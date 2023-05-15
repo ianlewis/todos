@@ -20,39 +20,36 @@ import (
 	"os"
 
 	"github.com/ianlewis/linguist"
-
 	"github.com/ianlewis/todos/internal/scanner"
 )
 
-var (
-	languageMap = map[string]scanner.Config{
-		"C":            scanner.CConfig,
-		"C++":          scanner.CPPConfig,
-		"C#":           scanner.CSConfig,
-		"Dockerfile":   scanner.DockerfileConfig,
-		"Go":           scanner.GoConfig,
-		"Go Module":    scanner.GoConfig,
-		"Go Checksums": scanner.GoConfig,
-		"HTML":         scanner.HTMLConfig,
-		"Java":         scanner.JavaConfig,
-		"JavaScript":   scanner.JavascriptConfig,
-		// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
-		"JSON":        scanner.JavascriptConfig,
-		"Makefile":    scanner.MakefileConfig,
-		"Objective-C": scanner.ObjectiveCConfig,
-		"Perl":        scanner.PerlConfig,
-		"PHP":         scanner.PHPConfig,
-		"Python":      scanner.PythonConfig,
-		"Ruby":        scanner.RubyConfig,
-		"Scala":       scanner.ScalaConfig,
-		"Shell":       scanner.ShellConfig,
-		"Swift":       scanner.SwiftConfig,
-		"TOML":        scanner.TOMLConfig,
-		"TypeScript":  scanner.TypescriptConfig,
-		"XML":         scanner.XMLConfig,
-		"YAML":        scanner.YAMLConfig,
-	}
-)
+var languageMap = map[string]scanner.Config{
+	"C":            scanner.CConfig,
+	"C++":          scanner.CPPConfig,
+	"C#":           scanner.CSConfig,
+	"Dockerfile":   scanner.DockerfileConfig,
+	"Go":           scanner.GoConfig,
+	"Go Module":    scanner.GoConfig,
+	"Go Checksums": scanner.GoConfig,
+	"HTML":         scanner.HTMLConfig,
+	"Java":         scanner.JavaConfig,
+	"JavaScript":   scanner.JavascriptConfig,
+	// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
+	"JSON":        scanner.JavascriptConfig,
+	"Makefile":    scanner.MakefileConfig,
+	"Objective-C": scanner.ObjectiveCConfig,
+	"Perl":        scanner.PerlConfig,
+	"PHP":         scanner.PHPConfig,
+	"Python":      scanner.PythonConfig,
+	"Ruby":        scanner.RubyConfig,
+	"Scala":       scanner.ScalaConfig,
+	"Shell":       scanner.ShellConfig,
+	"Swift":       scanner.SwiftConfig,
+	"TOML":        scanner.TOMLConfig,
+	"TypeScript":  scanner.TypescriptConfig,
+	"XML":         scanner.XMLConfig,
+	"YAML":        scanner.YAMLConfig,
+}
 
 // CommentScannerFromFile returns an appropriate CommentScanner for the given file.
 func CommentScannerFromFile(f *os.File) (*scanner.CommentScanner, error) {
