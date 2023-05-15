@@ -19,7 +19,7 @@ import (
 	"testing"
 )
 
-var testCases = []struct {
+var testCases = []*struct {
 	name     string
 	src      string
 	config   Config
