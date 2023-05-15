@@ -1,0 +1,62 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, "*"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  # Needed to check out the repo.
+  contents: read
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: 16
+      - run: make markdownlint
+
+  golangci-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
+        with:
+          go-version-file: "go.mod"
+      - env:
+          GOLANGCI_LINT_VERSION: "1.51.2"
+          GOLANGCI_LINT_CHECKSUM: "4de479eb9d9bc29da51aec1834e7c255b333723d38dbd56781c68e5dddc6a90b"
+        run: |
+          set -euo pipefail
+
+          #Install golangci-lint
+          curl -sSLo golangci-lint.tar.gz "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz"
+          echo "golangci-lint checksum is $(sha256sum golangci-lint.tar.gz | awk '{ print $1 }')"
+          echo "expected checksum is $GOLANGCI_LINT_CHECKSUM"
+          echo "$GOLANGCI_LINT_CHECKSUM  golangci-lint.tar.gz" | sha256sum --strict --check --status || exit -2
+          tar xf golangci-lint.tar.gz
+          mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint /usr/local/bin
+
+          # Run golangci-lint
+          make golangci-lint
+
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - env:
+          YAMLLINT_VERSION: "1.26.3"
+        run: |
+          set -euo pipefail
+
+          # Install yamllint
+          pip install -r requirements.txt --require-hashes
+
+          # Run yamllint
+          make yamllint
