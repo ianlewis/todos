@@ -92,7 +92,7 @@ func main() {
 		}
 
 		if fInfo.IsDir() {
-			fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
+			if err := fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
 				fullPath, err := filepath.EvalSymlinks(filepath.Join(path, subPath))
 				if err != nil {
 					// NOTE: If the symblink couldn't be evaluated just skip it.
@@ -134,7 +134,9 @@ func main() {
 				scanFile(f, outFunc)
 
 				return nil
-			})
+			}); err != nil {
+				panic(err)
+			}
 		} else {
 			// single file
 			scanFile(f, outFunc)
@@ -142,7 +144,6 @@ func main() {
 
 		f.Close()
 	}
-
 }
 
 func isHidden(path string) bool {
