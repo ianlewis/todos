@@ -93,7 +93,12 @@ func main() {
 
 		if fInfo.IsDir() {
 			fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
-				fullPath := filepath.Join(path, subPath)
+				fullPath, err := filepath.EvalSymlinks(filepath.Join(path, subPath))
+				if err != nil {
+					// NOTE: If the symblink couldn't be evaluated just skip it.
+					return nil
+				}
+
 				f, err := os.Open(fullPath)
 				if err != nil {
 					panic(err)
