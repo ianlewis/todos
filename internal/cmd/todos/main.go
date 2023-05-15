@@ -27,6 +27,12 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 )
 
+const (
+	exitCodeSuccess int = iota
+	exitCodeFlagParseError
+	exitCodeDirWalkError
+)
+
 type todoOpt struct {
 	fileName string
 	todo     todos.TODO
@@ -63,22 +69,22 @@ func main() {
 	fSet := opts.FlagSet()
 	if err := fSet.Parse(os.Args[1:]); err != nil {
 		printError(fmt.Sprintf("parsing flags: %v", err))
-		os.Exit(1)
+		os.Exit(exitCodeFlagParseError)
 	}
 	outFunc, ok := outTypes[opts.Output]
 	if !ok {
 		printError(fmt.Sprintf("invalid output type: %q", opts.Output))
-		os.Exit(1)
+		os.Exit(exitCodeFlagParseError)
 	}
 
 	if opts.Help {
 		opts.PrintLongUsage()
-		os.Exit(0)
+		os.Exit(exitCodeSuccess)
 	}
 
 	if opts.Version {
 		opts.PrintVersion()
-		os.Exit(0)
+		os.Exit(exitCodeSuccess)
 	}
 
 	paths := fSet.Args()
@@ -91,14 +97,14 @@ func main() {
 		f, err := os.Open(path)
 		if err != nil {
 			printError(fmt.Sprintf("%s: %v", path, err))
-			exitCode = 2
+			exitCode = exitCodeDirWalkError
 			continue
 		}
 
 		fInfo, err := f.Stat()
 		if err != nil {
 			printError(fmt.Sprintf("%s: %v", path, err))
-			exitCode = 2
+			exitCode = exitCodeDirWalkError
 			continue
 		}
 
@@ -107,7 +113,7 @@ func main() {
 				// If the path had an error then just skip it. WalkDir has likely hit the path already.
 				if err != nil {
 					printError(fmt.Sprintf("%s: %v", subPath, err))
-					exitCode = 2
+					exitCode = exitCodeDirWalkError
 					return nil
 				}
 
@@ -123,7 +129,7 @@ func main() {
 				f, err := os.Open(fullPath)
 				if err != nil {
 					printError(fmt.Sprintf("%s: %v", subPath, err))
-					exitCode = 2
+					exitCode = exitCodeDirWalkError
 					if d.IsDir() {
 						return fs.SkipDir
 					}
