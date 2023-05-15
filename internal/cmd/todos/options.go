@@ -22,22 +22,6 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
-var (
-	unknown = "unknown"
-
-	// Version is the current application version.
-	Version = "devel"
-
-	// Commit is the git commit sha.
-	Commit = unknown
-
-	// CommitDate is the date of the commit.
-	CommitDate = unknown
-
-	// TreeState is the state of the code tree when built.
-	TreeState = unknown
-)
-
 // Options are the command line options.
 type Options struct {
 	// IncludeHidden indicates including hidden files & directories.
