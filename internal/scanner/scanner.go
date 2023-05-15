@@ -27,7 +27,7 @@ type config struct {
 	Strings               [][2][]rune
 }
 
-func convertConfig(c Config) config {
+func convertConfig(c *Config) *config {
 	var c2 config
 	c2.LineCommentStart = stringsToRunes(c.LineCommentStart)
 	c2.MultilineCommentStart = []rune(c.MultilineCommentStart)
@@ -38,7 +38,7 @@ func convertConfig(c Config) config {
 			[]rune(c.Strings[i][1]),
 		})
 	}
-	return c2
+	return &c2
 }
 
 func stringsToRunes(s []string) [][]rune {
@@ -50,7 +50,7 @@ func stringsToRunes(s []string) [][]rune {
 }
 
 // New returns a new CommentScanner that scans code returned by r with the given Config.
-func New(r io.Reader, c Config) *CommentScanner {
+func New(r io.Reader, c *Config) *CommentScanner {
 	return &CommentScanner{
 		config: convertConfig(c),
 		reader: NewRuneReader(r),
@@ -64,7 +64,7 @@ func New(r io.Reader, c Config) *CommentScanner {
 // CommentScanner is a generic code comment scanner.
 type CommentScanner struct {
 	reader *RuneReader
-	config config
+	config *config
 
 	// state is the current state-machine state.
 	state state
