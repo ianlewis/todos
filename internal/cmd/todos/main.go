@@ -54,15 +54,21 @@ var outTypes = map[string]lineWriter{
 	"github":  outGithub,
 }
 
+func printError(msg string) {
+	fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], msg)
+}
+
 func main() {
 	opts := &Options{}
 	fSet := opts.FlagSet()
 	if err := fSet.Parse(os.Args[1:]); err != nil {
-		panic(err)
+		printError(fmt.Sprintf("parsing flags: %v", err))
+		os.Exit(1)
 	}
 	outFunc, ok := outTypes[opts.Output]
 	if !ok {
-		panic(fmt.Sprintf("invalid output type: %q", opts.Output))
+		printError(fmt.Sprintf("invalid output type: %q", opts.Output))
+		os.Exit(1)
 	}
 
 	if opts.Help {
@@ -80,36 +86,52 @@ func main() {
 		paths = []string{"."}
 	}
 
+	var exitCode int
 	for _, path := range paths {
 		f, err := os.Open(path)
 		if err != nil {
-			panic(err)
+			printError(fmt.Sprintf("%s: %v", path, err))
+			exitCode = 2
+			continue
 		}
 
 		fInfo, err := f.Stat()
 		if err != nil {
-			panic(err)
+			printError(fmt.Sprintf("%s: %v", path, err))
+			exitCode = 2
+			continue
 		}
 
 		if fInfo.IsDir() {
 			if err := fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
+				// If the path had an error then just skip it. WalkDir has likely hit the path already.
+				if err != nil {
+					printError(fmt.Sprintf("%s: %v", subPath, err))
+					exitCode = 2
+					return nil
+				}
+
 				fullPath, err := filepath.EvalSymlinks(filepath.Join(path, subPath))
 				if err != nil {
-					// NOTE: If the symblink couldn't be evaluated just skip it.
+					// NOTE: If the symbolic link couldn't be evaluated just skip it.
+					if d.IsDir() {
+						return fs.SkipDir
+					}
 					return nil
 				}
 
 				f, err := os.Open(fullPath)
 				if err != nil {
-					panic(err)
+					printError(fmt.Sprintf("%s: %v", subPath, err))
+					exitCode = 2
+					if d.IsDir() {
+						return fs.SkipDir
+					}
+					return nil
 				}
 				defer f.Close()
 
-				fInfo, err := f.Stat()
-				if err != nil {
-					panic(err)
-				}
-				if fInfo.IsDir() {
+				if d.IsDir() {
 					// NOTE: If subPath is "." then this path was explicitly included.
 					if subPath != "." {
 						if isHidden(fullPath) && !opts.IncludeHidden {
@@ -135,6 +157,7 @@ func main() {
 
 				return nil
 			}); err != nil {
+				// This shouldn't happen. Errors are all handled in the WalkDir.
 				panic(err)
 			}
 		} else {
@@ -144,6 +167,8 @@ func main() {
 
 		f.Close()
 	}
+
+	os.Exit(exitCode)
 }
 
 func isHidden(path string) bool {

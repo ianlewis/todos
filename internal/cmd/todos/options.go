@@ -96,9 +96,9 @@ OPTIONS:
 func (o *Options) PrintVersion() {
 	versionInfo := version.GetVersionInfo()
 
-	fmt.Fprintf(os.Stdout, `todos %s
+	fmt.Fprintf(os.Stdout, `%s %s
 Copyright (c) Google LLC
 License Apache License Version 2.0
 
-%s`, versionInfo.GitVersion, versionInfo.String())
+%s`, os.Args[0], versionInfo.GitVersion, versionInfo.String())
 }
