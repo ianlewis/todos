@@ -19,7 +19,7 @@ import (
 	"testing"
 )
 
-var testCases = []struct {
+var testCases = []*struct {
 	name     string
 	src      string
 	config   Config
@@ -354,7 +354,7 @@ var testCases = []struct {
 func TestCommentScanner(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := New(strings.NewReader(tc.src), tc.config)
+			s := New(strings.NewReader(tc.src), &tc.config)
 
 			var comments []*Comment
 			for s.Scan() {
@@ -384,7 +384,7 @@ func TestCommentScanner(t *testing.T) {
 func BenchmarkCommentScanner(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
-			s := New(strings.NewReader(tc.src), tc.config)
+			s := New(strings.NewReader(tc.src), &tc.config)
 			for s.Scan() {
 			}
 		})

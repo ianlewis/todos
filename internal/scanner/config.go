@@ -79,7 +79,7 @@ var (
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
 			{"\"", "\""},
-			{"'", "'"}, //character
+			{"'", "'"}, // character
 		},
 	}
 
