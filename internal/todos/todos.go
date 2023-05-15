@@ -62,8 +62,7 @@ func (t *TODOScanner) Scan() bool {
 		next := t.s.Next()
 		text := next.String()
 
-		var match string
-		match = findMatch(text)
+		match := findMatch(text)
 		if match != "" {
 			t.next = TODO{
 				Line: next.Line(),
