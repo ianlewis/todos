@@ -38,10 +38,7 @@ jobs:
   args:
     runs-on: ubuntu-latest
     outputs:
-      commit-date: ${{ steps.ldflags.outputs.commit-date }}
-      commit: ${{ steps.ldflags.outputs.commit }}
       version: ${{ steps.ldflags.outputs.version }}
-      tree-state: ${{ steps.ldflags.outputs.tree-state }}
     steps:
       - id: checkout
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # tag=v2.3.4
@@ -49,10 +46,7 @@ jobs:
           fetch-depth: 0
       - id: ldflags
         run: |
-          echo "commit-date=$(git log --date=iso8601-strict -1 --pretty=%ct)" >> "$GITHUB_OUTPUT"
-          echo "commit=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
           echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
-          echo "tree-state=$(if git diff --quiet; then echo "clean"; else echo "dirty"; fi)" >> "$GITHUB_OUTPUT"
 
   build:
     name: builder-${{matrix.os}}-${{matrix.arch}}
@@ -74,4 +68,4 @@ jobs:
     with:
       go-version: "1.20"
       config-file: ".slsa-goreleaser/${{matrix.os}}-${{matrix.arch}}.yml"
-      evaluated-envs: "COMMIT_DATE:${{needs.args.outputs.commit-date}}, COMMIT:${{needs.args.outputs.commit}}, VERSION:${{needs.args.outputs.version}}, TREE_STATE:${{needs.args.outputs.tree-state}}"
+      evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
