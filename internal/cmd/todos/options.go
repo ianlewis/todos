@@ -55,7 +55,7 @@ func (o *Options) FlagSet() *flag.FlagSet {
 	fs.BoolVar(&o.IncludeHidden, "include-hidden", false, "include hidden files and directories")
 	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
-	fs.StringVar(&o.TodoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX", "comma separated list of TODO types")
+	fs.StringVar(&o.TodoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX,COMBAK", "comma separated list of TODO types")
 	fs.StringVar(&o.Output, "o", "default", "output type (default, github)")
 	fs.StringVar(&o.Output, "output", "default", "output type (default, github)")
 	fs.Usage = func() {

@@ -46,7 +46,7 @@ func outReadable(o todoOpt) {
 func outGithub(o todoOpt) {
 	typ := "notice"
 	switch o.todo.Type {
-	case "TODO", "HACK":
+	case "TODO", "HACK", "COMBAK":
 		typ = "warning"
 	case "FIXME", "XXX", "BUG":
 		typ = "error"
