@@ -36,6 +36,9 @@ type Options struct {
 	// Output is the output type. Valid values are "default" or "github".
 	Output string
 
+	// Types is list of comma separated TODO types.
+	TodoTypes string
+
 	// Version indicates the command should print verison info and exit.
 	Version bool
 
@@ -52,6 +55,7 @@ func (o *Options) FlagSet() *flag.FlagSet {
 	fs.BoolVar(&o.IncludeHidden, "include-hidden", false, "include hidden files and directories")
 	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
+	fs.StringVar(&o.TodoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX", "comma separated list of TODO types")
 	fs.StringVar(&o.Output, "o", "default", "output type (default, github)")
 	fs.StringVar(&o.Output, "output", "default", "output type (default, github)")
 	fs.Usage = func() {
@@ -71,6 +75,7 @@ OPTIONS:
   --include-hidden            Include hidden files and directories.
   --include-docs              Include documentation.
   --include-vendored          Include vendored directories.
+  --todo-types=TYPES          Comma separated list of TODO types.
   -o, --output=TYPE           Output type (default, github).
   --version                   Print version information and exit.
 `, os.Args[0])

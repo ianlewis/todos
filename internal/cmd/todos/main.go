@@ -91,6 +91,14 @@ func main() {
 		paths = []string{"."}
 	}
 
+	var todoTypes []string
+	for _, todoType := range strings.Split(opts.TodoTypes, ",") {
+		todoTypes = append(todoTypes, strings.TrimSpace(todoType))
+	}
+	todoConfig := &todos.Config{
+		Types: todoTypes,
+	}
+
 	var exitCode int
 	for _, path := range paths {
 		f, err := os.Open(path)
@@ -109,10 +117,10 @@ func main() {
 
 		if fInfo.IsDir() {
 			// Walk the directory
-			exitCode = walkDir(path, exitCode, opts, outFunc)
+			exitCode = walkDir(path, exitCode, opts, todoConfig, outFunc)
 		} else {
 			// single file
-			exitCode = scanFile(f, exitCode, outFunc)
+			exitCode = scanFile(f, exitCode, todoConfig, outFunc)
 		}
 
 		f.Close()
@@ -121,7 +129,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
-func walkDir(path string, exitCode int, opts *Options, outFunc lineWriter) int {
+func walkDir(path string, exitCode int, opts *Options, todoConfig *todos.Config, outFunc lineWriter) int {
 	if err := fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
 		// If the path had an error then just skip it. WalkDir has likely hit the path already.
 		if err != nil {
@@ -172,7 +180,7 @@ func walkDir(path string, exitCode int, opts *Options, outFunc lineWriter) int {
 			return nil
 		}
 
-		exitCode = scanFile(f, exitCode, outFunc)
+		exitCode = scanFile(f, exitCode, todoConfig, outFunc)
 
 		return nil
 	}); err != nil {
@@ -192,7 +200,7 @@ func isHidden(path string) bool {
 	return strings.HasPrefix(base, ".")
 }
 
-func scanFile(f *os.File, exitCode int, out lineWriter) int {
+func scanFile(f *os.File, exitCode int, config *todos.Config, out lineWriter) int {
 	s, err := todos.CommentScannerFromFile(f)
 	if err != nil {
 		printError(fmt.Sprintf("%s: %v", f.Name(), err))
@@ -203,7 +211,7 @@ func scanFile(f *os.File, exitCode int, out lineWriter) int {
 	if s == nil {
 		return exitCode
 	}
-	t := todos.NewTODOScanner(s)
+	t := todos.NewTODOScanner(s, config)
 	for t.Scan() {
 		todo := t.Next()
 		out(todoOpt{
