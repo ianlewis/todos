@@ -16,20 +16,10 @@ package todos
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/ianlewis/todos/internal/scanner"
 )
-
-var todoMatch = []*regexp.Regexp{
-	// Empty comment
-	regexp.MustCompile(`(TODO|FIXME|BUG|HACK|XXX)\s*$`),
-
-	// Comment
-	regexp.MustCompile(`(TODO|FIXME|BUG|HACK|XXX): .*`),
-
-	// With Link
-	regexp.MustCompile(`(TODO|FIXME|BUG|HACK|XXX)\(.*\): .*`),
-}
 
 // TODO is a todo comment.
 type TODO struct {
@@ -43,17 +33,42 @@ type TODO struct {
 	Text string
 }
 
+// Config is configuration for the TODOScanner.
+type Config struct {
+	Types []string
+}
+
 // TODOScanner scans for TODO comments.
 type TODOScanner struct {
-	next TODO
-	s    *scanner.CommentScanner
+	next      TODO
+	s         *scanner.CommentScanner
+	todoMatch []*regexp.Regexp
 }
 
 // NewTODOScanner returns a new TODOScanner.
-func NewTODOScanner(s *scanner.CommentScanner) *TODOScanner {
-	return &TODOScanner{
+func NewTODOScanner(s *scanner.CommentScanner, config *Config) *TODOScanner {
+	snr := &TODOScanner{
 		s: s,
 	}
+
+	var quotedTypes []string
+	for _, tp := range config.Types {
+		quotedTypes = append(quotedTypes, regexp.QuoteMeta(tp))
+	}
+
+	typesMatch := strings.Join(quotedTypes, "|")
+	snr.todoMatch = []*regexp.Regexp{
+		// Empty comment
+		regexp.MustCompile(`(` + typesMatch + `)\s*$`),
+
+		// Comment
+		regexp.MustCompile(`(` + typesMatch + `): .*`),
+
+		// With Link
+		regexp.MustCompile(`(` + typesMatch + `)\(.*\): .*`),
+	}
+
+	return snr
 }
 
 // Scan scans for the next TODO.
@@ -62,7 +77,7 @@ func (t *TODOScanner) Scan() bool {
 		next := t.s.Next()
 		text := next.String()
 
-		match := findMatch(text)
+		match := t.findMatch(text)
 		if match != "" {
 			t.next = TODO{
 				Line: next.Line(),
@@ -75,8 +90,8 @@ func (t *TODOScanner) Scan() bool {
 	return false
 }
 
-func findMatch(text string) string {
-	for _, m := range todoMatch {
+func (t *TODOScanner) findMatch(text string) string {
+	for _, m := range t.todoMatch {
 		match := m.FindAllStringSubmatch(text, 1)
 		if len(match) != 0 {
 			return match[0][1]
