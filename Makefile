@@ -34,6 +34,12 @@ unit-test: ## Runs all unit tests.
 		fi; \
 		go test -mod=vendor $$extraeargs ./...
 
+.PHONY: coverage
+coverage: ## Generate coverage report.
+	@set -e;\
+		go mod vendor; \
+		go test -mod=vendor -race -coverprofile=coverage.out -covermode=atomic ./...
+
 ## Linters
 #####################################################################
 

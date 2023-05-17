@@ -1,0 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        # Don't allow code coverage to be reduced.
+        target: auto
+        threshold: 0%
+        if_ci_failed: failure # success, failure, error, ignore
+    patch:
+      default:
+        # basic
+        target: auto
+        threshold: 0%
+        base: auto
+        if_ci_failed: failure # success, failure, error, ignore
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false # if true: only post the comment if coverage changes
+  require_base: false # [yes :: must have a base report to post]
+  require_head: true # [yes :: must have a head report to post]
