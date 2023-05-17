@@ -34,7 +34,7 @@ var (
 		},
 	}
 
-	// CPPConfig is a config for C++
+	// CPPConfig is a config for C++.
 	CPPConfig = CConfig
 
 	// CSConfig is a config for C#
@@ -109,7 +109,7 @@ var (
 		},
 	}
 
-	// PHPConfig is a config for PHP
+	// PHPConfig is a config for PHP.
 	PHPConfig = Config{
 		LineCommentStart:      []string{"#", "//"},
 		MultilineCommentStart: "/*",

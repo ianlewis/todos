@@ -16,6 +16,7 @@ package todos
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 
@@ -55,7 +56,7 @@ var languageMap = map[string]*scanner.Config{
 func CommentScannerFromFile(f *os.File) (*scanner.CommentScanner, error) {
 	contents, err := io.ReadAll(f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading %s: %w", f.Name(), err)
 	}
 
 	if linguist.ShouldIgnoreContents(contents) {

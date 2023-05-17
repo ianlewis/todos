@@ -352,8 +352,13 @@ var testCases = []*struct {
 }
 
 func TestCommentScanner(t *testing.T) {
-	for _, tc := range testCases {
+	t.Parallel()
+
+	for i := range testCases {
+		tc := testCases[i]
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			s := New(strings.NewReader(tc.src), &tc.config)
 
 			var comments []*Comment
