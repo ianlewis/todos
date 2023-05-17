@@ -31,6 +31,9 @@ type TODO struct {
 
 	// Line is the line number where todo was found..
 	Line int
+
+	// CommentLine is the line where the comment starts.
+	CommentLine int
 }
 
 // Config is configuration for the TODOScanner.
@@ -77,12 +80,14 @@ func (t *TODOScanner) Scan() bool {
 		next := t.s.Next()
 		text := next.String()
 
-		match := t.findMatch(text)
+		match, text, lineNo := t.findMatch(text)
 		if match != "" {
 			t.next = TODO{
-				Line: next.Line(),
 				Type: match,
-				Text: next.String(),
+				Text: text,
+				// Add the line relative to the file.
+				Line:        next.Line() + lineNo - 1,
+				CommentLine: next.Line(),
 			}
 			return true
 		}
@@ -90,14 +95,19 @@ func (t *TODOScanner) Scan() bool {
 	return false
 }
 
-func (t *TODOScanner) findMatch(text string) string {
-	for _, m := range t.todoMatch {
-		match := m.FindAllStringSubmatch(text, 1)
-		if len(match) != 0 {
-			return match[0][1]
+// findMatch returns the TODO type, the full TODO line, and the line number it
+// was found on or zero if it was not found.
+func (t *TODOScanner) findMatch(text string) (string, string, int) {
+	for i, line := range strings.Split(text, "\n") {
+		for _, m := range t.todoMatch {
+			match := m.FindAllStringSubmatch(line, 1)
+			if len(match) != 0 {
+				return match[0][1], line, i + 1
+			}
 		}
 	}
-	return ""
+
+	return "", "", 0
 }
 
 // Next returns the next TODO.
