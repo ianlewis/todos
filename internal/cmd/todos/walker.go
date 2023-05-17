@@ -19,7 +19,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/ianlewis/linguist"
@@ -63,15 +62,6 @@ func outGithub(o todoOpt) {
 var outTypes = map[string]lineWriter{
 	"default": outReadable,
 	"github":  outGithub,
-}
-
-func isHidden(path string) bool {
-	base := filepath.Base(path)
-	if base == "." || base == ".." {
-		return false
-	}
-	// TODO(github.com/ianlewis/todos/issues/7): support hidden files on windows.
-	return strings.HasPrefix(base, ".")
 }
 
 // TODOWalker walks the directory tree and scans files for TODOS.
@@ -166,7 +156,17 @@ func (w *TODOWalker) walkDir(path string) {
 		if d.IsDir() {
 			// NOTE: If subPath is "." then this path was explicitly included.
 			if subPath != "." {
-				if isHidden(fullPath) && !w.includeHidden {
+				hdn, err := isHidden(fullPath)
+				if err != nil {
+					printError(fmt.Sprintf("%s: %v", subPath, err))
+					w.err = err
+					if d.IsDir() {
+						return fs.SkipDir
+					}
+					return nil
+				}
+
+				if hdn && !w.includeHidden {
 					// Skip hidden files.
 					return fs.SkipDir
 				}
@@ -180,7 +180,14 @@ func (w *TODOWalker) walkDir(path string) {
 			return nil
 		}
 
-		if isHidden(fullPath) && !w.includeHidden {
+		hdn, err := isHidden(fullPath)
+		if err != nil {
+			printError(fmt.Sprintf("%s: %v", subPath, err))
+			w.err = err
+			return nil
+		}
+
+		if hdn && !w.includeHidden {
 			// Skip hidden files.
 			return nil
 		}
