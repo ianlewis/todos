@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `--todo-types` flag which allows users to specify the TODO tags to
   search for.
 
+### Changed in X.Y.Z
+
+- TODOs matched in multi-line comments no longer print the entire comment. Only
+  the line containing the TODO is printed. Line numbers printed also correspond
+  to the line where the TODO occurs rather than the starting line of the
+  comment.
+
 ## [0.0.1] - 2023-05-15
 
 ### Added in 0.0.1
