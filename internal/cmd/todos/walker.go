@@ -160,10 +160,7 @@ func (w *TODOWalker) walkDir(path string) {
 				if err != nil {
 					printError(fmt.Sprintf("%s: %v", subPath, err))
 					w.err = err
-					if d.IsDir() {
-						return fs.SkipDir
-					}
-					return nil
+					return fs.SkipDir
 				}
 
 				if hdn && !w.includeHidden {
