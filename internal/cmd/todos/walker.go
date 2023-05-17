@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/ianlewis/linguist"
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
@@ -39,7 +40,13 @@ type todoOpt struct {
 type lineWriter func(todoOpt)
 
 func outReadable(o todoOpt) {
-	fmt.Printf("%s:%d:%s\n", o.fileName, o.todo.Line, o.todo.Text)
+	fmt.Printf("%s%s%s%s%s\n",
+		color.MagentaString(o.fileName),
+		color.CyanString(":"),
+		color.GreenString(fmt.Sprintf("%d", o.todo.Line)),
+		color.CyanString(":"),
+		o.todo.Text,
+	)
 }
 
 func outGithub(o todoOpt) {
