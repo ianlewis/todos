@@ -16,12 +16,13 @@ package scanner
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 )
 
 type expectation interface {
-	expect(*RuneReader, *testing.T)
+	expect(*testing.T, *RuneReader)
 }
 
 type expectedPeek struct {
@@ -30,9 +31,10 @@ type expectedPeek struct {
 	expectedErr   error
 }
 
-func (e *expectedPeek) expect(r *RuneReader, t *testing.T) {
+func (e *expectedPeek) expect(t *testing.T, r *RuneReader) {
+	t.Helper()
 	p, err := r.Peek(e.size)
-	if got, want := err, e.expectedErr; got != want {
+	if got, want := err, e.expectedErr; !errors.Is(got, want) {
 		t.Errorf("expected error: got: %v, want: %v", got, want)
 	}
 
@@ -44,14 +46,15 @@ func (e *expectedPeek) expect(r *RuneReader, t *testing.T) {
 type expectedRead struct {
 	size          int
 	expectedNum   int
-	expectedRunes []rune
 	expectedErr   error
+	expectedRunes []rune
 }
 
-func (e *expectedRead) expect(r *RuneReader, t *testing.T) {
+func (e *expectedRead) expect(t *testing.T, r *RuneReader) {
+	t.Helper()
 	p := make([]rune, e.size)
 	n, err := r.Read(p)
-	if got, want := err, e.expectedErr; got != want {
+	if got, want := err, e.expectedErr; !errors.Is(got, want) {
 		t.Errorf("expected error: got: %v, want: %v", got, want)
 	}
 
@@ -64,7 +67,9 @@ func (e *expectedRead) expect(r *RuneReader, t *testing.T) {
 }
 
 func TestRuneReader_ReadPeek(t *testing.T) {
-	cases := []struct {
+	t.Parallel()
+
+	testCases := []struct {
 		name     string
 		bytes    []byte
 		expected []expectation
@@ -221,13 +226,16 @@ func TestRuneReader_ReadPeek(t *testing.T) {
 		},
 	}
 
-	for _, c := range cases {
+	for i := range testCases {
+		c := testCases[i]
+
 		r := NewRuneReader(bytes.NewReader(c.bytes))
 		r.lookaheadSize = 11
 		r.bufSize = 24
 		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
 			for _, e := range c.expected {
-				e.expect(r, t)
+				e.expect(t, r)
 			}
 		})
 	}

@@ -15,6 +15,8 @@
 package scanner
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -86,7 +88,7 @@ func (s *CommentScanner) Next() *Comment {
 
 // Err returns an error if one occurred.
 func (s *CommentScanner) Err() error {
-	if s.err == io.EOF {
+	if errors.Is(s.err, io.EOF) {
 		return nil
 	}
 	return s.err
@@ -102,11 +104,11 @@ func (s *CommentScanner) Scan() bool {
 
 		switch st := s.state.(type) {
 		case *stateCode:
-			s.state, s.err = s.processCode()
+			s.state, s.err = s.processCode(st)
 		case *stateString:
 			s.state, s.err = s.processString(st)
 		case *stateLineComment:
-			s.state, s.err = s.processLineComment()
+			s.state, s.err = s.processLineComment(st)
 			if _, ok := s.state.(*stateLineComment); !ok {
 				return true
 			}
@@ -120,13 +122,13 @@ func (s *CommentScanner) Scan() bool {
 }
 
 // processCode processes source code and returns the next state.
-func (s *CommentScanner) processCode() (state, error) {
+func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 	for {
 		// Check for line comment
 		for _, start := range s.config.LineCommentStart {
 			eq, err := s.peekEqual(start)
 			if err != nil {
-				return &stateCode{}, err
+				return st, err
 			}
 			if eq {
 				return &stateLineComment{}, nil
@@ -137,14 +139,14 @@ func (s *CommentScanner) processCode() (state, error) {
 		if len(s.config.MultilineCommentStart) != 0 {
 			if eq, err := s.peekEqual(s.config.MultilineCommentStart); err == nil && eq {
 				// Discard the opening. It will be added by processMultilineComment.
-				if _, err := s.reader.Discard(len(s.config.MultilineCommentStart)); err != nil {
-					return &stateCode{}, err
+				if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
+					return st, errDiscard
 				}
 				return &stateMultilineComment{
 					line: s.line,
 				}, nil
 			} else if err != nil {
-				return &stateCode{}, err
+				return st, err
 			}
 		}
 
@@ -152,12 +154,12 @@ func (s *CommentScanner) processCode() (state, error) {
 		for i, strs := range s.config.Strings {
 			eq, err := s.peekEqual(strs[0])
 			if err != nil {
-				return &stateCode{}, err
+				return st, err
 			}
 			if eq {
 				// Discard the string opening.
 				if _, err := s.reader.Discard(len(strs[0])); err != nil {
-					return &stateCode{}, err
+					return st, err
 				}
 				return &stateString{
 					index: i,
@@ -167,7 +169,7 @@ func (s *CommentScanner) processCode() (state, error) {
 
 		// Process the next rune.
 		if _, err := s.nextRune(); err != nil {
-			return &stateCode{}, err
+			return st, err
 		}
 	}
 }
@@ -181,9 +183,8 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 			return st, err
 		}
 		if escaped {
-			// Skip the backslash charater.
-			_, err := s.reader.Discard(1)
-			if err != nil {
+			// Skip the backslash character.
+			if _, err := s.reader.Discard(1); err != nil {
 				return st, err
 			}
 		} else {
@@ -193,8 +194,7 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 				return st, err
 			}
 			if stringEnd {
-				_, err := s.reader.Discard(len(s.config.Strings[st.index][1]))
-				if err != nil {
+				if _, err := s.reader.Discard(len(s.config.Strings[st.index][1])); err != nil {
 					return st, err
 				}
 				return &stateCode{}, nil
@@ -208,12 +208,12 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 }
 
 // processLineComment processes line comments and returns the next state.
-func (s *CommentScanner) processLineComment() (state, error) {
+func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error) {
 	var b strings.Builder
 	for {
 		lineEnd, err := s.isLineEnd()
 		if err != nil {
-			return &stateLineComment{}, err
+			return st, err
 		}
 		if lineEnd {
 			s.next = &Comment{
@@ -225,12 +225,12 @@ func (s *CommentScanner) processLineComment() (state, error) {
 
 		rn, err := s.nextRune()
 		if err != nil {
-			return &stateLineComment{}, err
+			return st, err
 		}
 
 		_, err = b.WriteRune(rn)
 		if err != nil {
-			return &stateLineComment{}, err
+			return st, fmt.Errorf("writing rune %q: %w", rn, err)
 		}
 	}
 }
@@ -246,9 +246,8 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			return st, err
 		}
 		if mlEnd {
-			_, err := s.reader.Discard(len(s.config.MultilineCommentEnd))
-			if err != nil {
-				return st, err
+			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentEnd)); errDiscard != nil {
+				return st, errDiscard
 			}
 			// Add the ending to the builder.
 			b.WriteString(string(s.config.MultilineCommentEnd))
@@ -266,7 +265,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 
 		_, err = b.WriteRune(rn)
 		if err != nil {
-			return st, err
+			return st, fmt.Errorf("writing rune %q: %w", rn, err)
 		}
 	}
 }
@@ -284,7 +283,7 @@ func (s *CommentScanner) nextRune() (rune, error) {
 
 func (s *CommentScanner) isLineEnd() (bool, error) {
 	nixNL, err := s.peekEqual([]rune{'\n'})
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		// NOTE: if we get EOF here we have no more runes to read. Handle EOF
 		// as the end of a line.
 		return true, nil
@@ -297,7 +296,7 @@ func (s *CommentScanner) isLineEnd() (bool, error) {
 	}
 
 	winNL, err := s.peekEqual([]rune{'\r', '\n'})
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		// NOTE: We may only have one character left so return false so it can
 		// be processed.
 		return false, nil

@@ -24,6 +24,11 @@ import (
 // utfByteSize is the maximum number of bytes in a UTF-8 character.
 const utfByteSize = 4
 
+var (
+	errRuneDecode = errors.New("UTF-8 rune decoding error")
+	errPeekBuffer = fmt.Errorf("peek index greater than buffer size")
+)
+
 // RuneReader reads a byte stream of UTF-8 text as runes.
 type RuneReader struct {
 	r io.Reader
@@ -65,7 +70,8 @@ func (r *RuneReader) Read(p []rune) (int, error) {
 	i := 0
 	var err error
 	for err == nil && i < len(p) {
-		rn, err := r.Next()
+		var rn rune
+		rn, err = r.Next()
 		if err != nil {
 			return i, err
 		}
@@ -110,7 +116,7 @@ func (r *RuneReader) Discard(n int) (int, error) {
 // n is larger than r's buffer size.
 func (r *RuneReader) Peek(n int) ([]rune, error) {
 	if n > r.lookaheadSize {
-		return nil, fmt.Errorf("%d is greater than buffer size", n)
+		return nil, errPeekBuffer
 	}
 
 	if err := r.readLookahead(); err != nil {
@@ -136,12 +142,13 @@ func (r *RuneReader) readLookahead() error {
 	for i := lenBuf; i < r.lookaheadSize; i++ {
 		rn, size, err := r.readRune()
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return err
 			}
 			break
 		}
 		if size > 0 {
+			//nolint:makezero // buf is prealocated with length for copy function.
 			buf = append(buf, rn)
 		}
 	}
@@ -162,7 +169,7 @@ func (r *RuneReader) readRune() (rune, int, error) {
 
 	rn, size := utf8.DecodeRune(r.buf)
 	if rn == utf8.RuneError && size < 2 {
-		return rn, size, errors.New("UTF-8 rune decoding error")
+		return rn, size, errRuneDecode
 	}
 	r.buf = r.buf[size:]
 
@@ -178,7 +185,7 @@ func (r *RuneReader) readToBuf() error {
 	copy(buf, r.buf)
 	n, err := r.r.Read(buf[lenBuf:])
 	if err != nil && err != io.EOF {
-		return err
+		return fmt.Errorf("reading to byte buffer: %w", err)
 	}
 	r.buf = buf[:n+lenBuf]
 	r.atEOF = err == io.EOF

@@ -24,6 +24,12 @@ import (
 
 // Options are the command line options.
 type Options struct {
+	// Output is the output type. Valid values are "default" or "github".
+	Output string
+
+	// Types is list of comma separated TODO types.
+	TodoTypes string
+
 	// IncludeHidden indicates including hidden files & directories.
 	IncludeHidden bool
 
@@ -33,13 +39,7 @@ type Options struct {
 	// IncludeVendored indicates including vendored directories.
 	IncludeVendored bool
 
-	// Output is the output type. Valid values are "default" or "github".
-	Output string
-
-	// Types is list of comma separated TODO types.
-	TodoTypes string
-
-	// Version indicates the command should print verison info and exit.
+	// Version indicates the command should print version info and exit.
 	Version bool
 
 	// Help indicates the command should print the help and exit.

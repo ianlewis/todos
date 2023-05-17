@@ -23,14 +23,14 @@ import (
 
 // TODO is a todo comment.
 type TODO struct {
-	// Line is the line number where todo was found..
-	Line int
-
 	// Type is the todo type, such as "FIXME", "BUG", etc.
 	Type string
 
 	// Text is the full comment text.
 	Text string
+
+	// Line is the line number where todo was found..
+	Line int
 }
 
 // Config is configuration for the TODOScanner.
@@ -107,5 +107,6 @@ func (t *TODOScanner) Next() TODO {
 
 // Err returns the first error encountered.
 func (t *TODOScanner) Err() error {
+	//nolint:wrapcheck
 	return t.s.Err()
 }

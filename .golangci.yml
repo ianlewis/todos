@@ -71,11 +71,18 @@ linters-settings:
     check-blank: true
   gocognit:
     # Minimal code complexity to report
-    # Increased beyond default to support table-driven tests.
-    min-complexity: 35
+    # Increased beyond default to support table-driven tests and to preserve
+    # some semblance of sanity.
+    min-complexity: 40
+  nestif:
+    # Increased beyond default to preserve some semblance of sanity.
+    min-complexity: 8
   govet:
-    enable:
+    disable:
+      # Too strict.
       - fieldalignment
+    enable:
+      - shadow
   godox:
     keywords:
       - BUG
