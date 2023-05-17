@@ -19,7 +19,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/ianlewis/linguist"
@@ -63,15 +62,6 @@ func outGithub(o todoOpt) {
 var outTypes = map[string]lineWriter{
 	"default": outReadable,
 	"github":  outGithub,
-}
-
-func isHidden(path string) bool {
-	base := filepath.Base(path)
-	if base == "." || base == ".." {
-		return false
-	}
-	// TODO(github.com/ianlewis/todos/issues/7): support hidden files on windows.
-	return strings.HasPrefix(base, ".")
 }
 
 // TODOWalker walks the directory tree and scans files for TODOS.
@@ -135,63 +125,89 @@ func (w *TODOWalker) Walk() bool {
 }
 
 func (w *TODOWalker) walkDir(path string) {
-	if err := fs.WalkDir(os.DirFS(path), ".", func(subPath string, d fs.DirEntry, err error) error {
-		// If the path had an error then just skip it. WalkDir has likely hit the path already.
-		if err != nil {
-			printError(fmt.Sprintf("%s: %v", subPath, err))
-			w.err = err
-			return nil
-		}
-
-		fullPath, err := filepath.EvalSymlinks(filepath.Join(path, subPath))
-		if err != nil {
-			// NOTE: If the symbolic link couldn't be evaluated just skip it.
-			if d.IsDir() {
-				return fs.SkipDir
-			}
-			return nil
-		}
-
-		f, err := os.Open(fullPath)
-		if err != nil {
-			printError(fmt.Sprintf("%s: %v", subPath, err))
-			w.err = err
-			if d.IsDir() {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		defer f.Close()
-
-		if d.IsDir() {
-			// NOTE: If subPath is "." then this path was explicitly included.
-			if subPath != "." {
-				if isHidden(fullPath) && !w.includeHidden {
-					// Skip hidden files.
-					return fs.SkipDir
-				}
-				if !w.includeVendored && linguist.IsVendored(fullPath) {
-					return fs.SkipDir
-				}
-				if !w.includeDocs && linguist.IsDocumentation(fullPath) {
-					return fs.SkipDir
-				}
-			}
-			return nil
-		}
-
-		if isHidden(fullPath) && !w.includeHidden {
-			// Skip hidden files.
-			return nil
-		}
-
-		w.scanFile(f)
-
-		return nil
-	}); err != nil {
+	if err := fs.WalkDir(os.DirFS(path), ".", w.walkFunc); err != nil {
 		// This shouldn't happen. Errors are all handled in the WalkDir.
 		panic(err)
 	}
+}
+
+// walkFunc implements io.fs.WalkDirFunc.
+func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
+	// If the path had an error then just skip it. WalkDir has likely hit the path already.
+	if err != nil {
+		printError(fmt.Sprintf("%s: %v", path, err))
+		w.err = err
+		return nil
+	}
+
+	fullPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		// NOTE: If the symbolic link couldn't be evaluated just skip it.
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		return nil
+	}
+
+	f, err := os.Open(fullPath)
+	if err != nil {
+		printError(fmt.Sprintf("%s: %v", path, err))
+		w.err = err
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		return nil
+	}
+	defer f.Close()
+
+	if d.IsDir() {
+		return w.processDir(path, fullPath)
+	}
+	return w.processFile(path, fullPath, f)
+}
+
+func (w *TODOWalker) processDir(path, fullPath string) error {
+	// NOTE: If path is "." then this path was explicitly included.
+	if path == "." {
+		return nil
+	}
+
+	hdn, err := isHidden(fullPath)
+	if err != nil {
+		printError(fmt.Sprintf("%s: %v", path, err))
+		w.err = err
+		return fs.SkipDir
+	}
+
+	if hdn && !w.includeHidden {
+		// Skip hidden files.
+		return fs.SkipDir
+	}
+	if !w.includeVendored && linguist.IsVendored(fullPath) {
+		return fs.SkipDir
+	}
+	if !w.includeDocs && linguist.IsDocumentation(fullPath) {
+		return fs.SkipDir
+	}
+	return nil
+}
+
+func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
+	hdn, err := isHidden(fullPath)
+	if err != nil {
+		printError(fmt.Sprintf("%s: %v", path, err))
+		w.err = err
+		return nil
+	}
+
+	if hdn && !w.includeHidden {
+		// Skip hidden files.
+		return nil
+	}
+
+	w.scanFile(f)
+
+	return nil
 }
 
 func (w *TODOWalker) scanFile(f *os.File) {
