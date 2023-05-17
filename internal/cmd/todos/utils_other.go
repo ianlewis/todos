@@ -17,6 +17,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -25,7 +26,7 @@ import (
 func isHidden(path string) (bool, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("getting absolute path: %w", err)
 	}
 
 	base := filepath.Base(absPath)
