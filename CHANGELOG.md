@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the line containing the TODO is printed. Line numbers printed also correspond
   to the line where the TODO occurs rather than the starting line of the
   comment.
+- Filenames and line numbers are now colored in the terminal if it supports it.
 
 ## [0.0.1] - 2023-05-15
 
