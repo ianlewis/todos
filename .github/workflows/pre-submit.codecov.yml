@@ -1,0 +1,17 @@
+name: codecov
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [main]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  codecov:
+    steps:
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4

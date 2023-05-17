@@ -1,0 +1,7 @@
+coverage:
+  status:
+    project:
+      default:
+        # Don't allow code coverage to be reduced.
+        target: auto
+        threshold: 0%
