@@ -41,15 +41,28 @@ type Config struct {
 	Types []string
 }
 
+// CommentScanner is a type that scans code text for comments.
+type CommentScanner interface {
+	// Scan scans for the next comment. It returns true if there is more data
+	// to scan.
+	Scan() bool
+
+	// Next returns the next Comment.
+	Next() *scanner.Comment
+
+	// Err returns an error if one occurred.
+	Err() error
+}
+
 // TODOScanner scans for TODO comments.
 type TODOScanner struct {
-	next      TODO
-	s         *scanner.CommentScanner
+	next      *TODO
+	s         CommentScanner
 	todoMatch []*regexp.Regexp
 }
 
 // NewTODOScanner returns a new TODOScanner.
-func NewTODOScanner(s *scanner.CommentScanner, config *Config) *TODOScanner {
+func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	snr := &TODOScanner{
 		s: s,
 	}
@@ -82,12 +95,12 @@ func (t *TODOScanner) Scan() bool {
 
 		match, text, lineNo := t.findMatch(text)
 		if match != "" {
-			t.next = TODO{
+			t.next = &TODO{
 				Type: match,
 				Text: text,
 				// Add the line relative to the file.
-				Line:        next.Line() + lineNo - 1,
-				CommentLine: next.Line(),
+				Line:        next.Line + lineNo - 1,
+				CommentLine: next.Line,
 			}
 			return true
 		}
@@ -111,7 +124,7 @@ func (t *TODOScanner) findMatch(text string) (string, string, int) {
 }
 
 // Next returns the next TODO.
-func (t *TODOScanner) Next() TODO {
+func (t *TODOScanner) Next() *TODO {
 	return t.next
 }
 

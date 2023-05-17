@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/ianlewis/linguist"
+	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 )
 
@@ -32,7 +33,7 @@ func printError(format string, a ...any) {
 
 type todoOpt struct {
 	fileName string
-	todo     todos.TODO
+	todo     *todos.TODO
 }
 
 type lineWriter func(todoOpt)
@@ -187,7 +188,7 @@ func (w *TODOWalker) walkDir(path string) {
 }
 
 func (w *TODOWalker) scanFile(f *os.File) {
-	s, err := todos.CommentScannerFromFile(f)
+	s, err := scanner.FromFile(f)
 	if err != nil {
 		printError(fmt.Sprintf("%s: %v", f.Name(), err))
 		w.err = err

@@ -15,10 +15,14 @@
 package scanner
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+
+	"github.com/ianlewis/linguist"
 )
 
 // config is configuration for a generic comment scanner.
@@ -49,6 +53,28 @@ func stringsToRunes(s []string) [][]rune {
 		r = append(r, []rune(s[i]))
 	}
 	return r
+}
+
+// FromFile returns an appropriate CommentScanner for the given file. The
+// language is auto-detected and a relevant configuration is used to initialize the scanner.
+func FromFile(f *os.File) (*CommentScanner, error) {
+	contents, err := io.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("reading %s: %w", f.Name(), err)
+	}
+
+	if linguist.ShouldIgnoreContents(contents) {
+		return nil, nil
+	}
+
+	name := f.Name()
+	lang := linguist.LanguageByContents(contents, linguist.LanguageHints(name))
+
+	if config, ok := languageMap[lang]; ok {
+		return New(bytes.NewReader(contents), config), nil
+	}
+
+	return nil, nil
 }
 
 // New returns a new CommentScanner that scans code returned by r with the given Config.
@@ -217,8 +243,8 @@ func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error)
 		}
 		if lineEnd {
 			s.next = &Comment{
-				text: b.String(),
-				line: s.line,
+				Text: b.String(),
+				Line: s.line,
 			}
 			return &stateCode{}, nil
 		}
@@ -252,8 +278,8 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			// Add the ending to the builder.
 			b.WriteString(string(s.config.MultilineCommentEnd))
 			s.next = &Comment{
-				text: b.String(),
-				line: st.line,
+				Text: b.String(),
+				Line: st.line,
 			}
 			return &stateCode{}, nil
 		}
