@@ -34,7 +34,7 @@ func (s *testScanner) Scan() bool {
 		return false
 	}
 	s.index++
-	return s.index-1 < len(s.comments)
+	return s.index <= len(s.comments)
 }
 
 func (s *testScanner) Next() *scanner.Comment {
@@ -62,6 +62,8 @@ func (s todoSlice) String() string {
 }
 
 func TestTODOScanner(t *testing.T) {
+	t.Parallel()
+
 	testCases := map[string]struct {
 		s        CommentScanner
 		config   *Config
@@ -131,6 +133,8 @@ func TestTODOScanner(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			s := NewTODOScanner(tc.s, tc.config)
 			var found []*TODO
 			for s.Scan() {
