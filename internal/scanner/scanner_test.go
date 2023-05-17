@@ -378,7 +378,7 @@ func TestCommentScanner(t *testing.T) {
 					t.Errorf("unexpected text, want: %q, got: %q", want, got)
 				}
 
-				if want, got := tc.comments[i].line, comments[i].Line(); want != got {
+				if want, got := tc.comments[i].line, comments[i].Line; want != got {
 					t.Errorf("unexpected line, want: %d, got: %d", want, got)
 				}
 			}

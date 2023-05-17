@@ -31,6 +31,9 @@ type TODO struct {
 
 	// Line is the line number where todo was found..
 	Line int
+
+	// CommentLine is the line where the comment starts.
+	CommentLine int
 }
 
 // Config is configuration for the TODOScanner.
@@ -38,15 +41,28 @@ type Config struct {
 	Types []string
 }
 
+// CommentScanner is a type that scans code text for comments.
+type CommentScanner interface {
+	// Scan scans for the next comment. It returns true if there is more data
+	// to scan.
+	Scan() bool
+
+	// Next returns the next Comment.
+	Next() *scanner.Comment
+
+	// Err returns an error if one occurred.
+	Err() error
+}
+
 // TODOScanner scans for TODO comments.
 type TODOScanner struct {
-	next      TODO
-	s         *scanner.CommentScanner
+	next      *TODO
+	s         CommentScanner
 	todoMatch []*regexp.Regexp
 }
 
 // NewTODOScanner returns a new TODOScanner.
-func NewTODOScanner(s *scanner.CommentScanner, config *Config) *TODOScanner {
+func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	snr := &TODOScanner{
 		s: s,
 	}
@@ -77,12 +93,14 @@ func (t *TODOScanner) Scan() bool {
 		next := t.s.Next()
 		text := next.String()
 
-		match := t.findMatch(text)
+		match, text, lineNo := t.findMatch(text)
 		if match != "" {
-			t.next = TODO{
-				Line: next.Line(),
+			t.next = &TODO{
 				Type: match,
-				Text: next.String(),
+				Text: text,
+				// Add the line relative to the file.
+				Line:        next.Line + lineNo - 1,
+				CommentLine: next.Line,
 			}
 			return true
 		}
@@ -90,18 +108,23 @@ func (t *TODOScanner) Scan() bool {
 	return false
 }
 
-func (t *TODOScanner) findMatch(text string) string {
-	for _, m := range t.todoMatch {
-		match := m.FindAllStringSubmatch(text, 1)
-		if len(match) != 0 {
-			return match[0][1]
+// findMatch returns the TODO type, the full TODO line, and the line number it
+// was found on or zero if it was not found.
+func (t *TODOScanner) findMatch(text string) (string, string, int) {
+	for i, line := range strings.Split(text, "\n") {
+		for _, m := range t.todoMatch {
+			match := m.FindAllStringSubmatch(line, 1)
+			if len(match) != 0 {
+				return match[0][1], line, i + 1
+			}
 		}
 	}
-	return ""
+
+	return "", "", 0
 }
 
 // Next returns the next TODO.
-func (t *TODOScanner) Next() TODO {
+func (t *TODOScanner) Next() *TODO {
 	return t.next
 }
 

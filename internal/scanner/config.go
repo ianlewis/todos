@@ -23,6 +23,34 @@ type Config struct {
 }
 
 var (
+	languageMap = map[string]*Config{
+		"C":            &CConfig,
+		"C++":          &CPPConfig,
+		"C#":           &CSConfig,
+		"Dockerfile":   &DockerfileConfig,
+		"Go":           &GoConfig,
+		"Go Module":    &GoConfig,
+		"Go Checksums": &GoConfig,
+		"HTML":         &HTMLConfig,
+		"Java":         &JavaConfig,
+		"JavaScript":   &JavascriptConfig,
+		// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
+		"JSON":        &JavascriptConfig,
+		"Makefile":    &MakefileConfig,
+		"Objective-C": &ObjectiveCConfig,
+		"Perl":        &PerlConfig,
+		"PHP":         &PHPConfig,
+		"Python":      &PythonConfig,
+		"Ruby":        &RubyConfig,
+		"Scala":       &ScalaConfig,
+		"Shell":       &ShellConfig,
+		"Swift":       &SwiftConfig,
+		"TOML":        &TOMLConfig,
+		"TypeScript":  &TypescriptConfig,
+		"XML":         &XMLConfig,
+		"YAML":        &YAMLConfig,
+	}
+
 	// CConfig is a config for C.
 	CConfig = Config{
 		LineCommentStart:      []string{"//"},

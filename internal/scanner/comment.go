@@ -16,16 +16,11 @@ package scanner
 
 // Comment is a generic Comment implementation.
 type Comment struct {
-	text string
-	line int
+	Text string
+	Line int
 }
 
-// Line implements Comment.Line.
-func (c *Comment) Line() int {
-	return c.line
-}
-
-// String implements Comment.String.
+// String implements fmt.Stringer.String.
 func (c *Comment) String() string {
-	return c.text
+	return c.Text
 }
