@@ -16,8 +16,9 @@ package scanner
 
 // Comment is a generic Comment implementation.
 type Comment struct {
-	Text string
-	Line int
+	Text      string
+	Line      int
+	Multiline bool
 }
 
 // String implements fmt.Stringer.String.

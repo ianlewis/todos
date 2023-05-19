@@ -43,6 +43,9 @@ type Config struct {
 
 // CommentScanner is a type that scans code text for comments.
 type CommentScanner interface {
+	// Config return the configuration.
+	Config() *scanner.Config
+
 	// Scan scans for the next comment. It returns true if there is more data
 	// to scan.
 	Scan() bool
@@ -56,9 +59,10 @@ type CommentScanner interface {
 
 // TODOScanner scans for TODO comments.
 type TODOScanner struct {
-	next      *TODO
-	s         CommentScanner
-	todoMatch []*regexp.Regexp
+	next           *TODO
+	s              CommentScanner
+	lineMatch      *regexp.Regexp
+	multilineMatch *regexp.Regexp
 }
 
 // NewTODOScanner returns a new TODOScanner.
@@ -67,22 +71,30 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 		s: s,
 	}
 
+	sConfig := s.Config()
+	var commentStarts []string
+	for _, lineCommentStart := range sConfig.LineCommentStart {
+		commentStarts = append(commentStarts, regexp.QuoteMeta(lineCommentStart))
+	}
+	commentStartMatch := strings.Join(commentStarts, "|")
+
+	multiStartMatch := regexp.QuoteMeta(sConfig.MultilineCommentStart)
+
 	var quotedTypes []string
 	for _, tp := range config.Types {
 		quotedTypes = append(quotedTypes, regexp.QuoteMeta(tp))
 	}
-
 	typesMatch := strings.Join(quotedTypes, "|")
-	snr.todoMatch = []*regexp.Regexp{
-		// Empty comment
-		regexp.MustCompile(`(` + typesMatch + `)\s*$`),
 
-		// Comment
-		regexp.MustCompile(`(` + typesMatch + `): .*`),
+	msgMatch := strings.Join([]string{
+		`(\s*)`,       // Naked
+		`(:.*)`,       // With message
+		`(\(.*\)\s*)`, // Naked w/ bug
+		`(\(.*\):.*)`, // With bug and message
+	}, "|")
 
-		// With Link
-		regexp.MustCompile(`(` + typesMatch + `)\(.*\): .*`),
-	}
+	snr.lineMatch = regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`)
+	snr.multilineMatch = regexp.MustCompile(`^(` + multiStartMatch + `)?\s*(` + typesMatch + `)(` + msgMatch + `)$`)
 
 	return snr
 }
@@ -91,13 +103,12 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 func (t *TODOScanner) Scan() bool {
 	for t.s.Scan() {
 		next := t.s.Next()
-		text := next.String()
 
-		match, text, lineNo := t.findMatch(text)
+		match, line, lineNo := t.findMatch(next)
 		if match != "" {
 			t.next = &TODO{
 				Type: match,
-				Text: text,
+				Text: line,
 				// Add the line relative to the file.
 				Line:        next.Line + lineNo - 1,
 				CommentLine: next.Line,
@@ -110,14 +121,19 @@ func (t *TODOScanner) Scan() bool {
 
 // findMatch returns the TODO type, the full TODO line, and the line number it
 // was found on or zero if it was not found.
-func (t *TODOScanner) findMatch(text string) (string, string, int) {
-	for i, line := range strings.Split(text, "\n") {
-		for _, m := range t.todoMatch {
-			match := m.FindAllStringSubmatch(line, 1)
-			if len(match) != 0 {
-				return match[0][1], line, i + 1
+func (t *TODOScanner) findMatch(c *scanner.Comment) (string, string, int) {
+	if c.Multiline {
+		for i, line := range strings.Split(c.Text, "\n") {
+			match := t.multilineMatch.FindAllStringSubmatch(line, 1)
+			if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
+				return match[0][2], line, i + 1
 			}
 		}
+	}
+
+	match := t.lineMatch.FindAllStringSubmatch(c.Text, 1)
+	if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
+		return match[0][2], c.Text, 1
 	}
 
 	return "", "", 0
