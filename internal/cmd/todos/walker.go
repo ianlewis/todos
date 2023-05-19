@@ -87,6 +87,9 @@ type TODOWalker struct {
 	// paths is a list of paths to walk.
 	paths []string
 
+	// path is the currently walked path.
+	path string
+
 	// The last error encountered.
 	err error
 }
@@ -96,6 +99,8 @@ type TODOWalker struct {
 // if errors were encountered.
 func (w *TODOWalker) Walk() bool {
 	for _, path := range w.paths {
+		w.path = path
+
 		f, err := os.Open(path)
 		if err != nil {
 			printError(fmt.Sprintf("%s: %v", path, err))
@@ -140,7 +145,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 		return nil
 	}
 
-	fullPath, err := filepath.EvalSymlinks(path)
+	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
 	if err != nil {
 		// NOTE: If the symbolic link couldn't be evaluated just skip it.
 		if d.IsDir() {
