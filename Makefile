@@ -1,3 +1,31 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 SHELL := /bin/bash
 OUTPUT_FORMAT ?= $(shell if [ "${GITHUB_ACTIONS}" == "true" ]; then echo "github"; else echo ""; fi)
 
@@ -39,6 +67,33 @@ coverage: ## Generate coverage report.
 	@set -e;\
 		go mod vendor; \
 		go test -mod=vendor -race -coverprofile=coverage.out -covermode=atomic ./...
+
+## Tools
+#####################################################################
+
+.PHONY: autogen
+autogen: ## Runs autogen on code files.
+	@set -euo pipefail; \
+		md_files=$$( \
+			find . -type f \
+				\( \
+					-name '*.go' -o \
+					-name '*.yaml' -o \
+					-name '*.yml' \
+				\) \
+				-not -iwholename '*/.git/*' \
+				-not -iwholename '*/vendor/*' \
+				-not -iwholename '*/node_modules/*' \
+		); \
+		for filename in $${md_files}; do \
+			if ! ( head "$${filename}" | grep -iL "Copyright" > /dev/null ); then \
+				autogen -i --no-code --no-tlc -c "Google LLC" -l apache "$${filename}"; \
+			fi; \
+		done; \
+		if ! ( head Makefile | grep -iL "Copyright" > /dev/null ); then \
+			autogen -i --no-code --no-tlc -c "Google LLC" -l apache Makefile; \
+		fi;
+
 
 ## Linters
 #####################################################################
