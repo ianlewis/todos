@@ -80,8 +80,9 @@ func FromFile(f *os.File) (*CommentScanner, error) {
 // New returns a new CommentScanner that scans code returned by r with the given Config.
 func New(r io.Reader, c *Config) *CommentScanner {
 	return &CommentScanner{
-		config: convertConfig(c),
-		reader: NewRuneReader(r),
+		originalConfig: c,
+		config:         convertConfig(c),
+		reader:         NewRuneReader(r),
 
 		// Starting state
 		state: &stateCode{},
@@ -91,8 +92,9 @@ func New(r io.Reader, c *Config) *CommentScanner {
 
 // CommentScanner is a generic code comment scanner.
 type CommentScanner struct {
-	reader *RuneReader
-	config *config
+	reader         *RuneReader
+	originalConfig *Config
+	config         *config
 
 	// state is the current state-machine state.
 	state state
@@ -105,6 +107,11 @@ type CommentScanner struct {
 
 	// err is the error returned by Err.
 	err error
+}
+
+// Config returns the scanners configuration.
+func (s *CommentScanner) Config() *Config {
+	return s.originalConfig
 }
 
 // Next returns the next Comment.
@@ -243,8 +250,9 @@ func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error)
 		}
 		if lineEnd {
 			s.next = &Comment{
-				Text: b.String(),
-				Line: s.line,
+				Text:      b.String(),
+				Line:      s.line,
+				Multiline: false,
 			}
 			return &stateCode{}, nil
 		}
@@ -278,8 +286,9 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			// Add the ending to the builder.
 			b.WriteString(string(s.config.MultilineCommentEnd))
 			s.next = &Comment{
-				Text: b.String(),
-				Line: st.line,
+				Text:      b.String(),
+				Line:      st.line,
+				Multiline: true,
 			}
 			return &stateCode{}, nil
 		}

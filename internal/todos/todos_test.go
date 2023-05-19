@@ -29,6 +29,13 @@ type testScanner struct {
 	comments []*scanner.Comment
 }
 
+func (s *testScanner) Config() *scanner.Config {
+	return &scanner.Config{
+		LineCommentStart:      []string{"//"},
+		MultilineCommentStart: "/*",
+	}
+}
+
 func (s *testScanner) Scan() bool {
 	if s.err != nil {
 		return false
@@ -70,7 +77,36 @@ func TestTODOScanner(t *testing.T) {
 		expected []*TODO
 		errCheck func(error)
 	}{
-		"line_comments.go": {
+		"line_comments_basic.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+		"line_comments_message.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
 					{
@@ -99,7 +135,7 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
-		"multi_line_comments.go": {
+		"line_comments_bug.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
 					{
@@ -107,8 +143,98 @@ func TestTODOScanner(t *testing.T) {
 						Line: 1,
 					},
 					{
-						Text: "/*\nfoo\nTODO: foo\n*/",
+						Text: "// TODO(github.com/foo/bar/issues/1)",
 						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1)",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
+		"line_comments_bug_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO(github.com/foo/bar/issues/1): foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1): foo",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+		"multiline_comments_basic.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\nTODO\n*/",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "TODO",
+					Line:        7,
+					CommentLine: 5,
+				},
+			},
+		},
+		"multiline_comments_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\nTODO: foo\n*/",
+						Line:      5,
+						Multiline: true,
 					},
 					{
 						Text: "// godoc ",
@@ -127,6 +253,80 @@ func TestTODOScanner(t *testing.T) {
 					CommentLine: 5,
 				},
 			},
+		},
+		"multiline_comments_bug.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1)\n*/",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "TODO(github.com/foo/bar/issues1)",
+					Line:        7,
+					CommentLine: 5,
+				},
+			},
+		},
+		"multiline_comments_bug_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\n*/",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Line:        7,
+					CommentLine: 5,
+				},
+			},
+		},
+		"line_comment_leading_text.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment, TODO",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: nil,
 		},
 	}
 
