@@ -90,7 +90,10 @@ autogen: ## Runs autogen on code files.
 				autogen -i --no-code --no-tlc -c "Google LLC" -l apache "$${filename}"; \
 			fi; \
 		done; \
-		autogen -i --no-code --no-tlc -c "Google LLC" -l apache Makefile
+		if ! ( head Makefile | grep -iL "Copyright" > /dev/null ); then \
+			autogen -i --no-code --no-tlc -c "Google LLC" -l apache Makefile; \
+		fi;
+
 
 ## Linters
 #####################################################################
