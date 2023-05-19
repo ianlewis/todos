@@ -165,7 +165,18 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	}
 	defer f.Close()
 
-	if d.IsDir() {
+	info, err := f.Stat()
+	if err != nil {
+		printError(fmt.Sprintf("%s: %v", path, err))
+		w.err = err
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		return nil
+	}
+
+	// NOTE(github.com/ianlewis/todos/issues/40): d.IsDir sometimes returns false for some directories.
+	if info.IsDir() {
 		return w.processDir(path, fullPath)
 	}
 	return w.processFile(path, fullPath, f)
