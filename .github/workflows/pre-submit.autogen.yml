@@ -1,0 +1,34 @@
+name: autogen
+
+on:
+  push:
+    branches: [main, "*"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read # Needed to check out the repo.
+
+jobs:
+  autogen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        with:
+          repository: mbrukman/autogen
+          ref: 9026b78e17573b5dda4bff79033c352443551dc5
+          path: autogen
+      - run: |
+          echo "${GITHUB_WORKSPACE}/autogen" >> "${GITHUB_PATH}"
+      - run: make autogen
+      - name: markdown-toc
+        run: |
+          set -euo pipefail
+          if [ "$(GIT_PAGER="cat" git diff --ignore-space-at-eol | wc -l)" -gt "0" ]; then
+              echo "Detected license header changes.  See status below:"
+              GIT_PAGER="cat" git diff
+              exit 1
+          fi
