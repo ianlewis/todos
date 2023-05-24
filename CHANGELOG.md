@@ -5,14 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2023-05-24
 
-### Added in X.Y.Z
+### Added in 0.1.0
 
 - Added a `--todo-types` flag which allows users to specify the TODO tags to
   search for.
 
-### Changed in X.Y.Z
+### Changed in 0.1.0
 
 - TODOs matched in multi-line comments no longer print the entire comment. Only
   the line containing the TODO is printed. Line numbers printed also correspond
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filenames and line numbers are now colored in the terminal if it supports it.
 - Hidden files are now supported properly on Windows.
 
-### Fixed in X.Y.Z
+### Fixed in 0.1.0
 
 - TODOs are no longer matched when starting in the middle of a comment line.
 
@@ -32,5 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of `todos` CLI application.
 - Simple support for scanning directories for TODO/FIXME/BUG/HACK/XXX comments.
 
-[unreleased]: https://github.com/ianlewis/todos/compare/v0.0.1...HEAD
+[unreleased]: https://github.com/ianlewis/todos/compare/v0.1.0...HEAD
 [0.0.1]: https://github.com/ianlewis/todos/releases/tag/v0.0.1
+[0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0
