@@ -461,6 +461,10 @@ var loaderTestCases = []struct {
 		err: errDecodeCharset,
 	},
 	{
+		name: "binary.exe",
+		src:  []byte{1, 2, 3, 4, 5},
+	},
+	{
 		name: "unsupported_lang.coq",
 		src:  []byte{},
 	},
