@@ -127,7 +127,6 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 	lang := linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
 
 	// Detect the language encoding.
-
 	if config, ok := languageMap[lang]; ok {
 		return New(bytes.NewReader(decodedContents), config), nil
 	}
