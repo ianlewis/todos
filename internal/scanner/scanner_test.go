@@ -16,6 +16,7 @@ package scanner
 
 import (
 	"errors"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -447,9 +448,11 @@ var loaderTestCases = []struct {
 		expectedConfig: &GoConfig,
 	},
 	{
-		name: "unknown.go",
-		src:  []byte{12, 34, 56, 78, 90},
-		err:  errDetectCharset,
+		name: "zeros.go",
+		src:  []byte{0, 0, 0, 0, 0, 0},
+		// NOTE: This just happens to detect the UTF-32BE character set which
+		// isn't supported by golang.org/x/text/encoding.
+		err: errDecodeCharset,
 	},
 }
 
@@ -459,29 +462,27 @@ func TestFromFile(t *testing.T) {
 	for i := range loaderTestCases {
 		tc := loaderTestCases[i]
 
-		// We must have a charset to test from a file.
-		if tc.charset == "" {
-			continue
-		}
-
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary file.
 			f := testutils.Must(os.CreateTemp("", tc.name))
-			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
-			w := e.NewEncoder().Writer(f)
+			var w io.Writer
+			w = f
+			if tc.charset != "" {
+				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+				w = e.NewEncoder().Writer(f)
+			}
 			_ = testutils.Must(w.Write(tc.src))
-			_ = testutils.Must(f.Seek(0, os.SEEK_SET))
+			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
 			s, err := FromFile(f)
 			if got, want := err, tc.err; got != nil {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 				}
-			} else {
-				if want != nil {
-					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
-				}
+				return
+			} else if want != nil {
+				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 			}
 
 			config := s.Config()
@@ -501,18 +502,20 @@ func TestFromBytes(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
-			text := testutils.Must(e.NewDecoder().Bytes(tc.src))
+			text := tc.src
+			if tc.charset != "" {
+				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
+			}
 
 			s, err := FromBytes(tc.name, text)
 			if got, want := err, tc.err; got != nil {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 				}
-			} else {
-				if want != nil {
-					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
-				}
+				return
+			} else if want != nil {
+				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 			}
 
 			config := s.Config()

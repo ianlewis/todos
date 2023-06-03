@@ -92,10 +92,19 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 	if charset == "ISO-8859-1" {
 		charset = "UTF-8"
 	}
+	// See: https://github.com/saintfish/chardet/issues/2
+	if charset == "GB-18030" {
+		charset = "GB18030"
+	}
+
+	fmt.Println("detected charset:", charset)
 
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
+	}
+	if e == nil {
+		return nil, fmt.Errorf("%w: %s: unsupported character set", errDecodeCharset, charset)
 	}
 
 	decodedContents, err := e.NewDecoder().Bytes(rawContents)
