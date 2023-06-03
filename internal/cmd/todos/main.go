@@ -28,6 +28,11 @@ const (
 	exitCodeWalkError
 )
 
+func printError(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], msg)
+}
+
 func main() {
 	opts := &Options{}
 	fSet := opts.FlagSet()
@@ -64,6 +69,9 @@ func main() {
 
 	walker := TODOWalker{
 		outFunc: outFunc,
+		errFunc: func(err error) {
+			printError("%v", err)
+		},
 		todoConfig: &todos.Config{
 			Types: todoTypes,
 		},

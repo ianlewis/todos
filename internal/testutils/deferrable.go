@@ -14,17 +14,27 @@
 
 package testutils
 
-// Check checks the error and panics if not nil.
-func Check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
+// DeferFunc is a deferrable function.
+type DeferFunc func()
 
-// Must checks the error and panics if not nil.
-func Must[T any](val T, err error) T {
-	if err != nil {
-		panic(err)
+// CancelFunc is a cancel function.
+type CancelFunc func()
+
+// WithCancel returns a deferrable function that can be cancelled.
+func WithCancel(d DeferFunc, f func()) (DeferFunc, CancelFunc) {
+	var c bool
+	newFunc := func() {
+		if !c {
+			if f != nil {
+				f()
+			}
+			if d != nil {
+				d()
+			}
+		}
 	}
-	return val
+	cancel := func() {
+		c = true
+	}
+	return newFunc, cancel
 }

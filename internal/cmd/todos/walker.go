@@ -27,17 +27,15 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 )
 
-func printError(format string, a ...any) {
-	msg := fmt.Sprintf(format, a...)
-	fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], msg)
-}
-
 type todoOpt struct {
 	fileName string
 	todo     *todos.TODO
 }
 
 type lineWriter func(todoOpt)
+
+// errHandler functions handle errors and return if they are fatal.
+type errHandler func(error)
 
 func outReadable(o todoOpt) {
 	fmt.Printf("%s%s%s%s%s\n",
@@ -67,8 +65,11 @@ var outTypes = map[string]lineWriter{
 
 // TODOWalker walks the directory tree and scans files for TODOS.
 type TODOWalker struct {
-	// opts are the configuration options.
+	// outFunc is for printing when todos are found.
 	outFunc lineWriter
+
+	// errHandler is for handling errors.
+	errFunc errHandler
 
 	// todoConfig is the TODOScanner config.
 	todoConfig *todos.Config
@@ -104,15 +105,13 @@ func (w *TODOWalker) Walk() bool {
 
 		f, err := os.Open(path)
 		if err != nil {
-			printError(fmt.Sprintf("%s: %v", path, err))
-			w.err = err
+			w.handleErr(path, err)
 			continue
 		}
 
 		fInfo, err := f.Stat()
 		if err != nil {
-			printError(fmt.Sprintf("%s: %v", path, err))
-			w.err = err
+			w.handleErr(path, err)
 			continue
 		}
 
@@ -141,8 +140,7 @@ func (w *TODOWalker) walkDir(path string) {
 func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	// If the path had an error then just skip it. WalkDir has likely hit the path already.
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", path, err))
-		w.err = err
+		w.handleErr(path, err)
 		return nil
 	}
 
@@ -157,8 +155,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	f, err := os.Open(fullPath)
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", path, err))
-		w.err = err
+		w.handleErr(path, err)
 		if d.IsDir() {
 			return fs.SkipDir
 		}
@@ -168,8 +165,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	info, err := f.Stat()
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", path, err))
-		w.err = err
+		w.handleErr(path, err)
 		if d.IsDir() {
 			return fs.SkipDir
 		}
@@ -191,8 +187,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", path, err))
-		w.err = err
+		w.handleErr(path, err)
 		return fs.SkipDir
 	}
 
@@ -212,8 +207,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", path, err))
-		w.err = err
+		w.handleErr(path, err)
 		return nil
 	}
 
@@ -230,9 +224,7 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 func (w *TODOWalker) scanFile(f *os.File) {
 	s, err := scanner.FromFile(f)
 	if err != nil {
-		printError(fmt.Sprintf("%s: %v", f.Name(), err))
-		w.err = err
-		return
+		w.handleErr(f.Name(), err)
 	}
 
 	// Skip files that can't be scanned.
@@ -248,8 +240,16 @@ func (w *TODOWalker) scanFile(f *os.File) {
 		})
 	}
 	if err := t.Err(); err != nil {
-		printError(fmt.Sprintf("%s: %v", f.Name(), err))
-		w.err = err
-		return
+		w.handleErr(f.Name(), err)
+	}
+}
+
+func (w *TODOWalker) handleErr(prefix string, err error) {
+	w.err = err
+	if w.errFunc != nil {
+		if prefix != "" {
+			err = fmt.Errorf("%s: %w", prefix, err)
+		}
+		w.errFunc(err)
 	}
 }
