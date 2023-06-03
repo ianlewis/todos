@@ -16,6 +16,7 @@ package scanner
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -448,6 +449,11 @@ var loaderTestCases = []struct {
 		expectedConfig: &GoConfig,
 	},
 	{
+		name:           "gb18030.go",
+		src:            []byte{250, 255, 255, 255, 255, 250},
+		expectedConfig: &GoConfig,
+	},
+	{
 		name: "zeros.go",
 		src:  []byte{0, 0, 0, 0, 0, 0},
 		// NOTE: This just happens to detect the UTF-32BE character set which
@@ -465,7 +471,8 @@ func TestFromFile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary file.
-			f := testutils.Must(os.CreateTemp("", tc.name))
+			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
+			f := testutils.Must(os.CreateTemp("", fmt.Sprintf("*.%s", tc.name)))
 			var w io.Writer
 			w = f
 			if tc.charset != "" {
@@ -485,7 +492,10 @@ func TestFromFile(t *testing.T) {
 				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 			}
 
-			config := s.Config()
+			var config *Config
+			if s != nil {
+				config = s.Config()
+			}
 			if got, want := config, tc.expectedConfig; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}

@@ -102,8 +102,6 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 		charset = "GB18030"
 	}
 
-	fmt.Println("detected charset:", charset)
-
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
