@@ -450,7 +450,7 @@ var loaderTestCases = []struct {
 	},
 	{
 		name:           "gb18030.go",
-		src:            []byte{250, 255, 255, 255, 255, 250},
+		src:            []byte{255, 255, 255, 255, 255, 255, 250},
 		expectedConfig: &GoConfig,
 	},
 	{
@@ -459,6 +459,10 @@ var loaderTestCases = []struct {
 		// NOTE: This just happens to detect the UTF-32BE character set which
 		// isn't supported by golang.org/x/text/encoding.
 		err: errDecodeCharset,
+	},
+	{
+		name: "unsupported_lang.coq",
+		src:  []byte{},
 	},
 }
 
@@ -528,7 +532,10 @@ func TestFromBytes(t *testing.T) {
 				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 			}
 
-			config := s.Config()
+			var config *Config
+			if s != nil {
+				config = s.Config()
+			}
 			if got, want := config, tc.expectedConfig; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}

@@ -104,7 +104,8 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
+		// The detected charset should not be unregistered.
+		panic(fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err))
 	}
 	if e == nil {
 		return nil, fmt.Errorf("%w: %s: unsupported character set", errDecodeCharset, charset)
