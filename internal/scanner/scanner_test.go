@@ -401,6 +401,8 @@ func BenchmarkCommentScanner(b *testing.B) {
 }
 
 func TestFromBytes(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name    string
 		charset string
@@ -446,8 +448,12 @@ func TestFromBytes(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			e, err := ianaindex.IANA.Encoding(tc.charset)
 			if err != nil {
 				panic(err)
