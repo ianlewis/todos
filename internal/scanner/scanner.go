@@ -23,6 +23,16 @@ import (
 	"strings"
 
 	"github.com/ianlewis/linguist"
+	"github.com/saintfish/chardet"
+	"golang.org/x/text/encoding/ianaindex"
+)
+
+var (
+	// errDetectCharset is an error detecting a charset.
+	errDetectCharset = errors.New("detect charset")
+
+	// errDecodeCharset is an error when decoding a charset.
+	errDecodeCharset = errors.New("decoding charset")
 )
 
 // config is configuration for a generic comment scanner.
@@ -58,20 +68,52 @@ func stringsToRunes(s []string) [][]rune {
 // FromFile returns an appropriate CommentScanner for the given file. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
 func FromFile(f *os.File) (*CommentScanner, error) {
-	contents, err := io.ReadAll(f)
+	rawContents, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", f.Name(), err)
 	}
 
-	if linguist.ShouldIgnoreContents(contents) {
+	return FromBytes(f.Name(), rawContents)
+}
+
+// FromBytes returns an appropriate CommentScanner for the given contents. The
+// language is auto-detected and a relevant configuration is used to initialize the scanner.
+func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
+	// Detect the character set.
+	det := chardet.NewTextDetector()
+	result, err := det.DetectBest(rawContents)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errDetectCharset, err)
+	}
+
+	// If we just detect it as ascii (latin1) then treat it as UTF-8 since they
+	// are compatible.
+	charset := result.Charset
+	if charset == "ISO-8859-1" {
+		charset = "UTF-8"
+	}
+
+	e, err := ianaindex.IANA.Encoding(charset)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
+	}
+
+	decodedContents, err := e.NewDecoder().Bytes(rawContents)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
+	}
+
+	if linguist.ShouldIgnoreContents(decodedContents) {
 		return nil, nil
 	}
 
-	name := f.Name()
-	lang := linguist.LanguageByContents(contents, linguist.LanguageHints(name))
+	// Detect the programming language.
+	lang := linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+
+	// Detect the language encoding.
 
 	if config, ok := languageMap[lang]; ok {
-		return New(bytes.NewReader(contents), config), nil
+		return New(bytes.NewReader(decodedContents), config), nil
 	}
 
 	return nil, nil

@@ -15,8 +15,11 @@
 package scanner
 
 import (
+	"errors"
 	"strings"
 	"testing"
+
+	"golang.org/x/text/encoding/ianaindex"
 )
 
 var testCases = []*struct {
@@ -262,12 +265,12 @@ var testCases = []*struct {
 			TODO is a function.
 			"""
 
-		 	def foo():
-		 		# Random comment
-		 		x = "\"# Random comment"
-		 		y = '\'# Random comment'
-		 		return x + y
-		 	`,
+			def foo():
+				# Random comment
+				x = "\"# Random comment"
+				y = '\'# Random comment'
+				return x + y
+			`,
 		config: PythonConfig,
 		comments: []struct {
 			text string
@@ -390,7 +393,85 @@ func BenchmarkCommentScanner(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			s := New(strings.NewReader(tc.src), &tc.config)
+			//nolint:revive // intentional empty block
 			for s.Scan() {
+			}
+		})
+	}
+}
+
+func TestFromBytes(t *testing.T) {
+	testCases := []struct {
+		name    string
+		charset string
+		src     string
+		config  *Config
+		err     error
+	}{
+		{
+			name:    "ascii.go",
+			charset: "ISO-8859-1",
+			src: `package foo
+			// package comment
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`,
+			config: &GoConfig,
+		},
+		{
+			name:    "utf8.go",
+			charset: "UTF-8",
+			src: `package foo
+			// Hello, 世界
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`,
+			config: &GoConfig,
+		},
+		{
+			name:    "shift_jis.go",
+			charset: "SHIFT_JIS",
+			src: `package foo
+			// Hello, 世界
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`,
+			config: &GoConfig,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			e, err := ianaindex.IANA.Encoding(tc.charset)
+			if err != nil {
+				panic(err)
+			}
+
+			text, err := e.NewDecoder().Bytes([]byte(tc.src))
+			if err != nil {
+				panic(err)
+			}
+
+			s, err := FromBytes(tc.name, text)
+			if got, want := err, tc.err; got != nil {
+				if !errors.Is(got, want) {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+			} else {
+				if want != nil {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+			}
+
+			config := s.Config()
+			if got, want := config, tc.config; got != want {
+				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})
 	}
