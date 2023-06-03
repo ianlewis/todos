@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/ianlewis/linguist"
 	"github.com/saintfish/chardet"
@@ -33,6 +34,10 @@ var (
 
 	// errDecodeCharset is an error when decoding a charset.
 	errDecodeCharset = errors.New("decoding charset")
+
+	// linguistLock manages a global lock on lingist language detection which
+	// is not thread-safe.
+	linguistLock sync.Mutex
 )
 
 // config is configuration for a generic comment scanner.
@@ -117,6 +122,8 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 	}
 
 	// Detect the programming language.
+	linguistLock.Lock()
+	defer linguistLock.Unlock()
 	lang := linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
 
 	// Detect the language encoding.
