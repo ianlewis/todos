@@ -393,7 +393,6 @@ func BenchmarkCommentScanner(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			s := New(strings.NewReader(tc.src), &tc.config)
-			//nolint:revive // intentional empty block
 			for s.Scan() {
 			}
 		})
