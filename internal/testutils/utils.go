@@ -14,6 +14,13 @@
 
 package testutils
 
+// Check checks the error and panics if not nil.
+func Check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Must checks the error and panics if not nil.
 func Must[T any](val T, err error) T {
 	if err != nil {
