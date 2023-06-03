@@ -446,6 +446,11 @@ var loaderTestCases = []struct {
 			}`),
 		expectedConfig: &GoConfig,
 	},
+	{
+		name: "unknown.go",
+		src:  []byte{12, 34, 56, 78, 90},
+		err:  errDetectCharset,
+	},
 }
 
 func TestFromFile(t *testing.T) {
@@ -453,6 +458,11 @@ func TestFromFile(t *testing.T) {
 
 	for i := range loaderTestCases {
 		tc := loaderTestCases[i]
+
+		// We must have a charset to test from a file.
+		if tc.charset == "" {
+			continue
+		}
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
