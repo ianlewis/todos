@@ -22,6 +22,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/ianlewis/linguist"
+
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 )

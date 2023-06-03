@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.15.0
+	github.com/google/go-cmp v0.5.9
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	golang.org/x/text v0.9.0

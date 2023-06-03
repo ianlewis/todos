@@ -80,6 +80,37 @@ linters:
     - whitespace
     - wrapcheck
 linters-settings:
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - "github.com/fatih/color"
+          - "github.com/ianlewis/todos"
+          - "github.com/ianlewis/linguist"
+          - "github.com/saintfish/chardet"
+          - "sigs.k8s.io/release-utils/version"
+        deny:
+          - pkg: "reflect"
+            desc: Please don't use reflect package
+          - pkg: "unsafe"
+            desc: Please don't use unsafe package
+      test:
+        files:
+          - $test
+        allow:
+          - $gostd
+          - "github.com/ianlewis/todos"
+          - "github.com/google/go-cmp/cmp"
+        deny:
+          - pkg: "reflect"
+            desc: Use go-cmp instead.
+          - pkg: "unsafe"
+            desc: Please don't use unsafe package
+
   errcheck:
     check-type-assertions: true
     check-blank: true
@@ -106,7 +137,7 @@ linters-settings:
     sections:
       - standard
       - default
-      - prefix(github.com/slsa-framework/slsa-github-generator)
+      - prefix(github.com/ianlewis/todos)
   gocritic:
     enabled-checks:
       # Diagnostic
