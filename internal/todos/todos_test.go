@@ -16,9 +16,10 @@ package todos
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/ianlewis/todos/internal/scanner"
 )
@@ -341,7 +342,7 @@ func TestTODOScanner(t *testing.T) {
 				found = append(found, s.Next())
 			}
 
-			if got, want := found, tc.expected; !reflect.DeepEqual(got, want) {
+			if got, want := found, tc.expected; !cmp.Equal(got, want) {
 				t.Errorf("unexpected todos, got: %s, want: %s", todoSlice(got), todoSlice(want))
 			}
 
