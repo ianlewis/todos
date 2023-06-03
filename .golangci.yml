@@ -94,6 +94,8 @@ linters-settings:
           - "github.com/saintfish/chardet"
           - "sigs.k8s.io/release-utils/version"
         deny:
+          - pkg: "ianlewis/todos/internal/testutils"
+            desc: Please don't use testutils package
           - pkg: "reflect"
             desc: Please don't use reflect package
           - pkg: "unsafe"

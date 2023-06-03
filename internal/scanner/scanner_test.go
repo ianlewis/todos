@@ -16,13 +16,16 @@ package scanner
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"testing"
 
 	"golang.org/x/text/encoding/ianaindex"
+
+	"github.com/ianlewis/todos/internal/testutils"
 )
 
-var testCases = []*struct {
+var scannerTestCases = []*struct {
 	name     string
 	src      string
 	config   Config
@@ -357,8 +360,8 @@ var testCases = []*struct {
 func TestCommentScanner(t *testing.T) {
 	t.Parallel()
 
-	for i := range testCases {
-		tc := testCases[i]
+	for i := range scannerTestCases {
+		tc := scannerTestCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -390,7 +393,8 @@ func TestCommentScanner(t *testing.T) {
 }
 
 func BenchmarkCommentScanner(b *testing.B) {
-	for _, tc := range testCases {
+	for i := range scannerTestCases {
+		tc := scannerTestCases[i]
 		b.Run(tc.name, func(b *testing.B) {
 			s := New(strings.NewReader(tc.src), &tc.config)
 			for s.Scan() {
@@ -399,69 +403,96 @@ func BenchmarkCommentScanner(b *testing.B) {
 	}
 }
 
-func TestFromBytes(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name    string
-		charset string
-		src     string
-		config  *Config
-		err     error
-	}{
-		{
-			name:    "ascii.go",
-			charset: "ISO-8859-1",
-			src: `package foo
+var loaderTestCases = []struct {
+	name           string
+	charset        string
+	src            string
+	expectedConfig *Config
+	err            error
+}{
+	{
+		name:    "ascii.go",
+		charset: "ISO-8859-1",
+		src: `package foo
 			// package comment
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
 			}`,
-			config: &GoConfig,
-		},
-		{
-			name:    "utf8.go",
-			charset: "UTF-8",
-			src: `package foo
+		expectedConfig: &GoConfig,
+	},
+	{
+		name:    "utf8.go",
+		charset: "UTF-8",
+		src: `package foo
 			// Hello, 世界
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
 			}`,
-			config: &GoConfig,
-		},
-		{
-			name:    "shift_jis.go",
-			charset: "SHIFT_JIS",
-			src: `package foo
+		expectedConfig: &GoConfig,
+	},
+	{
+		name:    "shift_jis.go",
+		charset: "SHIFT_JIS",
+		src: `package foo
 			// Hello, 世界
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
 			}`,
-			config: &GoConfig,
-		},
+		expectedConfig: &GoConfig,
+	},
+}
+
+func TestFromFile(t *testing.T) {
+	t.Parallel()
+
+	for i := range loaderTestCases {
+		tc := loaderTestCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			// Create a temporary file.
+			f := testutils.Must(os.CreateTemp("", tc.name))
+			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+			w := e.NewEncoder().Writer(f)
+			_ = testutils.Must(w.Write([]byte(tc.src)))
+			_ = testutils.Must(f.Seek(0, os.SEEK_SET))
+
+			s, err := FromFile(f)
+			if got, want := err, tc.err; got != nil {
+				if !errors.Is(got, want) {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+			} else {
+				if want != nil {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+			}
+
+			config := s.Config()
+			if got, want := config, tc.expectedConfig; got != want {
+				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
+			}
+		})
 	}
+}
 
-	for i := range testCases {
-		tc := testCases[i]
+func TestFromBytes(t *testing.T) {
+	t.Parallel()
+
+	for i := range loaderTestCases {
+		tc := loaderTestCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			e, err := ianaindex.IANA.Encoding(tc.charset)
-			if err != nil {
-				panic(err)
-			}
-
-			text, err := e.NewDecoder().Bytes([]byte(tc.src))
-			if err != nil {
-				panic(err)
-			}
+			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+			text := testutils.Must(e.NewDecoder().Bytes([]byte(tc.src)))
 
 			s, err := FromBytes(tc.name, text)
 			if got, want := err, tc.err; got != nil {
@@ -475,7 +506,7 @@ func TestFromBytes(t *testing.T) {
 			}
 
 			config := s.Config()
-			if got, want := config, tc.config; got != want {
+			if got, want := config, tc.expectedConfig; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})
