@@ -299,7 +299,6 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		t.Errorf("unexpected # of errors, got: %v, want: %v\n%v", got, want, f.err)
 	}
 	if got, want := f.err[0], os.ErrNotExist; !errors.Is(got, os.ErrNotExist) {
-		fmt.Println(os.IsNotExist(got))
 		t.Errorf("unexpected error, got: %v, want: %v", got, want)
 	}
 
