@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+
 	"github.com/ianlewis/todos/internal/todos"
 )
 
