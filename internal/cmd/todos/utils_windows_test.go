@@ -97,7 +97,7 @@ func Test_isHidden(t *testing.T) {
 
 			dir := testutils.Must(os.MkdirTemp("", tc.name))
 			path := filepath.Join(dir, tc.name)
-			testutils.Check(os.WriteFile(path, "", 0600))
+			testutils.Check(os.WriteFile(path, nil, 0600))
 			if tc.hiddenAttr {
 				testutils.Check(setHidden(path))
 			}
