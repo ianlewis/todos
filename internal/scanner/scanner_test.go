@@ -15,11 +15,19 @@
 package scanner
 
 import (
+	"errors"
+	"fmt"
+	"io"
+	"os"
 	"strings"
 	"testing"
+
+	"golang.org/x/text/encoding/ianaindex"
+
+	"github.com/ianlewis/todos/internal/testutils"
 )
 
-var testCases = []*struct {
+var scannerTestCases = []*struct {
 	name     string
 	src      string
 	config   Config
@@ -262,12 +270,12 @@ var testCases = []*struct {
 			TODO is a function.
 			"""
 
-		 	def foo():
-		 		# Random comment
-		 		x = "\"# Random comment"
-		 		y = '\'# Random comment'
-		 		return x + y
-		 	`,
+			def foo():
+				# Random comment
+				x = "\"# Random comment"
+				y = '\'# Random comment'
+				return x + y
+			`,
 		config: PythonConfig,
 		comments: []struct {
 			text string
@@ -354,8 +362,8 @@ var testCases = []*struct {
 func TestCommentScanner(t *testing.T) {
 	t.Parallel()
 
-	for i := range testCases {
-		tc := testCases[i]
+	for i := range scannerTestCases {
+		tc := scannerTestCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -387,10 +395,154 @@ func TestCommentScanner(t *testing.T) {
 }
 
 func BenchmarkCommentScanner(b *testing.B) {
-	for _, tc := range testCases {
+	for i := range scannerTestCases {
+		tc := scannerTestCases[i]
 		b.Run(tc.name, func(b *testing.B) {
 			s := New(strings.NewReader(tc.src), &tc.config)
 			for s.Scan() {
+			}
+		})
+	}
+}
+
+var loaderTestCases = []struct {
+	name           string
+	charset        string
+	src            []byte
+	expectedConfig *Config
+	err            error
+}{
+	{
+		name:    "ascii.go",
+		charset: "ISO-8859-1",
+		src: []byte(`package foo
+			// package comment
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`),
+		expectedConfig: &GoConfig,
+	},
+	{
+		name:    "utf8.go",
+		charset: "UTF-8",
+		src: []byte(`package foo
+			// Hello, 世界
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`),
+		expectedConfig: &GoConfig,
+	},
+	{
+		name:    "shift_jis.go",
+		charset: "SHIFT_JIS",
+		src: []byte(`package foo
+			// Hello, 世界
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`),
+		expectedConfig: &GoConfig,
+	},
+	{
+		name:           "gb18030.go",
+		src:            []byte{255, 255, 255, 255, 255, 255, 250},
+		expectedConfig: &GoConfig,
+	},
+	{
+		name: "zeros.go",
+		src:  []byte{0, 0, 0, 0, 0, 0},
+		// NOTE: This just happens to detect the UTF-32BE character set which
+		// isn't supported by golang.org/x/text/encoding.
+		err: errDecodeCharset,
+	},
+	{
+		name: "binary.exe",
+		// NOTE: Control codes rarely seen in text. Detected by linguist.
+		src: []byte{1, 2, 3, 4, 5},
+	},
+	{
+		name: "unsupported_lang.coq",
+		src:  []byte{},
+	},
+}
+
+func TestFromFile(t *testing.T) {
+	t.Parallel()
+
+	for i := range loaderTestCases {
+		tc := loaderTestCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			// Create a temporary file.
+			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
+			f := testutils.Must(os.CreateTemp("", fmt.Sprintf("*.%s", tc.name)))
+			var w io.Writer
+			w = f
+			if tc.charset != "" {
+				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+				w = e.NewEncoder().Writer(f)
+			}
+			_ = testutils.Must(w.Write(tc.src))
+			_ = testutils.Must(f.Seek(0, io.SeekStart))
+
+			s, err := FromFile(f)
+			if got, want := err, tc.err; got != nil {
+				if !errors.Is(got, want) {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+				return
+			} else if want != nil {
+				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+			}
+
+			var config *Config
+			if s != nil {
+				config = s.Config()
+			}
+			if got, want := config, tc.expectedConfig; got != want {
+				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
+			}
+		})
+	}
+}
+
+func TestFromBytes(t *testing.T) {
+	t.Parallel()
+
+	for i := range loaderTestCases {
+		tc := loaderTestCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			text := tc.src
+			if tc.charset != "" {
+				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
+			}
+
+			s, err := FromBytes(tc.name, text)
+			if got, want := err, tc.err; got != nil {
+				if !errors.Is(got, want) {
+					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+				}
+				return
+			} else if want != nil {
+				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+			}
+
+			var config *Config
+			if s != nil {
+				config = s.Config()
+			}
+			if got, want := config, tc.expectedConfig; got != want {
+				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})
 	}
