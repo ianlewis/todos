@@ -16,6 +16,14 @@
 
 package main
 
+import (
+	"os"
+	"syscall"
+	"testing"
+
+	"github.com/ianlewis/todos/internal/testutils"
+)
+
 func setHidden(path string) error {
 	filenameW, err := syscall.UTF16PtrFromString(path)
 	if err != nil {
@@ -89,12 +97,12 @@ func Test_isHidden(t *testing.T) {
 			dir := testutils.Must(os.MkdirTemp("", tc.name))
 			path := filepath.Join(dir, tc.name)
 			testutils.Check(os.WriteFile(path, "", 0600))
-			if tc.hidden {
+			if tc.hiddenAttr {
 				testutils.Check(setHidden(path))
 			}
 			defer os.RemoveAll(dir)
 
-			if got, want := testutils.Must(isHidden(tc.name)), tc.hidden; got != want {
+			if got, want := testutils.Must(isHidden(tc.name)), tc.expected; got != want {
 				t.Errorf("unexpected result for %q, got: %v, want: %v", tc.name, got, want)
 			}
 		})
