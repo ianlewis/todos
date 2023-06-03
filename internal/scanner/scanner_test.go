@@ -462,7 +462,8 @@ var loaderTestCases = []struct {
 	},
 	{
 		name: "binary.exe",
-		src:  []byte{1, 2, 3, 4, 5},
+		// NOTE: Control codes rarely seen in text. Detected by linguist.
+		src: []byte{1, 2, 3, 4, 5},
 	},
 	{
 		name: "unsupported_lang.coq",
