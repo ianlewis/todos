@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/ianlewis/todos/internal/todos"
 )
 
@@ -31,6 +32,32 @@ const (
 func printError(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
 	fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], msg)
+}
+
+func outReadable(o todoOpt) {
+	fmt.Printf("%s%s%s%s%s\n",
+		color.MagentaString(o.fileName),
+		color.CyanString(":"),
+		color.GreenString(fmt.Sprintf("%d", o.todo.Line)),
+		color.CyanString(":"),
+		o.todo.Text,
+	)
+}
+
+func outGithub(o todoOpt) {
+	typ := "notice"
+	switch o.todo.Type {
+	case "TODO", "HACK", "COMBAK":
+		typ = "warning"
+	case "FIXME", "XXX", "BUG":
+		typ = "error"
+	}
+	fmt.Printf("::%s file=%s,line=%d::%s\n", typ, o.fileName, o.todo.Line, o.todo.Text)
+}
+
+var outTypes = map[string]lineWriter{
+	"default": outReadable,
+	"github":  outGithub,
 }
 
 func main() {

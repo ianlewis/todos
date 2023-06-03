@@ -20,7 +20,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
 	"github.com/ianlewis/linguist"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -36,32 +35,6 @@ type lineWriter func(todoOpt)
 
 // errHandler functions handle errors and return if they are fatal.
 type errHandler func(error)
-
-func outReadable(o todoOpt) {
-	fmt.Printf("%s%s%s%s%s\n",
-		color.MagentaString(o.fileName),
-		color.CyanString(":"),
-		color.GreenString(fmt.Sprintf("%d", o.todo.Line)),
-		color.CyanString(":"),
-		o.todo.Text,
-	)
-}
-
-func outGithub(o todoOpt) {
-	typ := "notice"
-	switch o.todo.Type {
-	case "TODO", "HACK", "COMBAK":
-		typ = "warning"
-	case "FIXME", "XXX", "BUG":
-		typ = "error"
-	}
-	fmt.Printf("::%s file=%s,line=%d::%s\n", typ, o.fileName, o.todo.Line, o.todo.Text)
-}
-
-var outTypes = map[string]lineWriter{
-	"default": outReadable,
-	"github":  outGithub,
-}
 
 // TODOWalker walks the directory tree and scans files for TODOS.
 type TODOWalker struct {
@@ -234,10 +207,12 @@ func (w *TODOWalker) scanFile(f *os.File) {
 	t := todos.NewTODOScanner(s, w.todoConfig)
 	for t.Scan() {
 		todo := t.Next()
-		w.outFunc(todoOpt{
-			fileName: f.Name(),
-			todo:     todo,
-		})
+		if w.outFunc != nil {
+			w.outFunc(todoOpt{
+				fileName: f.Name(),
+				todo:     todo,
+			})
+		}
 	}
 	if err := t.Err(); err != nil {
 		w.handleErr(f.Name(), err)
