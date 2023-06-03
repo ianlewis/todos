@@ -406,44 +406,44 @@ func BenchmarkCommentScanner(b *testing.B) {
 var loaderTestCases = []struct {
 	name           string
 	charset        string
-	src            string
+	src            []byte
 	expectedConfig *Config
 	err            error
 }{
 	{
 		name:    "ascii.go",
 		charset: "ISO-8859-1",
-		src: `package foo
+		src: []byte(`package foo
 			// package comment
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
-			}`,
+			}`),
 		expectedConfig: &GoConfig,
 	},
 	{
 		name:    "utf8.go",
 		charset: "UTF-8",
-		src: `package foo
+		src: []byte(`package foo
 			// Hello, 世界
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
-			}`,
+			}`),
 		expectedConfig: &GoConfig,
 	},
 	{
 		name:    "shift_jis.go",
 		charset: "SHIFT_JIS",
-		src: `package foo
+		src: []byte(`package foo
 			// Hello, 世界
 
 			// TODO is a function.
 			func TODO() {
 				return // Random comment
-			}`,
+			}`),
 		expectedConfig: &GoConfig,
 	},
 }
@@ -460,7 +460,7 @@ func TestFromFile(t *testing.T) {
 			f := testutils.Must(os.CreateTemp("", tc.name))
 			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
 			w := e.NewEncoder().Writer(f)
-			_ = testutils.Must(w.Write([]byte(tc.src)))
+			_ = testutils.Must(w.Write(tc.src))
 			_ = testutils.Must(f.Seek(0, os.SEEK_SET))
 
 			s, err := FromFile(f)
@@ -492,7 +492,7 @@ func TestFromBytes(t *testing.T) {
 			t.Parallel()
 
 			e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
-			text := testutils.Must(e.NewDecoder().Bytes([]byte(tc.src)))
+			text := testutils.Must(e.NewDecoder().Bytes(tc.src))
 
 			s, err := FromBytes(tc.name, text)
 			if got, want := err, tc.err; got != nil {
