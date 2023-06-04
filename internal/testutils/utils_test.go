@@ -19,6 +19,8 @@ import (
 	"testing"
 )
 
+var errTest = errors.New("error")
+
 func TestCheck(t *testing.T) {
 	t.Parallel()
 
@@ -36,13 +38,18 @@ func TestCheck(t *testing.T) {
 	t.Run("fail", func(t *testing.T) {
 		t.Parallel()
 
-		err := errors.New("error")
 		defer func() {
-			if got, want := recover(), err; got != want {
+			r := recover()
+			got, ok := r.(error)
+			want := errTest
+			if !ok {
+				t.Errorf("expected panic, got: %v, want: %v", r, want)
+			}
+			if !errors.Is(got, want) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
 		}()
-		Check(err)
+		Check(errTest)
 	})
 }
 
@@ -65,12 +72,17 @@ func TestMust(t *testing.T) {
 	t.Run("fail", func(t *testing.T) {
 		t.Parallel()
 
-		err := errors.New("error")
 		defer func() {
-			if got, want := recover(), err; got != want {
+			r := recover()
+			got, ok := r.(error)
+			want := errTest
+			if !ok {
+				t.Errorf("expected panic, got: %v, want: %v", r, want)
+			}
+			if !errors.Is(got, want) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
 		}()
-		Must("test", err)
+		Must("test", errTest)
 	})
 }
