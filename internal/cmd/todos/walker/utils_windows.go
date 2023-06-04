@@ -12,26 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !windows
+//go:build windows
 
-package main
+package walker
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
-// isHidden checks if a file is hidden on most operating systems.
+// isHidden checks if a file is hidden on Windows.
 func isHidden(path string) (bool, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return false, fmt.Errorf("getting absolute path: %w", err)
+		return false, err
 	}
 
 	base := filepath.Base(absPath)
-	if base == "." || base == ".." {
-		return false, nil
+	if strings.HasPrefix(base, ".") {
+		return true, nil
 	}
-	return strings.HasPrefix(base, "."), nil
+
+	// Appending `\\?\` to the absolute path helps with
+	// preventing 'Path Not Specified Error' when accessing
+	// long paths and filenames
+	// https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
+	pointer, err := syscall.UTF16PtrFromString(`\\?\` + absPath)
+	if err != nil {
+		return false, err
+	}
+
+	attributes, err := syscall.GetFileAttributes(pointer)
+	if err != nil {
+		return false, err
+	}
+
+	return attributes&syscall.FILE_ATTRIBUTE_HIDDEN != 0, nil
 }

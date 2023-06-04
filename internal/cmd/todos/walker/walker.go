@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package walker
 
 import (
 	"fmt"
@@ -22,27 +22,33 @@ import (
 
 	"github.com/ianlewis/linguist"
 
+	"github.com/ianlewis/todos/internal/cmd/todos/options"
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 )
 
-type todoOpt struct {
-	fileName string
-	todo     *todos.TODO
+// New returns a new walker for the options.
+func New(opts *options.Options) *TODOWalker {
+	return &TODOWalker{
+		outFunc: opts.Output,
+		errFunc: opts.Error,
+		todoConfig: &todos.Config{
+			Types: opts.TODOTypes,
+		},
+		includeHidden:   opts.IncludeHidden,
+		includeVendored: opts.IncludeVendored,
+		includeDocs:     opts.IncludeDocs,
+		paths:           opts.Paths,
+	}
 }
-
-type lineWriter func(todoOpt)
-
-// errHandler functions handle errors and return if they are fatal.
-type errHandler func(error)
 
 // TODOWalker walks the directory tree and scans files for TODOS.
 type TODOWalker struct {
 	// outFunc is for printing when todos are found.
-	outFunc lineWriter
+	outFunc options.LineWriter
 
 	// errHandler is for handling errors.
-	errFunc errHandler
+	errFunc func(error)
 
 	// todoConfig is the TODOScanner config.
 	todoConfig *todos.Config
@@ -208,9 +214,9 @@ func (w *TODOWalker) scanFile(f *os.File) {
 	for t.Scan() {
 		todo := t.Next()
 		if w.outFunc != nil {
-			w.outFunc(todoOpt{
-				fileName: f.Name(),
-				todo:     todo,
+			w.outFunc(options.TODOOpt{
+				FileName: f.Name(),
+				TODO:     todo,
 			})
 		}
 	}

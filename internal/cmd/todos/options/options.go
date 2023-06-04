@@ -12,23 +12,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package options
 
 import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/fatih/color"
 	"sigs.k8s.io/release-utils/version"
+
+	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
+	"github.com/ianlewis/todos/internal/todos"
 )
+
+// TODOOpt represents a TODO in a specific file.
+type TODOOpt struct {
+	FileName string
+	TODO     *todos.TODO
+}
+
+// LineWriter writes output for a TODO.
+type LineWriter func(TODOOpt)
+
+func outReadable(o TODOOpt) {
+	fmt.Printf("%s%s%s%s%s\n",
+		color.MagentaString(o.FileName),
+		color.CyanString(":"),
+		color.GreenString(fmt.Sprintf("%d", o.TODO.Line)),
+		color.CyanString(":"),
+		o.TODO.Text,
+	)
+}
+
+func outGithub(o TODOOpt) {
+	typ := "notice"
+	switch o.TODO.Type {
+	case "TODO", "HACK", "COMBAK":
+		typ = "warning"
+	case "FIXME", "XXX", "BUG":
+		typ = "error"
+	}
+	fmt.Printf("::%s file=%s,line=%d::%s\n", typ, o.FileName, o.TODO.Line, o.TODO.Text)
+}
+
+var outTypes = map[string]LineWriter{
+	"default": outReadable,
+	"github":  outGithub,
+}
 
 // Options are the command line options.
 type Options struct {
-	// Output is the output type. Valid values are "default" or "github".
-	Output string
+	// Output writes the output for a TODO.
+	Output LineWriter
 
-	// Types is list of comma separated TODO types.
-	TodoTypes string
+	// Error writes error output.
+	Error func(error)
+
+	// Types is list of TODO types.
+	TODOTypes []string
 
 	// IncludeHidden indicates including hidden files & directories.
 	IncludeHidden bool
@@ -44,10 +87,17 @@ type Options struct {
 
 	// Help indicates the command should print the help and exit.
 	Help bool
+
+	// Paths are the paths to walk to look for TODOs.
+	Paths []string
 }
 
-// FlagSet returns a FlagSet for the options.
-func (o *Options) FlagSet() *flag.FlagSet {
+// New parses the given command-line args and returns a new options instance.
+func New(args []string) (*Options, error) {
+	var outType string
+	var todoTypes string
+
+	var o Options
 	fs := flag.NewFlagSet("todos", flag.ExitOnError)
 	fs.BoolVar(&o.Help, "help", false, "print help and exit")
 	fs.BoolVar(&o.Help, "h", false, "print help and exit")
@@ -55,14 +105,38 @@ func (o *Options) FlagSet() *flag.FlagSet {
 	fs.BoolVar(&o.IncludeHidden, "include-hidden", false, "include hidden files and directories")
 	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
-	fs.StringVar(&o.TodoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX,COMBAK", "comma separated list of TODO types")
-	fs.StringVar(&o.Output, "o", "default", "output type (default, github)")
-	fs.StringVar(&o.Output, "output", "default", "output type (default, github)")
+	fs.StringVar(&todoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX,COMBAK", "comma separated list of TODO types")
+	fs.StringVar(&outType, "o", "default", "output type (default, github)")
+	fs.StringVar(&outType, "output", "default", "output type (default, github)")
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", os.Args[0])
 		fmt.Fprintf(fs.Output(), "Try '%s --help' for more information.\n", os.Args[0])
 	}
-	return fs
+
+	if err := fs.Parse(args[1:]); err != nil {
+		return nil, fmt.Errorf("%w: %w", todoerr.ErrFlagParse, err)
+	}
+
+	outFunc, ok := outTypes[outType]
+	if !ok {
+		return nil, fmt.Errorf("%w: invalid output type: %v", todoerr.ErrFlagParse, o.Output)
+	}
+	o.Output = outFunc
+
+	o.Error = func(err error) {
+		todoerr.PrintError(args[0], err)
+	}
+
+	for _, todoType := range strings.Split(todoTypes, ",") {
+		o.TODOTypes = append(o.TODOTypes, strings.TrimSpace(todoType))
+	}
+
+	o.Paths = fs.Args()
+	if len(o.Paths) == 0 {
+		o.Paths = []string{"."}
+	}
+
+	return &o, nil
 }
 
 // PrintLongUsage prints the long help for the options.

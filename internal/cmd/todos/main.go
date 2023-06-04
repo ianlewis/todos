@@ -15,101 +15,37 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
-	"github.com/fatih/color"
-
-	"github.com/ianlewis/todos/internal/todos"
+	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
+	"github.com/ianlewis/todos/internal/cmd/todos/options"
+	"github.com/ianlewis/todos/internal/cmd/todos/walker"
 )
-
-const (
-	exitCodeSuccess int = iota
-	exitCodeFlagParseError
-	exitCodeWalkError
-)
-
-func printError(format string, a ...any) {
-	msg := fmt.Sprintf(format, a...)
-	fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], msg)
-}
-
-func outReadable(o todoOpt) {
-	fmt.Printf("%s%s%s%s%s\n",
-		color.MagentaString(o.fileName),
-		color.CyanString(":"),
-		color.GreenString(fmt.Sprintf("%d", o.todo.Line)),
-		color.CyanString(":"),
-		o.todo.Text,
-	)
-}
-
-func outGithub(o todoOpt) {
-	typ := "notice"
-	switch o.todo.Type {
-	case "TODO", "HACK", "COMBAK":
-		typ = "warning"
-	case "FIXME", "XXX", "BUG":
-		typ = "error"
-	}
-	fmt.Printf("::%s file=%s,line=%d::%s\n", typ, o.fileName, o.todo.Line, o.todo.Text)
-}
-
-var outTypes = map[string]lineWriter{
-	"default": outReadable,
-	"github":  outGithub,
-}
 
 func main() {
-	opts := &Options{}
-	fSet := opts.FlagSet()
-	if err := fSet.Parse(os.Args[1:]); err != nil {
-		printError(fmt.Sprintf("parsing flags: %v", err))
-		os.Exit(exitCodeFlagParseError)
+	opts, err := options.New(os.Args)
+	if err != nil {
+		todoerr.Exit(err)
 	}
+	todoerr.Exit(Run(opts))
+}
 
-	outFunc, ok := outTypes[opts.Output]
-	if !ok {
-		printError(fmt.Sprintf("invalid output type: %q", opts.Output))
-		os.Exit(exitCodeFlagParseError)
-	}
-
+// Run runs the the `todos` command.
+func Run(opts *options.Options) error {
 	if opts.Help {
 		opts.PrintLongUsage()
-		os.Exit(exitCodeSuccess)
+		return nil
 	}
 
 	if opts.Version {
 		opts.PrintVersion()
-		os.Exit(exitCodeSuccess)
+		return nil
 	}
 
-	paths := fSet.Args()
-	if len(paths) == 0 {
-		paths = []string{"."}
-	}
-
-	var todoTypes []string
-	for _, todoType := range strings.Split(opts.TodoTypes, ",") {
-		todoTypes = append(todoTypes, strings.TrimSpace(todoType))
-	}
-
-	walker := TODOWalker{
-		outFunc: outFunc,
-		errFunc: func(err error) {
-			printError("%v", err)
-		},
-		todoConfig: &todos.Config{
-			Types: todoTypes,
-		},
-		includeHidden:   opts.IncludeHidden,
-		includeVendored: opts.IncludeVendored,
-		includeDocs:     opts.IncludeDocs,
-		paths:           paths,
-	}
-
+	walker := walker.New(opts)
 	if walker.Walk() {
-		os.Exit(exitCodeWalkError)
+		return todoerr.ErrWalk
 	}
+
+	return nil
 }
