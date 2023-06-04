@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/ianlewis/todos/internal/cmd/todos/options"
 	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 )
@@ -53,7 +54,7 @@ type fixture struct {
 	dir   string
 	types []string
 	paths []string
-	out   []todoOpt
+	out   []options.TODOOpt
 	err   []error
 }
 
@@ -73,7 +74,7 @@ func (f *fixture) walker() *TODOWalker {
 	}
 }
 
-func (f *fixture) outFunc(o todoOpt) {
+func (f *fixture) outFunc(o options.TODOOpt) {
 	f.out = append(f.out, o)
 }
 
@@ -91,7 +92,7 @@ var testCases = []struct {
 	files    map[string]string
 	types    []string
 	paths    []string
-	expected []todoOpt
+	expected []options.TODOOpt
 	err      bool
 }{
 	{
@@ -107,10 +108,10 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []todoOpt{
+		expected: []options.TODOOpt{
 			{
-				fileName: "line_comments.go",
-				todo: &todos.TODO{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
 					Line:        5,
@@ -144,10 +145,10 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []todoOpt{
+		expected: []options.TODOOpt{
 			{
-				fileName: "line_comments.go",
-				todo: &todos.TODO{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
 					Line:        7,
@@ -155,8 +156,8 @@ var testCases = []struct {
 				},
 			},
 			{
-				fileName: "multi_line.go",
-				todo: &todos.TODO{
+				FileName: "multi_line.go",
+				TODO: &todos.TODO{
 					Type: "TODO",
 					// TODO: leading whitespace should be stripped.
 					Text:        "\t\t\t\tTODO: Some other task.",
@@ -191,10 +192,10 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []todoOpt{
+		expected: []options.TODOOpt{
 			{
-				fileName: "line_comments.go",
-				todo: &todos.TODO{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
 					Line:        7,
@@ -202,8 +203,8 @@ var testCases = []struct {
 				},
 			},
 			{
-				fileName: "sub-dir/multi_line.go",
-				todo: &todos.TODO{
+				FileName: "sub-dir/multi_line.go",
+				TODO: &todos.TODO{
 					Type: "TODO",
 					// TODO: leading whitespace should be stripped.
 					Text:        "\t\t\t\tTODO: Some other task.",
@@ -234,10 +235,10 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{"line_comments.go"},
-		expected: []todoOpt{
+		expected: []options.TODOOpt{
 			{
-				fileName: "line_comments.go",
-				todo: &todos.TODO{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
 					Line:        5,
@@ -262,7 +263,7 @@ func TestTODOWalker(t *testing.T) {
 			}
 
 			got, want := f.out, tc.expected
-			if diff := cmp.Diff(want, got, cmp.AllowUnexported(todoOpt{})); diff != "" {
+			if diff := cmp.Diff(want, got, cmp.AllowUnexported(options.TODOOpt{})); diff != "" {
 				t.Errorf("unexpected output (-want +got):\n%s", diff)
 			}
 		})
@@ -302,10 +303,10 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		t.Errorf("unexpected error, got: %v, want: %v", got, want)
 	}
 
-	got, want := f.out, []todoOpt{
+	got, want := f.out, []options.TODOOpt{
 		{
-			fileName: "line_comments.go",
-			todo: &todos.TODO{
+			FileName: "line_comments.go",
+			TODO: &todos.TODO{
 				Type:        "TODO",
 				Text:        "// TODO: some task.",
 				Line:        5,
@@ -313,7 +314,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 			},
 		},
 	}
-	if diff := cmp.Diff(want, got, cmp.AllowUnexported(todoOpt{})); diff != "" {
+	if diff := cmp.Diff(want, got, cmp.AllowUnexported(options.TODOOpt{})); diff != "" {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
