@@ -17,6 +17,7 @@
 package walker
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/ianlewis/todos/internal/testutils"
@@ -34,7 +35,7 @@ func Test_isHidden(t *testing.T) {
 			hidden: false,
 		},
 		{
-			name:   "some/path/foo.bar",
+			name:   filepath.Join("some", "path", "foo.bar"),
 			hidden: false,
 		},
 		{
@@ -42,7 +43,7 @@ func Test_isHidden(t *testing.T) {
 			hidden: true,
 		},
 		{
-			name:   "some/path/.foo",
+			name:   filepath.Join("some", "path", ".foo"),
 			hidden: true,
 		},
 	}

@@ -53,7 +53,7 @@ func Test_isHidden(t *testing.T) {
 			expected:   false,
 		},
 		{
-			name:       "some/path/foo.bar",
+			name:       filepath.Join("some", "path", "foo.bar"),
 			hiddenAttr: false,
 			expected:   false,
 		},
@@ -63,7 +63,7 @@ func Test_isHidden(t *testing.T) {
 			expected:   true,
 		},
 		{
-			name:       "some/path/foo.bar",
+			name:       filepath.Join("some", "path", "foo.bar"),
 			hiddenAttr: true,
 			expected:   true,
 		},
@@ -73,7 +73,7 @@ func Test_isHidden(t *testing.T) {
 			expected:   true,
 		},
 		{
-			name:       "some/path/.foo.bar",
+			name:       filepath.Join("some", "path", ".foo.bar"),
 			hiddenAttr: false,
 			expected:   true,
 		},
@@ -83,7 +83,7 @@ func Test_isHidden(t *testing.T) {
 			expected:   true,
 		},
 		{
-			name:       "some/path/.foo.bar",
+			name:       filepath.Join("some", "path", ".foo.bar"),
 			hiddenAttr: true,
 			expected:   true,
 		},
