@@ -329,6 +329,36 @@ func TestTODOScanner(t *testing.T) {
 			},
 			expected: nil,
 		},
+		"multiline_comments_leading_whitespace.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\n\t\t\tTODO(github.com/foo/bar/issues1): foo\n*/",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Line:        7,
+					CommentLine: 5,
+				},
+			},
+		},
 	}
 
 	for name, tc := range testCases {

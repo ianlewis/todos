@@ -108,7 +108,7 @@ func (t *TODOScanner) Scan() bool {
 		if match != "" {
 			t.next = &TODO{
 				Type: match,
-				Text: line,
+				Text: strings.TrimSpace(line),
 				// Add the line relative to the file.
 				Line:        next.Line + lineNo - 1,
 				CommentLine: next.Line,
