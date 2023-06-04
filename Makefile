@@ -99,7 +99,24 @@ autogen: ## Runs autogen on code files.
 #####################################################################
 
 .PHONY: lint
-lint: markdownlint golangci-lint yamllint ## Run all linters.
+lint: markdownlint golangci-lint yamllint actionlint ## Run all linters.
+
+.PHONY: actionlint
+actionlint: ## Runs the actionlint linter.
+	@# NOTE: We need to ignore config files used in tests.
+	@set -e;\
+		files=$$( \
+			find .github/workflows/ -type f \
+				\( \
+					-name '*.yaml' -o \
+					-name '*.yml' \
+				\) \
+		); \
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			actionlint -format '{{range $$err := .}}::error file={{$$err.Filepath}},line={{$$err.Line}},col={{$$err.Column}}::{{$$err.Message}}%0A```%0A{{replace $$err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:' $${files}; \
+		else \
+			actionlint $${files}; \
+		fi
 
 .PHONY: markdownlint
 markdownlint: node_modules/.installed ## Runs the markdownlint linter.
