@@ -482,6 +482,8 @@ func TestFromFile(t *testing.T) {
 			// Create a temporary file.
 			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
 			f := testutils.Must(os.CreateTemp("", fmt.Sprintf("*.%s", tc.name)))
+			defer os.Remove(f.Name())
+
 			var w io.Writer
 			w = f
 			if tc.charset != "" {

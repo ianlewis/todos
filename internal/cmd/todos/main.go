@@ -15,65 +15,37 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
-	"github.com/ianlewis/todos/internal/todos"
-)
-
-const (
-	exitCodeSuccess int = iota
-	exitCodeFlagParseError
-	exitCodeWalkError
+	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
+	"github.com/ianlewis/todos/internal/cmd/todos/options"
+	"github.com/ianlewis/todos/internal/cmd/todos/walker"
 )
 
 func main() {
-	opts := &Options{}
-	fSet := opts.FlagSet()
-	if err := fSet.Parse(os.Args[1:]); err != nil {
-		printError(fmt.Sprintf("parsing flags: %v", err))
-		os.Exit(exitCodeFlagParseError)
+	opts, err := options.New(os.Args)
+	if err != nil {
+		todoerr.Exit(err)
 	}
+	todoerr.Exit(Run(opts))
+}
 
-	outFunc, ok := outTypes[opts.Output]
-	if !ok {
-		printError(fmt.Sprintf("invalid output type: %q", opts.Output))
-		os.Exit(exitCodeFlagParseError)
-	}
-
+// Run runs the the `todos` command.
+func Run(opts *options.Options) error {
 	if opts.Help {
 		opts.PrintLongUsage()
-		os.Exit(exitCodeSuccess)
+		return nil
 	}
 
 	if opts.Version {
 		opts.PrintVersion()
-		os.Exit(exitCodeSuccess)
+		return nil
 	}
 
-	paths := fSet.Args()
-	if len(paths) == 0 {
-		paths = []string{"."}
+	w := walker.New(opts)
+	if w.Walk() {
+		return todoerr.ErrWalk
 	}
 
-	var todoTypes []string
-	for _, todoType := range strings.Split(opts.TodoTypes, ",") {
-		todoTypes = append(todoTypes, strings.TrimSpace(todoType))
-	}
-
-	walker := TODOWalker{
-		outFunc: outFunc,
-		todoConfig: &todos.Config{
-			Types: todoTypes,
-		},
-		includeHidden:   opts.IncludeHidden,
-		includeVendored: opts.IncludeVendored,
-		includeDocs:     opts.IncludeDocs,
-		paths:           paths,
-	}
-
-	if walker.Walk() {
-		os.Exit(exitCodeWalkError)
-	}
+	return nil
 }

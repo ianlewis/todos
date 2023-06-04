@@ -12,26 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !windows
+package testutils
 
-package main
+// DeferFunc is a deferrable function.
+type DeferFunc func()
 
-import (
-	"fmt"
-	"path/filepath"
-	"strings"
-)
+// CancelFunc is a cancel function.
+type CancelFunc func()
 
-// isHidden checks if a file is hidden on most operating systems.
-func isHidden(path string) (bool, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return false, fmt.Errorf("getting absolute path: %w", err)
+// WithCancel returns a deferrable function that can be cancelled.
+func WithCancel(d DeferFunc, f func()) (DeferFunc, CancelFunc) {
+	var c bool
+	newFunc := func() {
+		if !c {
+			if f != nil {
+				f()
+			}
+			if d != nil {
+				d()
+			}
+		}
 	}
-
-	base := filepath.Base(absPath)
-	if base == "." || base == ".." {
-		return false, nil
+	cancel := func() {
+		c = true
 	}
-	return strings.HasPrefix(base, "."), nil
+	return newFunc, cancel
 }

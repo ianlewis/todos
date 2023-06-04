@@ -27,7 +27,11 @@ permissions: read-all
 jobs:
   pre-submit:
     name: unit tests
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     if: ${{ always() }}
     steps:
       - name: Checkout
@@ -35,7 +39,8 @@ jobs:
       - name: setup-go
         uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
-          go-version-file: "go.mod"
-
+          go-version: ${{ matrix.go-version }}
       - name: unit tests
-        run: make unit-test
+        run: |
+          go mod vendor
+          go test -mod=vendor -v ./...
