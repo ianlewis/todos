@@ -175,7 +175,6 @@ var testCases = []struct {
 					return // Random comment
 				}`,
 			filepath.Join("sub-dir", "multi_line.go"): `
-
 				package foo
 
 				/*
