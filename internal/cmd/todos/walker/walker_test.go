@@ -41,8 +41,8 @@ func newFixture(files map[string]string, types, paths []string) *fixture {
 
 	for path, src := range files {
 		fullPath := filepath.Join(f.dir, path)
-		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0700))
-		testutils.Check(os.WriteFile(fullPath, []byte(src), 0600))
+		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
+		testutils.Check(os.WriteFile(fullPath, []byte(src), 0o600))
 	}
 
 	if len(paths) == 0 {
