@@ -19,6 +19,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ianlewis/linguist"
 
@@ -174,6 +175,11 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		// Skip hidden files.
 		return fs.SkipDir
 	}
+
+	// NOTE: linguist only matches paths with a path separator at the end.
+	if !strings.HasSuffix(fullPath, string(os.PathSeparator)) {
+		fullPath = fullPath + string(os.PathSeparator)
+	}
 	if !w.includeVendored && linguist.IsVendored(fullPath) {
 		return fs.SkipDir
 	}
@@ -192,13 +198,6 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 
 	if hdn && !w.includeHidden {
 		// Skip hidden files.
-		return nil
-	}
-
-	if !w.includeVendored && linguist.IsVendored(fullPath) {
-		return nil
-	}
-	if !w.includeDocs && linguist.IsDocumentation(fullPath) {
 		return nil
 	}
 

@@ -456,6 +456,213 @@ var testCases = []struct {
 			},
 		},
 	},
+	{
+		name: "hidden dir skipped",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			filepath.Join(".somepath", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "hidden dir specified",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			filepath.Join(".somepath", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{filepath.Join(".somepath")},
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join(".somepath", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "hidden dir processed",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			filepath.Join(".somepath", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include hidden files.
+		hidden: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join(".somepath", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored dir skipped",
+		files: map[string]string{
+			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "vendored dir specified",
+		files: map[string]string{
+			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{filepath.Join("vendor", "pkgname")},
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored dir processed",
+		files: map[string]string{
+			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include vendored files.
+		vendored: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "docs dir skipped",
+		files: map[string]string{
+			filepath.Join("docs", "somedir", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "docs dir specified",
+		files: map[string]string{
+			filepath.Join("docs", "somedir", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{filepath.Join("docs", "somedir")},
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("docs", "somedir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "docs dir processed",
+		files: map[string]string{
+			filepath.Join("docs", "somedir", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include docs files.
+		docs: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("docs", "somedir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
 }
 
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
