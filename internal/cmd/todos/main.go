@@ -42,8 +42,8 @@ func Run(opts *options.Options) error {
 		return nil
 	}
 
-	walker := walker.New(opts)
-	if walker.Walk() {
+	w := walker.New(opts)
+	if w.Walk() {
 		return todoerr.ErrWalk
 	}
 
