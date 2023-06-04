@@ -103,7 +103,7 @@ func Test_isHidden(t *testing.T) {
 			}
 			defer os.RemoveAll(dir)
 
-			if got, want := testutils.Must(isHidden(tc.name)), tc.expected; got != want {
+			if got, want := testutils.Must(isHidden(path)), tc.expected; got != want {
 				t.Errorf("unexpected result for %q, got: %v, want: %v", tc.name, got, want)
 			}
 		})
