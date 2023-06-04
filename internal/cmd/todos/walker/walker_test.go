@@ -174,7 +174,8 @@ var testCases = []struct {
 				func TODO() {
 					return // Random comment
 				}`,
-			"sub-dir/multi_line.go": `
+			filepath.Join("sub-dir", "multi_line.go"): `
+
 				package foo
 
 				/*
@@ -197,7 +198,7 @@ var testCases = []struct {
 				},
 			},
 			{
-				FileName: "sub-dir/multi_line.go",
+				FileName: filepath.Join("sub-dir", "multi_line.go"),
 				TODO: &todos.TODO{
 					Type: "TODO",
 					// TODO: leading whitespace should be stripped.
