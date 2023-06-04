@@ -29,7 +29,7 @@ import (
 )
 
 func newFixture(files map[string]string, types, paths []string) *fixture {
-	f := &fixture{types: types, paths: paths}
+	f := &fixture{}
 	f.wd = testutils.Must(os.Getwd())
 
 	f.dir = testutils.Must(os.MkdirTemp("", "code"))
@@ -45,33 +45,27 @@ func newFixture(files map[string]string, types, paths []string) *fixture {
 		testutils.Check(os.WriteFile(fullPath, []byte(src), 0600))
 	}
 
+	if len(paths) == 0 {
+		paths = []string{"."}
+	}
+
+	f.walker = New(&options.Options{
+		Output:    f.outFunc,
+		Error:     f.errFunc,
+		TODOTypes: types,
+		Paths:     paths,
+	})
+
 	cancel()
 	return f
 }
 
 type fixture struct {
-	wd    string
-	dir   string
-	types []string
-	paths []string
-	out   []options.TODOOpt
-	err   []error
-}
-
-func (f *fixture) walker() *TODOWalker {
-	paths := []string{"."}
-	if len(f.paths) > 0 {
-		paths = f.paths
-	}
-
-	return &TODOWalker{
-		outFunc: f.outFunc,
-		errFunc: f.errFunc,
-		todoConfig: &todos.Config{
-			Types: f.types,
-		},
-		paths: paths,
-	}
+	walker *TODOWalker
+	wd     string
+	dir    string
+	out    []options.TODOOpt
+	err    []error
 }
 
 func (f *fixture) outFunc(o options.TODOOpt) {
@@ -257,8 +251,7 @@ func TestTODOWalker(t *testing.T) {
 			f := newFixture(tc.files, tc.types, tc.paths)
 			defer f.cleanup()
 
-			walker := f.walker()
-			if got, want := walker.Walk(), tc.err; got != want {
+			if got, want := f.walker.Walk(), tc.err; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v", got, want)
 			}
 
@@ -290,7 +283,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 	f := newFixture(files, []string{"TODO"}, nil)
 	defer f.cleanup()
 
-	walker := f.walker()
+	walker := f.walker
 	walker.paths = append(walker.paths, notExistsPath)
 	if got, want := walker.Walk(), true; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
