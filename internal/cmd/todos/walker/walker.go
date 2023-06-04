@@ -195,6 +195,13 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 		return nil
 	}
 
+	if !w.includeVendored && linguist.IsVendored(fullPath) {
+		return nil
+	}
+	if !w.includeDocs && linguist.IsDocumentation(fullPath) {
+		return nil
+	}
+
 	w.scanFile(f)
 
 	return nil

@@ -28,7 +28,7 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 )
 
-func newFixture(files map[string]string, types, paths []string) *fixture {
+func newFixture(files map[string]string, types, paths []string, hidden, vendored, docs bool) *fixture {
 	f := &fixture{}
 	f.wd = testutils.Must(os.Getwd())
 
@@ -54,6 +54,10 @@ func newFixture(files map[string]string, types, paths []string) *fixture {
 		Error:     f.errFunc,
 		TODOTypes: types,
 		Paths:     paths,
+
+		IncludeHidden:   hidden,
+		IncludeVendored: vendored,
+		IncludeDocs:     docs,
 	})
 
 	cancel()
@@ -82,10 +86,15 @@ func (f *fixture) cleanup() {
 }
 
 var testCases = []struct {
-	name     string
-	files    map[string]string
-	types    []string
-	paths    []string
+	name  string
+	files map[string]string
+	types []string
+	paths []string
+
+	hidden   bool
+	vendored bool
+	docs     bool
+
 	expected []options.TODOOpt
 	err      bool
 }{
@@ -208,7 +217,6 @@ var testCases = []struct {
 			},
 		},
 	},
-
 	{
 		name: "single file",
 		files: map[string]string{
@@ -241,6 +249,213 @@ var testCases = []struct {
 			},
 		},
 	},
+	{
+		name: "hidden file skipped",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			".line_comments.go": `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "hidden file specified",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			".line_comments.go": `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{".line_comments.go"},
+		expected: []options.TODOOpt{
+			{
+				FileName: ".line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "hidden file processed",
+		files: map[string]string{
+			// NOTE: Files starting with '.' should be hidden on all platforms.
+			".line_comments.go": `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include hidden files.
+		hidden: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: ".line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored file skipped",
+		files: map[string]string{
+			filepath.Join("vendor", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "vendored file specified",
+		files: map[string]string{
+			filepath.Join("vendor", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{filepath.Join("vendor", "line_comments.go")},
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored file processed",
+		files: map[string]string{
+			filepath.Join("vendor", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include vendored files.
+		vendored: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "docs file skipped",
+		files: map[string]string{
+			filepath.Join("docs", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types:    []string{"TODO"},
+		expected: nil,
+	},
+	{
+		name: "docs file specified",
+		files: map[string]string{
+			filepath.Join("docs", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		paths: []string{filepath.Join("docs", "line_comments.go")},
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("docs", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "docs file processed",
+		files: map[string]string{
+			filepath.Join("docs", "line_comments.go"): `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		// NOTE: Include docs files.
+		docs: true,
+		expected: []options.TODOOpt{
+			{
+				FileName: filepath.Join("docs", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
 }
 
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
@@ -249,7 +464,7 @@ func TestTODOWalker(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			f := newFixture(tc.files, tc.types, tc.paths)
+			f := newFixture(tc.files, tc.types, tc.paths, tc.hidden, tc.vendored, tc.docs)
 			defer f.cleanup()
 
 			if got, want := f.walker.Walk(), tc.err; got != want {
@@ -282,7 +497,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 			}`,
 	}
 
-	f := newFixture(files, []string{"TODO"}, nil)
+	f := newFixture(files, []string{"TODO"}, nil, false, false, false)
 	defer f.cleanup()
 
 	walker := f.walker
