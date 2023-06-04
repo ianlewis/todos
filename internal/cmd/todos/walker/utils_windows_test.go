@@ -95,7 +95,7 @@ func Test_isHidden(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			dir := testutils.Must(os.MkdirTemp("", tc.name))
+			dir := testutils.Must(os.MkdirTemp("", "utils_windows_test"))
 			path := filepath.Join(dir, tc.name)
 			testutils.Check(os.WriteFile(path, nil, 0600))
 			if tc.hiddenAttr {
