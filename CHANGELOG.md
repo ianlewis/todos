@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Changed in X.Y.Z
+
+- Leading whitespaces is now trimmed from TODOS in multi-line comments.
+
 ## Fixed in X.Y.Z
 
 - Hidden, Vendored, and Docs files are now properly excluded by default.

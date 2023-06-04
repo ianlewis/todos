@@ -161,9 +161,8 @@ var testCases = []struct {
 			{
 				FileName: "multi_line.go",
 				TODO: &todos.TODO{
-					Type: "TODO",
-					// TODO: leading whitespace should be stripped.
-					Text:        "\t\t\t\tTODO: Some other task.",
+					Type:        "TODO",
+					Text:        "TODO: Some other task.",
 					Line:        6,
 					CommentLine: 4,
 				},
@@ -208,9 +207,8 @@ var testCases = []struct {
 			{
 				FileName: filepath.Join("sub-dir", "multi_line.go"),
 				TODO: &todos.TODO{
-					Type: "TODO",
-					// TODO: leading whitespace should be stripped.
-					Text:        "\t\t\t\tTODO: Some other task.",
+					Type:        "TODO",
+					Text:        "TODO: Some other task.",
 					Line:        6,
 					CommentLine: 4,
 				},
