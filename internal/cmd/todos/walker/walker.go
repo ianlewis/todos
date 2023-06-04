@@ -176,9 +176,13 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		return fs.SkipDir
 	}
 
+	// NOTE: linguist only matches paths with a *nix path separators.
+	// TODO(github.com/ianlewis/linguist/issues/1): Update when linguist supports Windows.
+	fullPath = strings.ReplaceAll(fullPath, string(os.PathSeparator), "/")
+
 	// NOTE: linguist only matches paths with a path separator at the end.
-	if !strings.HasSuffix(fullPath, string(os.PathSeparator)) {
-		fullPath = fullPath + string(os.PathSeparator)
+	if !strings.HasSuffix(fullPath, "/") {
+		fullPath += "/"
 	}
 	if !w.includeVendored && linguist.IsVendored(fullPath) {
 		return fs.SkipDir
