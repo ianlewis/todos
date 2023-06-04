@@ -17,7 +17,11 @@ package testutils
 import "testing"
 
 func TestWithCancel(t *testing.T) {
+	t.Parallel()
+
 	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
+
 		var called int
 		func() {
 			d, _ := WithCancel(nil, func() {
@@ -31,6 +35,8 @@ func TestWithCancel(t *testing.T) {
 	})
 
 	t.Run("cancel", func(t *testing.T) {
+		t.Parallel()
+
 		var called int
 		func() {
 			d, cancel := WithCancel(nil, func() {
@@ -45,6 +51,8 @@ func TestWithCancel(t *testing.T) {
 	})
 
 	t.Run("nested", func(t *testing.T) {
+		t.Parallel()
+
 		var parentCalled int
 		var childCalled int
 		func() {
@@ -67,6 +75,8 @@ func TestWithCancel(t *testing.T) {
 	})
 
 	t.Run("nested child cancel", func(t *testing.T) {
+		t.Parallel()
+
 		var parentCalled int
 		var childCalled int
 		func() {
@@ -90,6 +100,8 @@ func TestWithCancel(t *testing.T) {
 	})
 
 	t.Run("nested parent cancel", func(t *testing.T) {
+		t.Parallel()
+
 		var parentCalled int
 		var childCalled int
 		func() {

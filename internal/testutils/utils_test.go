@@ -20,7 +20,11 @@ import (
 )
 
 func TestCheck(t *testing.T) {
+	t.Parallel()
+
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		defer func() {
 			if r := recover(); r != nil {
 				t.Errorf("unexpected panic: %v", r)
@@ -30,6 +34,8 @@ func TestCheck(t *testing.T) {
 	})
 
 	t.Run("fail", func(t *testing.T) {
+		t.Parallel()
+
 		err := errors.New("error")
 		defer func() {
 			if got, want := recover(), err; got != want {
@@ -41,7 +47,11 @@ func TestCheck(t *testing.T) {
 }
 
 func TestMust(t *testing.T) {
+	t.Parallel()
+
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		defer func() {
 			if r := recover(); r != nil {
 				t.Errorf("unexpected panic: %v", r)
@@ -53,6 +63,8 @@ func TestMust(t *testing.T) {
 	})
 
 	t.Run("fail", func(t *testing.T) {
+		t.Parallel()
+
 		err := errors.New("error")
 		defer func() {
 			if got, want := recover(), err; got != want {
