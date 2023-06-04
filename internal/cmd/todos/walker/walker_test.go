@@ -244,10 +244,14 @@ var testCases = []struct {
 }
 
 func TestTODOWalker(t *testing.T) {
+	t.Parallel()
+
 	for i := range testCases {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			f := newFixture(tc.files, tc.types, tc.paths)
 			defer f.cleanup()
 
@@ -264,6 +268,8 @@ func TestTODOWalker(t *testing.T) {
 }
 
 func TestTODOWalker_PathNotExists(t *testing.T) {
+	t.Parallel()
+
 	notExistsPath := "/does/not/exist"
 	if _, err := os.Stat(notExistsPath); !errors.Is(err, os.ErrNotExist) {
 		panic(fmt.Sprintf("assertion failure: %s exists.", notExistsPath))
