@@ -29,6 +29,12 @@ type TODO struct {
 	// Text is the full comment text.
 	Text string
 
+	// Label is the label part (the part in parenthesis)
+	Label string
+
+	// Message is the comment message (the part after the parenthesis).
+	Message string
+
 	// Line is the line number where todo was found..
 	Line int
 
@@ -84,13 +90,21 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	for _, tp := range config.Types {
 		quotedTypes = append(quotedTypes, regexp.QuoteMeta(tp))
 	}
+	// match[0][2]
 	typesMatch := strings.Join(quotedTypes, "|")
 
 	msgMatch := strings.Join([]string{
-		`(\s*)`,       // Naked
-		`(:.*)`,       // With message
-		`(\(.*\)\s*)`, // Naked w/ bug
-		`(\(.*\):.*)`, // With bug and message
+		`\s*`, // Naked
+
+		// message = match[0][4]
+		`:(.*)`, // With message
+
+		// label = match[0][5]
+		`\((.*)\)\s*`, // Naked w/ label
+
+		// label = match[0][6]
+		// message = match[0][7]
+		`\((.*)\):(.*)`, // With label and message
 	}, "|")
 
 	snr.lineMatch = regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`)
@@ -104,39 +118,70 @@ func (t *TODOScanner) Scan() bool {
 	for t.s.Scan() {
 		next := t.s.Next()
 
-		match, line, lineNo := t.findMatch(next)
-		if match != "" {
-			t.next = &TODO{
-				Type: match,
-				Text: strings.TrimSpace(line),
-				// Add the line relative to the file.
-				Line:        next.Line + lineNo - 1,
-				CommentLine: next.Line,
-			}
+		match := t.findMatch(next)
+		if match != nil {
+			t.next = match
 			return true
 		}
 	}
 	return false
 }
 
-// findMatch returns the TODO type, the full TODO line, and the line number it
-// was found on or zero if it was not found.
-func (t *TODOScanner) findMatch(c *scanner.Comment) (string, string, int) {
+// findMatch returns the TODO type, the full TODO line, the label, message, and
+// the line number it was found on or zero if it was not found.
+func (t *TODOScanner) findMatch(c *scanner.Comment) *TODO {
 	if c.Multiline {
 		for i, line := range strings.Split(c.Text, "\n") {
 			match := t.multilineMatch.FindAllStringSubmatch(line, 1)
 			if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-				return match[0][2], line, i + 1
+				label := match[0][5]
+				if label == "" {
+					label = match[0][6]
+				}
+
+				message := match[0][4]
+				if message == "" {
+					message = match[0][7]
+				}
+
+				return &TODO{
+					Type:    match[0][2],
+					Text:    strings.TrimSpace(line),
+					Label:   strings.TrimSpace(label),
+					Message: strings.TrimSpace(message),
+					// Add the line relative to the file.
+					Line:        c.Line + i,
+					CommentLine: c.Line,
+				}
 			}
 		}
 	}
 
 	match := t.lineMatch.FindAllStringSubmatch(c.Text, 1)
 	if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-		return match[0][2], c.Text, 1
+
+		label := match[0][5]
+		if label == "" {
+			label = match[0][6]
+		}
+
+		message := match[0][4]
+		if message == "" {
+			message = match[0][7]
+		}
+
+		return &TODO{
+			Type:    match[0][2],
+			Text:    strings.TrimSpace(c.Text),
+			Label:   strings.TrimSpace(label),
+			Message: strings.TrimSpace(message),
+			// Add the line relative to the file.
+			Line:        c.Line,
+			CommentLine: c.Line,
+		}
 	}
 
-	return "", "", 0
+	return nil
 }
 
 // Next returns the next TODO.

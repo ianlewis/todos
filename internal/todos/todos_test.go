@@ -15,8 +15,6 @@
 package todos
 
 import (
-	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -54,19 +52,6 @@ func (s *testScanner) Next() *scanner.Comment {
 
 func (s *testScanner) Err() error {
 	return s.err
-}
-
-type todoSlice []*TODO
-
-func (s todoSlice) String() string {
-	if s == nil {
-		return "nil"
-	}
-	var items []string
-	for _, t := range s {
-		items = append(items, fmt.Sprintf("%#v", t))
-	}
-	return "[" + strings.Join(items, ", ") + "]"
 }
 
 func TestTODOScanner(t *testing.T) {
@@ -131,6 +116,7 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "// TODO: foo",
+					Message:     "foo",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -160,6 +146,7 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "// TODO(github.com/foo/bar/issues/1)",
+					Label:       "github.com/foo/bar/issues/1",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -190,6 +177,8 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "// TODO(github.com/foo/bar/issues/1): foo",
+					Message:     "foo",
+					Label:       "github.com/foo/bar/issues/1",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -250,6 +239,7 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "TODO: foo",
+					Message:     "foo",
 					Line:        7,
 					CommentLine: 5,
 				},
@@ -372,8 +362,9 @@ func TestTODOScanner(t *testing.T) {
 				found = append(found, s.Next())
 			}
 
-			if got, want := found, tc.expected; !cmp.Equal(got, want) {
-				t.Errorf("unexpected todos, got: %s, want: %s", todoSlice(got), todoSlice(want))
+			got, want := found, tc.expected
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("unexpected todos (-want +got):\n%s", diff)
 			}
 
 			err := s.Err()
