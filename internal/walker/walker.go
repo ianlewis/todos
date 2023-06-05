@@ -102,7 +102,7 @@ func (w *TODOWalker) Walk() bool {
 
 		f, err := os.Open(path)
 		if err != nil {
-			if err := w.handleErr(path, err); err != nil {
+			if herr := w.handleErr(path, err); herr != nil {
 				break
 			}
 			continue
@@ -110,7 +110,7 @@ func (w *TODOWalker) Walk() bool {
 
 		fInfo, err := f.Stat()
 		if err != nil {
-			if err := w.handleErr(path, err); err != nil {
+			if herr := w.handleErr(path, err); herr != nil {
 				break
 			}
 			continue
@@ -122,7 +122,7 @@ func (w *TODOWalker) Walk() bool {
 		} else {
 			// single file
 			if err := w.scanFile(f); err != nil {
-				if err := w.handleErr(path, err); err != nil {
+				if herr := w.handleErr(path, err); herr != nil {
 					break
 				}
 			}
@@ -145,10 +145,7 @@ func (w *TODOWalker) walkDir(path string) {
 func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	// If the path had an error then just skip it. WalkDir has likely hit the path already.
 	if err != nil {
-		if err := w.handleErr(path, err); err != nil {
-			return err
-		}
-		return nil
+		return w.handleErr(path, err)
 	}
 
 	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
@@ -162,8 +159,8 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	f, err := os.Open(fullPath)
 	if err != nil {
-		if err := w.handleErr(path, err); err != nil {
-			return err
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
 		}
 		if d.IsDir() {
 			return fs.SkipDir
@@ -174,8 +171,8 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	info, err := f.Stat()
 	if err != nil {
-		if err := w.handleErr(path, err); err != nil {
-			return err
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
 		}
 		if d.IsDir() {
 			return fs.SkipDir
@@ -198,15 +195,15 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		if err := w.handleErr(path, err); err != nil {
-			return err
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
 		}
 		return fs.SkipDir
 	}
 
 	if hdn && !w.options.IncludeHidden {
-		if err := w.handleErr(path, err); err != nil {
-			return err
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
 		}
 		// Skip hidden files.
 		return fs.SkipDir
@@ -232,10 +229,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		if err := w.handleErr(path, err); err != nil {
-			return err
-		}
-		return nil
+		return w.handleErr(path, err)
 	}
 
 	if hdn && !w.options.IncludeHidden {
@@ -249,8 +243,8 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 func (w *TODOWalker) scanFile(f *os.File) error {
 	s, err := scanner.FromFile(f)
 	if err != nil {
-		if err := w.handleErr(f.Name(), err); err != nil {
-			return err
+		if herr := w.handleErr(f.Name(), err); herr != nil {
+			return herr
 		}
 	}
 
@@ -269,8 +263,8 @@ func (w *TODOWalker) scanFile(f *os.File) error {
 		}
 	}
 	if err := t.Err(); err != nil {
-		if err := w.handleErr(f.Name(), err); err != nil {
-			return err
+		if herr := w.handleErr(f.Name(), err); herr != nil {
+			return herr
 		}
 	}
 
@@ -288,8 +282,8 @@ func (w *TODOWalker) handleErr(prefix string, err error) error {
 		if prefix != "" {
 			err = fmt.Errorf("%s: %w", prefix, err)
 		}
-		if err := w.options.ErrorFunc(err); err != nil {
-			return err
+		if herr := w.options.ErrorFunc(err); herr != nil {
+			return herr
 		}
 	}
 	return nil
