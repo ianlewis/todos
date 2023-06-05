@@ -24,19 +24,10 @@ import (
 	"sigs.k8s.io/release-utils/version"
 
 	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
-	"github.com/ianlewis/todos/internal/todos"
+	"github.com/ianlewis/todos/internal/walker"
 )
 
-// TODOOpt represents a TODO in a specific file.
-type TODOOpt struct {
-	FileName string
-	TODO     *todos.TODO
-}
-
-// LineWriter writes output for a TODO.
-type LineWriter func(TODOOpt)
-
-func outReadable(o TODOOpt) {
+func outReadable(o *walker.TODORef) error {
 	fmt.Printf("%s%s%s%s%s\n",
 		color.MagentaString(o.FileName),
 		color.CyanString(":"),
@@ -44,9 +35,10 @@ func outReadable(o TODOOpt) {
 		color.CyanString(":"),
 		o.TODO.Text,
 	)
+	return nil
 }
 
-func outGithub(o TODOOpt) {
+func outGithub(o *walker.TODORef) error {
 	typ := "notice"
 	switch o.TODO.Type {
 	case "TODO", "HACK", "COMBAK":
@@ -55,9 +47,10 @@ func outGithub(o TODOOpt) {
 		typ = "error"
 	}
 	fmt.Printf("::%s file=%s,line=%d::%s\n", typ, o.FileName, o.TODO.Line, o.TODO.Text)
+	return nil
 }
 
-var outTypes = map[string]LineWriter{
+var outTypes = map[string]walker.TODOHandler{
 	"default": outReadable,
 	"github":  outGithub,
 }
@@ -65,10 +58,10 @@ var outTypes = map[string]LineWriter{
 // Options are the command line options.
 type Options struct {
 	// Output writes the output for a TODO.
-	Output LineWriter
+	Output walker.TODOHandler
 
 	// Error writes error output.
-	Error func(error)
+	Error walker.ErrorHandler
 
 	// Types is list of TODO types.
 	TODOTypes []string
@@ -122,9 +115,9 @@ func New(args []string) (*Options, error) {
 		return nil, fmt.Errorf("%w: invalid output type: %v", todoerr.ErrFlagParse, o.Output)
 	}
 	o.Output = outFunc
-
-	o.Error = func(err error) {
+	o.Error = func(err error) error {
 		todoerr.PrintError(args[0], err)
+		return nil
 	}
 
 	for _, todoType := range strings.Split(todoTypes, ",") {
