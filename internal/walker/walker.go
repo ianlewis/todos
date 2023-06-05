@@ -15,6 +15,7 @@
 package walker
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -23,51 +24,67 @@ import (
 
 	"github.com/ianlewis/linguist"
 
-	"github.com/ianlewis/todos/internal/cmd/todos/options"
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 )
 
+// TODORef represents a TODO in a specific file.
+type TODORef struct {
+	FileName string
+	TODO     *todos.TODO
+}
+
+// TODOHandler handles found TODO references. It can return SkipAll or SkipDir.
+type TODOHandler func(*TODORef) error
+
+// ErrorHandler handles found TODO references. It can return SkipAll or SkipDir.
+type ErrorHandler func(error) error
+
+// Options are options for the walker.
+type Options struct {
+	// TODOFunc handles when TODOs are found.
+	TODOFunc TODOHandler
+
+	// ErrorFunc handles when errors are found.
+	ErrorFunc ErrorHandler
+
+	// Config is the config for scanning todos.
+	Config *todos.Config
+
+	// IncludeHidden indicates whether hidden paths should be processed. Hidden
+	// paths are always processed if there are specified explicitly in `paths`.
+	IncludeHidden bool
+
+	// IncludeDocs indicates whether docs paths should be processed. Docs
+	// paths are always processed if there are specified explicitly in `paths`.
+	IncludeDocs bool
+
+	// IncludeVendored indicates whether vendored paths should be processed. Vendored
+	// paths are always processed if there are specified explicitly in `paths`.
+	IncludeVendored bool
+
+	// Paths are the paths to walk to look for TODOs.
+	Paths []string
+}
+
 // New returns a new walker for the options.
-func New(opts *options.Options) *TODOWalker {
+func New(opts *Options) *TODOWalker {
+	if opts == nil {
+		opts = &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		}
+	}
 	return &TODOWalker{
-		outFunc: opts.Output,
-		errFunc: opts.Error,
-		todoConfig: &todos.Config{
-			Types: opts.TODOTypes,
-		},
-		includeHidden:   opts.IncludeHidden,
-		includeVendored: opts.IncludeVendored,
-		includeDocs:     opts.IncludeDocs,
-		paths:           opts.Paths,
+		options: opts,
 	}
 }
 
 // TODOWalker walks the directory tree and scans files for TODOS.
 type TODOWalker struct {
-	// outFunc is for printing when todos are found.
-	outFunc options.LineWriter
-
-	// errHandler is for handling errors.
-	errFunc func(error)
-
-	// todoConfig is the TODOScanner config.
-	todoConfig *todos.Config
-
-	// includeHidden indicates whether hidden paths should be processed. Hidden
-	// paths are always processed if there are specified explicitly in `paths`.
-	includeHidden bool
-
-	// includeVendored indicates whether vendored paths should be processed. Vendored
-	// paths are always processed if there are specified explicitly in `paths`.
-	includeVendored bool
-
-	// includeDocs indicates whether docs paths should be processed. Docs
-	// paths are always processed if there are specified explicitly in `paths`.
-	includeDocs bool
-
-	// paths is a list of paths to walk.
-	paths []string
+	// options are the walker's options.
+	options *Options
 
 	// path is the currently walked path.
 	path string
@@ -80,18 +97,22 @@ type TODOWalker struct {
 // when it encounters errors. It instead prints an error message and returns true
 // if errors were encountered.
 func (w *TODOWalker) Walk() bool {
-	for _, path := range w.paths {
+	for _, path := range w.options.Paths {
 		w.path = path
 
 		f, err := os.Open(path)
 		if err != nil {
-			w.handleErr(path, err)
+			if herr := w.handleErr(path, err); herr != nil {
+				break
+			}
 			continue
 		}
 
 		fInfo, err := f.Stat()
 		if err != nil {
-			w.handleErr(path, err)
+			if herr := w.handleErr(path, err); herr != nil {
+				break
+			}
 			continue
 		}
 
@@ -100,7 +121,11 @@ func (w *TODOWalker) Walk() bool {
 			w.walkDir(path)
 		} else {
 			// single file
-			w.scanFile(f)
+			if err := w.scanFile(f); err != nil {
+				if herr := w.handleErr(path, err); herr != nil {
+					break
+				}
+			}
 		}
 
 		f.Close()
@@ -120,8 +145,7 @@ func (w *TODOWalker) walkDir(path string) {
 func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	// If the path had an error then just skip it. WalkDir has likely hit the path already.
 	if err != nil {
-		w.handleErr(path, err)
-		return nil
+		return w.handleErr(path, err)
 	}
 
 	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
@@ -135,7 +159,9 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	f, err := os.Open(fullPath)
 	if err != nil {
-		w.handleErr(path, err)
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
+		}
 		if d.IsDir() {
 			return fs.SkipDir
 		}
@@ -145,7 +171,9 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 
 	info, err := f.Stat()
 	if err != nil {
-		w.handleErr(path, err)
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
+		}
 		if d.IsDir() {
 			return fs.SkipDir
 		}
@@ -167,11 +195,16 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		w.handleErr(path, err)
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
+		}
 		return fs.SkipDir
 	}
 
-	if hdn && !w.includeHidden {
+	if hdn && !w.options.IncludeHidden {
+		if herr := w.handleErr(path, err); herr != nil {
+			return herr
+		}
 		// Skip hidden files.
 		return fs.SkipDir
 	}
@@ -184,10 +217,10 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	if !strings.HasSuffix(fullPath, "/") {
 		fullPath += "/"
 	}
-	if !w.includeVendored && linguist.IsVendored(fullPath) {
+	if !w.options.IncludeVendored && linguist.IsVendored(fullPath) {
 		return fs.SkipDir
 	}
-	if !w.includeDocs && linguist.IsDocumentation(fullPath) {
+	if !w.options.IncludeDocs && linguist.IsDocumentation(fullPath) {
 		return fs.SkipDir
 	}
 	return nil
@@ -196,51 +229,64 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 	hdn, err := isHidden(fullPath)
 	if err != nil {
-		w.handleErr(path, err)
-		return nil
+		return w.handleErr(path, err)
 	}
 
-	if hdn && !w.includeHidden {
+	if hdn && !w.options.IncludeHidden {
 		// Skip hidden files.
 		return nil
 	}
 
-	w.scanFile(f)
-
-	return nil
+	return w.scanFile(f)
 }
 
-func (w *TODOWalker) scanFile(f *os.File) {
+func (w *TODOWalker) scanFile(f *os.File) error {
 	s, err := scanner.FromFile(f)
 	if err != nil {
-		w.handleErr(f.Name(), err)
+		if herr := w.handleErr(f.Name(), err); herr != nil {
+			return herr
+		}
 	}
 
 	// Skip files that can't be scanned.
 	if s == nil {
-		return
+		return nil
 	}
-	t := todos.NewTODOScanner(s, w.todoConfig)
+	t := todos.NewTODOScanner(s, w.options.Config)
 	for t.Scan() {
 		todo := t.Next()
-		if w.outFunc != nil {
-			w.outFunc(options.TODOOpt{
+		if w.options.TODOFunc != nil {
+			if err := w.options.TODOFunc(&TODORef{
 				FileName: f.Name(),
 				TODO:     todo,
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
 	if err := t.Err(); err != nil {
-		w.handleErr(f.Name(), err)
+		if herr := w.handleErr(f.Name(), err); herr != nil {
+			return herr
+		}
 	}
+
+	return nil
 }
 
-func (w *TODOWalker) handleErr(prefix string, err error) {
+func (w *TODOWalker) handleErr(prefix string, err error) error {
+	// If it's a skip error then just return it.
+	if errors.Is(err, fs.SkipDir) || errors.Is(err, fs.SkipAll) {
+		return err
+	}
+
 	w.err = err
-	if w.errFunc != nil {
+	if w.options.ErrorFunc != nil {
 		if prefix != "" {
 			err = fmt.Errorf("%s: %w", prefix, err)
 		}
-		w.errFunc(err)
+		if herr := w.options.ErrorFunc(err); herr != nil {
+			return herr
+		}
 	}
+	return nil
 }

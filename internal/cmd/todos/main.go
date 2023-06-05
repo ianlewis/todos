@@ -19,7 +19,7 @@ import (
 
 	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
 	"github.com/ianlewis/todos/internal/cmd/todos/options"
-	"github.com/ianlewis/todos/internal/cmd/todos/walker"
+	"github.com/ianlewis/todos/internal/walker"
 )
 
 func main() {
@@ -42,7 +42,14 @@ func Run(opts *options.Options) error {
 		return nil
 	}
 
-	w := walker.New(opts)
+	w := walker.New(&walker.Options{
+		TODOFunc:        opts.Output,
+		ErrorFunc:       opts.Error,
+		IncludeHidden:   opts.IncludeHidden,
+		IncludeDocs:     opts.IncludeDocs,
+		IncludeVendored: opts.IncludeVendored,
+		Paths:           opts.Paths,
+	})
 	if w.Walk() {
 		return todoerr.ErrWalk
 	}

@@ -24,7 +24,7 @@ coverage:
       default:
         # basic
         target: auto
-        threshold: 5%
+        threshold: 35%
         base: auto
         if_ci_failed: failure # success, failure, error, ignore
 

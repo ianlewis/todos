@@ -17,13 +17,13 @@ package walker
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ianlewis/todos/internal/cmd/todos/options"
 	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 )
@@ -49,11 +49,13 @@ func newFixture(files map[string]string, types, paths []string, hidden, vendored
 		paths = []string{"."}
 	}
 
-	f.walker = New(&options.Options{
-		Output:    f.outFunc,
-		Error:     f.errFunc,
-		TODOTypes: types,
-		Paths:     paths,
+	f.walker = New(&Options{
+		TODOFunc:  f.outFunc,
+		ErrorFunc: f.errFunc,
+		Config: &todos.Config{
+			Types: types,
+		},
+		Paths: paths,
 
 		IncludeHidden:   hidden,
 		IncludeVendored: vendored,
@@ -68,16 +70,18 @@ type fixture struct {
 	walker *TODOWalker
 	wd     string
 	dir    string
-	out    []options.TODOOpt
+	out    []*TODORef
 	err    []error
 }
 
-func (f *fixture) outFunc(o options.TODOOpt) {
-	f.out = append(f.out, o)
+func (f *fixture) outFunc(r *TODORef) error {
+	f.out = append(f.out, r)
+	return nil
 }
 
-func (f *fixture) errFunc(err error) {
+func (f *fixture) errFunc(err error) error {
 	f.err = append(f.err, err)
+	return nil
 }
 
 func (f *fixture) cleanup() {
@@ -95,7 +99,7 @@ var testCases = []struct {
 	vendored bool
 	docs     bool
 
-	expected []options.TODOOpt
+	expected []*TODORef
 	err      bool
 }{
 	{
@@ -111,7 +115,7 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
 				TODO: &todos.TODO{
@@ -149,7 +153,7 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
 				TODO: &todos.TODO{
@@ -197,7 +201,7 @@ var testCases = []struct {
 				}`,
 		},
 		types: []string{"TODO"},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
 				TODO: &todos.TODO{
@@ -240,7 +244,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{"line_comments.go"},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
 				TODO: &todos.TODO{
@@ -284,7 +288,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{".line_comments.go"},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: ".line_comments.go",
 				TODO: &todos.TODO{
@@ -313,7 +317,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include hidden files.
 		hidden: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: ".line_comments.go",
 				TODO: &todos.TODO{
@@ -355,7 +359,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{filepath.Join("vendor", "line_comments.go")},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -383,7 +387,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include vendored files.
 		vendored: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -425,7 +429,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{filepath.Join("docs", "line_comments.go")},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("docs", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -453,7 +457,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include docs files.
 		docs: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("docs", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -497,7 +501,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{filepath.Join(".somepath")},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join(".somepath", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -526,7 +530,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include hidden files.
 		hidden: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join(".somepath", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -568,7 +572,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{filepath.Join("vendor", "pkgname")},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -596,7 +600,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include vendored files.
 		vendored: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -638,7 +642,7 @@ var testCases = []struct {
 		},
 		types: []string{"TODO"},
 		paths: []string{filepath.Join("docs", "somedir")},
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("docs", "somedir", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -666,7 +670,7 @@ var testCases = []struct {
 		types: []string{"TODO"},
 		// NOTE: Include docs files.
 		docs: true,
-		expected: []options.TODOOpt{
+		expected: []*TODORef{
 			{
 				FileName: filepath.Join("docs", "somedir", "line_comments.go"),
 				TODO: &todos.TODO{
@@ -675,6 +679,43 @@ var testCases = []struct {
 					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "single file traverse path multiple todos",
+		files: map[string]string{
+			"line_comments.go": `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					// TODO: some other task.
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some other task.",
+					Message:     "some other task.",
+					Line:        7,
+					CommentLine: 7,
 				},
 			},
 		},
@@ -695,7 +736,7 @@ func TestTODOWalker(t *testing.T) {
 			}
 
 			got, want := f.out, tc.expected
-			if diff := cmp.Diff(want, got, cmp.AllowUnexported(options.TODOOpt{})); diff != "" {
+			if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
 				t.Errorf("unexpected output (-want +got):\n%s", diff)
 			}
 		})
@@ -724,7 +765,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 	defer f.cleanup()
 
 	walker := f.walker
-	walker.paths = append(walker.paths, notExistsPath)
+	walker.options.Paths = append(walker.options.Paths, notExistsPath)
 	if got, want := walker.Walk(), true; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
 	}
@@ -736,7 +777,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		t.Errorf("unexpected error, got: %v, want: %v", got, want)
 	}
 
-	got, want := f.out, []options.TODOOpt{
+	got, want := f.out, []*TODORef{
 		{
 			FileName: "line_comments.go",
 			TODO: &todos.TODO{
@@ -748,7 +789,65 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 			},
 		},
 	}
-	if diff := cmp.Diff(want, got, cmp.AllowUnexported(options.TODOOpt{})); diff != "" {
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected output (-want +got):\n%s", diff)
+	}
+}
+
+func TestTODOWalker_DefaultOptions(t *testing.T) {
+	t.Parallel()
+
+	walker := New(nil)
+	got, want := walker.options.Config.Types, []string{"TODO"}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected config (-want +got):\n%s", diff)
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_StopEarly(t *testing.T) {
+	files := map[string]string{
+		"line_comments.go": `package foo
+			// package comment
+
+			// TODO is a function.
+			// TODO: some task.
+			func TODO() {
+				// TODO: some other task.
+				return // Random comment
+			}`,
+	}
+
+	f := newFixture(files, []string{"TODO"}, nil, false, false, false)
+	defer f.cleanup()
+
+	// Override the handler to cause it to stop early.
+	f.walker.options.TODOFunc = func(r *TODORef) error {
+		if err := f.outFunc(r); err != nil {
+			return err
+		}
+		return fs.SkipAll
+	}
+
+	if got, want := f.walker.Walk(), false; got != want {
+		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
+	}
+
+	// NOTE: there are two TODOs in the file but we only get one because we
+	// stopped early.
+	got, want := f.out, []*TODORef{
+		{
+			FileName: "line_comments.go",
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "// TODO: some task.",
+				Message:     "some task.",
+				Line:        5,
+				CommentLine: 5,
+			},
+		},
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
