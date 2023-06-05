@@ -152,7 +152,6 @@ func (t *TODOScanner) findMatch(c *scanner.Comment) *TODO {
 
 	match := t.lineMatch.FindAllStringSubmatch(c.Text, 1)
 	if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-
 		label := match[0][5]
 		if label == "" {
 			label = match[0][6]
