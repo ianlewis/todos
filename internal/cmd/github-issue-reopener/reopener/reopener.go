@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"github.com/google/go-github/v52/github"
-	"github.com/ianlewis/todos/internal/todos"
+	"github.com/ianlewis/todos/internal/walker"
 )
 
 // labelMatch is the regexp that matches the TODO label. It can be of the
@@ -34,13 +34,13 @@ import (
 // - 1234
 var labelMatch = regexp.MustCompile("((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)")
 
-// IssuesRef is a set of references to an issue.
-type IssuesRef struct {
+// IssueRef is a set of references to an issue.
+type IssueRef struct {
 	// ID is the issue ID.
 	ID int
 
 	// TODOs is a list of todos referencing this issue.
-	TODOs []*todos.TODO
+	TODOs []*walker.TODORef
 }
 
 // IssueReopener is reopens issues referenced by TODOs.
@@ -49,10 +49,17 @@ type IssueReopener struct {
 	owner  string
 	repo   string
 
+	dryRun bool
+
 	// issues is a local cache of issues.
 	issues struct {
 		sync.Mutex
 		cache map[int]*github.Issue
+	}
+
+	refs struct {
+		sync.Mutex
+		cache map[int]*IssueRef
 	}
 }
 
@@ -72,16 +79,15 @@ func New(ctx context.Context, owner, repo, token string) (*IssueReopener, error)
 	}, nil
 }
 
-// Reopen the issue if the todo references an issue on the repo. If not this is a no-op.
-func (r *IssueReopener) Reopen(ctx context.Context, fileName string, todo *todos.TODO) error {
-	match := labelMatch.FindStringSubmatch(todo.Label)
+// handleTODO implements walker.TODOHandler
+func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
+	match := labelMatch.FindStringSubmatch(ref.TODO.Label)
 	if len(match) == 0 {
 		return nil
 	}
 
-	owner := match[2]
-	repo := match[3]
-	if owner != r.owner || repo != r.repo {
+	// Check if the URL matches the owner and repo name.
+	if match[2] != r.owner || match[3] != r.repo {
 		return nil
 	}
 
@@ -91,21 +97,56 @@ func (r *IssueReopener) Reopen(ctx context.Context, fileName string, todo *todos
 		return nil
 	}
 
-	issue, err := r.loadIssue(ctx, id)
-	if err != nil {
-		return fmt.Errorf("loading issue: %w", err)
-	}
-	if issue.State == nil || *issue.State == "open" {
-		return nil
-	}
+	_ = r.addToRef(id, ref)
+	return nil
+}
 
-	comment := strings.Builder{}
-	fmt.Fprintln(&comment, "There are TODOs still referencing this issue:")
-	fmt.Fprintf(&comment,
-		"1. [%s:%d](https://github.com/%s/%s/blob/HEAD/%s#L%d): %s\n",
-		l.File, l.Line, b.owner, b.repo, l.File, l.Line, l.Comment)
-	fmt.Fprintf(&comment,
-		"\n\nSearch [TODO](https://github.com/%s/%s/search?q=%%22%s%%22)", b.owner, b.repo, todo.Issue)
+// ReopenAll reopens issues for all encountered todos and returns the last error encountered.
+func (r *IssueReopener) ReopenAll(ctx context.Context) error {
+	r.refs.Lock()
+	defer r.refs.Unlock()
+
+	for id, issueRef := range r.refs.cache {
+		issue, err := r.loadIssue(ctx, id)
+		if err != nil {
+			return fmt.Errorf("loading issue: %w", err)
+		}
+		if issue.State == nil || *issue.State == "open" {
+			// The issue is still open. Do nothing.
+			return nil
+		}
+
+		if r.dryRun {
+			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d\n", r.owner, r.repo, id)
+			return nil
+		}
+
+		fmt.Printf("Reopening https://github.com/%s/%s/issues/%d\n", r.owner, r.repo, id)
+
+		req := &github.IssueRequest{State: github.String("open")}
+		_, _, err = r.client.Issues.Edit(ctx, r.owner, r.repo, id, req)
+		if err != nil {
+			return fmt.Errorf("reopening issue %d: %v", id, err)
+		}
+
+		// TODO: Add label to reopened issue.
+
+		comment := strings.Builder{}
+		fmt.Fprintln(&comment, "There are TODOs referencing this issue:")
+		for i, todoRef := range issueRef.TODOs {
+			fmt.Fprintf(&comment,
+				"%d. [%s:%d](https://github.com/%s/%s/blob/HEAD/%s#L%d): %s\n",
+				i, todoRef.FileName, todoRef.TODO.Line, r.owner, r.repo, todoRef.FileName, todoRef.TODO.Line, todoRef.TODO.Message)
+		}
+
+		cmt := &github.IssueComment{
+			Body:      github.String(comment.String()),
+			Reactions: &github.Reactions{Confused: github.Int(1)},
+		}
+		if _, _, err := r.client.Issues.CreateComment(ctx, r.owner, r.repo, id, cmt); err != nil {
+			return fmt.Errorf("failed to add comment to issue %d: %v", id, err)
+		}
+	}
 
 	return nil
 }
@@ -119,10 +160,29 @@ func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, e
 		return issue, nil
 	}
 
-	issue, _, err := Get(ctx, r.owner, r.repo, id)
+	issue, _, err := r.client.Issues.Get(ctx, r.owner, r.repo, id)
 	if err != nil {
 		return issue, err
 	}
 	r.issues.cache[id] = issue
 	return issue, nil
+}
+
+// addToRef gets the IssueRef and adds the todo to it.
+func (r *IssueReopener) addToRef(id int, todo *walker.TODORef) *IssueRef {
+	r.refs.Lock()
+	defer r.refs.Unlock()
+
+	ref, ok := r.refs.cache[id]
+	if !ok {
+		ref := &IssueRef{
+			ID:    id,
+			TODOs: []*walker.TODORef{todo},
+		}
+		r.refs.cache[id] = ref
+	} else {
+		ref.TODOs = append(ref.TODOs, todo)
+	}
+
+	return ref
 }
