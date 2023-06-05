@@ -756,3 +756,13 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
+
+func TestTODOWalker_DefaultOptions(t *testing.T) {
+	t.Parallel()
+
+	walker := New(nil)
+	got, want := walker.options.Config.Types, []string{"TODO"}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected config (-want +got):\n%s", diff)
+	}
+}
