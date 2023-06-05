@@ -117,6 +117,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -154,6 +155,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        7,
 					CommentLine: 7,
 				},
@@ -163,6 +165,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "TODO: Some other task.",
+					Message:     "Some other task.",
 					Line:        6,
 					CommentLine: 4,
 				},
@@ -200,6 +203,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        7,
 					CommentLine: 7,
 				},
@@ -209,6 +213,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "TODO: Some other task.",
+					Message:     "Some other task.",
 					Line:        6,
 					CommentLine: 4,
 				},
@@ -241,6 +246,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -284,6 +290,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -312,6 +319,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -353,6 +361,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -380,6 +389,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -421,6 +431,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -448,6 +459,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -491,6 +503,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -519,6 +532,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -560,6 +574,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -587,6 +602,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -628,6 +644,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -655,6 +672,7 @@ var testCases = []struct {
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
+					Message:     "some task.",
 					Line:        5,
 					CommentLine: 5,
 				},
@@ -724,6 +742,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 			TODO: &todos.TODO{
 				Type:        "TODO",
 				Text:        "// TODO: some task.",
+				Message:     "some task.",
 				Line:        5,
 				CommentLine: 5,
 			},
