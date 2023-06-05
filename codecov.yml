@@ -18,13 +18,13 @@ coverage:
       default:
         # Don't allow code coverage to be reduced.
         target: auto
-        threshold: 35%
+        threshold: 5%
         if_ci_failed: failure # success, failure, error, ignore
     patch:
       default:
         # basic
         target: auto
-        threshold: 5%
+        threshold: 35%
         base: auto
         if_ci_failed: failure # success, failure, error, ignore
 
