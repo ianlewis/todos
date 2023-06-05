@@ -823,7 +823,9 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 
 	// Override the handler to cause it to stop early.
 	f.walker.options.TODOFunc = func(r *TODORef) error {
-		f.outFunc(r)
+		if err := f.outFunc(r); err != nil {
+			return err
+		}
 		return fs.SkipAll
 	}
 
