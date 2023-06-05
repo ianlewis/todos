@@ -256,10 +256,12 @@ func (w *TODOWalker) scanFile(f *os.File) error {
 	for t.Scan() {
 		todo := t.Next()
 		if w.options.TODOFunc != nil {
-			return w.options.TODOFunc(&TODORef{
+			if err := w.options.TODOFunc(&TODORef{
 				FileName: f.Name(),
 				TODO:     todo,
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
 	if err := t.Err(); err != nil {

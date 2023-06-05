@@ -17,13 +17,13 @@ package walker
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ianlewis/todos/internal/cmd/todos/options"
 	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 )
@@ -683,6 +683,43 @@ var testCases = []struct {
 			},
 		},
 	},
+	{
+		name: "single file traverse path multiple todos",
+		files: map[string]string{
+			"line_comments.go": `package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					// TODO: some other task.
+					return // Random comment
+				}`,
+		},
+		types: []string{"TODO"},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some other task.",
+					Message:     "some other task.",
+					Line:        7,
+					CommentLine: 7,
+				},
+			},
+		},
+	},
 }
 
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
@@ -752,7 +789,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 			},
 		},
 	}
-	if diff := cmp.Diff(want, got, cmp.AllowUnexported(options.TODOOpt{})); diff != "" {
+	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
@@ -764,5 +801,51 @@ func TestTODOWalker_DefaultOptions(t *testing.T) {
 	got, want := walker.options.Config.Types, []string{"TODO"}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("unexpected config (-want +got):\n%s", diff)
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_StopEarly(t *testing.T) {
+	files := map[string]string{
+		"line_comments.go": `package foo
+			// package comment
+
+			// TODO is a function.
+			// TODO: some task.
+			func TODO() {
+				// TODO: some other task.
+				return // Random comment
+			}`,
+	}
+
+	f := newFixture(files, []string{"TODO"}, nil, false, false, false)
+	defer f.cleanup()
+
+	// Override the handler to cause it to stop early.
+	f.walker.options.TODOFunc = func(r *TODORef) error {
+		f.outFunc(r)
+		return fs.SkipAll
+	}
+
+	if got, want := f.walker.Walk(), false; got != want {
+		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
+	}
+
+	// NOTE: there are two TODOs in the file but we only get one because we
+	// stopped early.
+	got, want := f.out, []*TODORef{
+		{
+			FileName: "line_comments.go",
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "// TODO: some task.",
+				Message:     "some task.",
+				Line:        5,
+				CommentLine: 5,
+			},
+		},
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
