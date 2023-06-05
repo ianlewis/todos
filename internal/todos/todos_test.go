@@ -270,6 +270,7 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "TODO(github.com/foo/bar/issues1)",
+					Label:       "github.com/foo/bar/issues1",
 					Line:        7,
 					CommentLine: 5,
 				},
@@ -300,6 +301,8 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Label:       "github.com/foo/bar/issues1",
+					Message:     "foo",
 					Line:        7,
 					CommentLine: 5,
 				},
@@ -344,6 +347,8 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Label:       "github.com/foo/bar/issues1",
+					Message:     "foo",
 					Line:        7,
 					CommentLine: 5,
 				},
