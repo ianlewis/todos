@@ -20,10 +20,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 
 	"sigs.k8s.io/release-utils/version"
 )
+
+var gitShaMatch = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 
 // ErrFlagParse is a flag parsing error.
 var ErrFlagParse = errors.New("parsing flags")
@@ -85,6 +88,11 @@ func New(args []string) (*Options, error) {
 	if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
 		o.RepoOwner = parts[0]
 		o.RepoName = parts[1]
+	}
+
+	// Validate the git sha
+	if !gitShaMatch.MatchString(o.Sha) {
+		return nil, fmt.Errorf("%w: invalid git digest", ErrFlagParse)
 	}
 
 	o.Token = os.Getenv("GITHUB_TOKEN")
