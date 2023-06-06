@@ -39,6 +39,9 @@ type Options struct {
 	// RepoName is the repository name.
 	RepoName string
 
+	// Sha of the current checkout.
+	Sha string
+
 	// Token is the GitHub Token.
 	Token string
 
@@ -54,19 +57,21 @@ type Options struct {
 
 // New parses the given command-line args and returns a new options instance.
 func New(args []string) (*Options, error) {
+	var o Options
+
 	// Set defaults from the environment.
 	repo := os.Getenv("GITHUB_REPOSITORY")
+	o.Sha = os.Getenv("GITHUB_SHA")
 
 	var tokenFile string
 
-	var o Options
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	fs.BoolVar(&o.Help, "help", false, "print help and exit")
 	fs.BoolVar(&o.Help, "h", false, "print help and exit")
 	fs.BoolVar(&o.Version, "version", false, "print version information and exit")
 	fs.StringVar(&repo, "repo", repo, "The GitHub repository of the form <owner>/<name>")
+	fs.StringVar(&o.Sha, "sha", o.Sha, "The SHA digest of the current checkout")
 	fs.StringVar(&tokenFile, "token-file", "", "File containing the GitHub token")
-
 	fs.BoolVar(&o.DryRun, "dry-run", false, "Perform a dry-run. Don't take any action.")
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", args[0])
@@ -106,7 +111,8 @@ Reopen GitHub issues that are still referenced by TODOs.
 
 OPTIONS:
   -h, --help                  Print help and exit.
-  --repo=OWNER/REPO           GitHub Repository.
+  --repo=OWNER/REPO           GitHub Repository. Defaults to GITHUB_REPOSITORY.
+  --sha=SHA1                  Git digest of current checkout. Defaults to GITHUB_SHA.
   --dry-run                   Perform a dry-run. Don't take any action.
   --token-file=FILE           File containing the GitHub token.
   --version                   Print version information and exit.

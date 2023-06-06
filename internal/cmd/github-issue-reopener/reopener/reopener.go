@@ -12,17 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// TODO(https://github.com/ianlewis/todos/issues/48): open issue
+// TODO(https://github.com/ianlewis/todos/issues/58): open issue
+
 package reopener
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/google/go-github/v52/github"
+
+	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
 	"github.com/ianlewis/todos/internal/walker"
 )
 
@@ -46,10 +52,8 @@ type IssueRef struct {
 // IssueReopener is reopens issues referenced by TODOs.
 type IssueReopener struct {
 	client *github.Client
-	owner  string
-	repo   string
 
-	dryRun bool
+	options *options.Options
 
 	// issues is a local cache of issues.
 	issues struct {
@@ -61,22 +65,49 @@ type IssueReopener struct {
 		sync.Mutex
 		cache map[int]*IssueRef
 	}
+
+	// err is the last issue encountered.
+	err error
 }
 
 // New returns a new IssueReopener
-func New(ctx context.Context, owner, repo, token string) (*IssueReopener, error) {
+func New(ctx context.Context, opts *options.Options) (*IssueReopener, error) {
 	var client *github.Client
-	if token == "" {
+	if opts.Token == "" {
 		client = github.NewClient(nil)
 	} else {
-		client = github.NewTokenClient(ctx, token)
+		client = github.NewTokenClient(ctx, opts.Token)
 	}
 
 	return &IssueReopener{
-		client: client,
-		owner:  owner,
-		repo:   repo,
+		client:  client,
+		options: opts,
 	}, nil
+}
+
+// ReopenAll scans the given paths for TODOs and reopens any closed issues it
+// finds. It returns the last error encountered.
+func (r *IssueReopener) ReopenAll(ctx context.Context) error {
+	w := walker.New(&walker.Options{
+		TODOFunc:  r.handleTODO,
+		ErrorFunc: r.handleErr,
+		// TODO: Support TODO config.
+		Config: nil,
+
+		// TODO: Support walker config.
+		IncludeHidden:   false,
+		IncludeVendored: false,
+		IncludeDocs:     false,
+		Paths:           r.options.Paths,
+	})
+
+	// NOTE: even if we encounter errors when walking the directory tree we
+	// will still continue on and try to reopen any issues we did find.
+	_ = w.Walk()
+
+	r.reopenAll(ctx)
+
+	return r.err
 }
 
 // handleTODO implements walker.TODOHandler
@@ -87,11 +118,11 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 	}
 
 	// Check if the URL matches the owner and repo name.
-	if match[2] != r.owner || match[3] != r.repo {
+	if match[3] != r.options.RepoOwner || match[4] != r.options.RepoName {
 		return nil
 	}
 
-	id, err := strconv.Atoi(match[4])
+	id, err := strconv.Atoi(match[5])
 	if err != nil {
 		// issue is not a number.
 		return nil
@@ -101,54 +132,80 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 	return nil
 }
 
-// ReopenAll reopens issues for all encountered todos and returns the last error encountered.
-func (r *IssueReopener) ReopenAll(ctx context.Context) error {
+// handleErr implements walker.ErrorHandler
+func (r *IssueReopener) handleErr(err error) error {
+	r.err = err
+	fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+	return nil
+}
+
+// reopenAll reopens issues for all encountered todos.
+func (r *IssueReopener) reopenAll(ctx context.Context) {
 	r.refs.Lock()
 	defer r.refs.Unlock()
 
 	for id, issueRef := range r.refs.cache {
 		issue, err := r.loadIssue(ctx, id)
 		if err != nil {
-			return fmt.Errorf("loading issue: %w", err)
+			err = fmt.Errorf("loading issue %d: %w", id, err)
+			if herr := r.handleErr(err); herr != nil {
+				return
+			}
+			continue
 		}
 		if issue.State == nil || *issue.State == "open" {
 			// The issue is still open. Do nothing.
-			return nil
+			continue
 		}
 
-		if r.dryRun {
-			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d\n", r.owner, r.repo, id)
-			return nil
+		if r.options.DryRun {
+			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d\n", r.options.RepoOwner, r.options.RepoName, id)
+			continue
 		}
 
-		fmt.Printf("Reopening https://github.com/%s/%s/issues/%d\n", r.owner, r.repo, id)
+		fmt.Printf("Reopening https://github.com/%s/%s/issues/%d\n", r.options.RepoOwner, r.options.RepoName, id)
 
 		req := &github.IssueRequest{State: github.String("open")}
-		_, _, err = r.client.Issues.Edit(ctx, r.owner, r.repo, id, req)
+		_, _, err = r.client.Issues.Edit(ctx, r.options.RepoOwner, r.options.RepoName, id, req)
 		if err != nil {
-			return fmt.Errorf("reopening issue %d: %v", id, err)
+			err = fmt.Errorf("reopening issue %d: %w", id, err)
+			if herr := r.handleErr(err); herr != nil {
+				return
+			}
+			continue
 		}
-
-		// TODO: Add label to reopened issue.
 
 		comment := strings.Builder{}
 		fmt.Fprintln(&comment, "There are TODOs referencing this issue:")
 		for i, todoRef := range issueRef.TODOs {
-			fmt.Fprintf(&comment,
-				"%d. [%s:%d](https://github.com/%s/%s/blob/HEAD/%s#L%d): %s\n",
-				i, todoRef.FileName, todoRef.TODO.Line, r.owner, r.repo, todoRef.FileName, todoRef.TODO.Line, todoRef.TODO.Message)
+			fmt.Fprintf(
+				&comment,
+				// TODO: Reference at the current commit.
+				"%d. [%s:%d](https://github.com/%s/%s/blob/%s/%s#L%d): %s\n",
+				i+1,
+				todoRef.FileName,
+				todoRef.TODO.Line,
+				r.options.RepoOwner,
+				r.options.RepoName,
+				r.options.Sha,
+				todoRef.FileName,
+				todoRef.TODO.Line,
+				todoRef.TODO.Message,
+			)
 		}
 
 		cmt := &github.IssueComment{
 			Body:      github.String(comment.String()),
 			Reactions: &github.Reactions{Confused: github.Int(1)},
 		}
-		if _, _, err := r.client.Issues.CreateComment(ctx, r.owner, r.repo, id, cmt); err != nil {
-			return fmt.Errorf("failed to add comment to issue %d: %v", id, err)
+		if _, _, err := r.client.Issues.CreateComment(ctx, r.options.RepoOwner, r.options.RepoName, id, cmt); err != nil {
+			err = fmt.Errorf("posting comment: %d: %w", id, err)
+			if herr := r.handleErr(err); herr != nil {
+				return
+			}
+			continue
 		}
 	}
-
-	return nil
 }
 
 // loadIssue gets the issue by number.
@@ -156,11 +213,15 @@ func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, e
 	r.issues.Lock()
 	defer r.issues.Unlock()
 
+	if r.issues.cache == nil {
+		r.issues.cache = make(map[int]*github.Issue)
+	}
+
 	if issue, ok := r.issues.cache[id]; ok {
 		return issue, nil
 	}
 
-	issue, _, err := r.client.Issues.Get(ctx, r.owner, r.repo, id)
+	issue, _, err := r.client.Issues.Get(ctx, r.options.RepoOwner, r.options.RepoName, id)
 	if err != nil {
 		return issue, err
 	}
@@ -172,6 +233,10 @@ func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, e
 func (r *IssueReopener) addToRef(id int, todo *walker.TODORef) *IssueRef {
 	r.refs.Lock()
 	defer r.refs.Unlock()
+
+	if r.refs.cache == nil {
+		r.refs.cache = make(map[int]*IssueRef)
+	}
 
 	ref, ok := r.refs.cache[id]
 	if !ok {

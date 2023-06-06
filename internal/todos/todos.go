@@ -42,6 +42,16 @@ type TODO struct {
 	CommentLine int
 }
 
+// DefaultTypes is the default set of TODO types.
+var DefaultTypes = []string{
+	"TODO",
+	"FIXME",
+	"BUG",
+	"HACK",
+	"XXX",
+	"COMBAK",
+}
+
 // Config is configuration for the TODOScanner.
 type Config struct {
 	Types []string
@@ -85,6 +95,12 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	commentStartMatch := strings.Join(commentStarts, "|")
 
 	multiStartMatch := regexp.QuoteMeta(sConfig.MultilineCommentStart)
+
+	if config == nil {
+		config = &Config{
+			Types: DefaultTypes,
+		}
+	}
 
 	var quotedTypes []string
 	for _, tp := range config.Types {
