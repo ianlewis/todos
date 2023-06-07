@@ -88,6 +88,8 @@ func New(args []string) (*Options, error) {
 	if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
 		o.RepoOwner = parts[0]
 		o.RepoName = parts[1]
+	} else {
+		return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
 	}
 
 	// Validate the git sha
