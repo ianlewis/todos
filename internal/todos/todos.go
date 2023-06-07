@@ -21,6 +21,16 @@ import (
 	"github.com/ianlewis/todos/internal/scanner"
 )
 
+// DefaultTypes is the default set of TODO types.
+var DefaultTypes = []string{
+	"TODO",
+	"FIXME",
+	"BUG",
+	"HACK",
+	"XXX",
+	"COMBAK",
+}
+
 // TODO is a todo comment.
 type TODO struct {
 	// Type is the todo type, such as "FIXME", "BUG", etc.
@@ -85,6 +95,12 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	commentStartMatch := strings.Join(commentStarts, "|")
 
 	multiStartMatch := regexp.QuoteMeta(sConfig.MultilineCommentStart)
+
+	if config == nil {
+		config = &Config{
+			Types: DefaultTypes,
+		}
+	}
 
 	var quotedTypes []string
 	for _, tp := range config.Types {
