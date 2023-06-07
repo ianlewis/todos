@@ -202,9 +202,6 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	}
 
 	if hdn && !w.options.IncludeHidden {
-		if herr := w.handleErr(path, err); herr != nil {
-			return herr
-		}
 		// Skip hidden files.
 		return fs.SkipDir
 	}
