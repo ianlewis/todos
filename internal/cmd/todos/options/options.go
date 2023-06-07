@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/release-utils/version"
 
 	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
+	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
 
@@ -101,7 +102,7 @@ func New(args []string) (*Options, error) {
 	fs.BoolVar(&o.IncludeHidden, "include-hidden", false, "include hidden files and directories")
 	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
-	fs.StringVar(&todoTypes, "todo-types", "TODO,FIXME,BUG,HACK,XXX,COMBAK", "comma separated list of TODO types")
+	fs.StringVar(&todoTypes, "todo-types", strings.Join(todos.DefaultTypes, ","), "comma separated list of TODO types")
 	fs.StringVar(&outType, "o", "default", "output type (default, github)")
 	fs.StringVar(&outType, "output", "default", "output type (default, github)")
 	fs.Usage = func() {
