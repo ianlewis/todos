@@ -18,6 +18,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -88,6 +89,8 @@ type Options struct {
 
 // New parses the given command-line args and returns a new options instance.
 func New(args []string) (*Options, error) {
+	baseCmd := filepath.Base(args[0])
+
 	var outType string
 	var todoTypes string
 
@@ -103,8 +106,8 @@ func New(args []string) (*Options, error) {
 	fs.StringVar(&outType, "o", "default", "output type (default, github)")
 	fs.StringVar(&outType, "output", "default", "output type (default, github)")
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", os.Args[0])
-		fmt.Fprintf(fs.Output(), "Try '%s --help' for more information.\n", os.Args[0])
+		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", baseCmd)
+		fmt.Fprintf(fs.Output(), "Try '%s --help' for more information.\n", baseCmd)
 	}
 
 	if err := fs.Parse(args[1:]); err != nil {
@@ -117,7 +120,7 @@ func New(args []string) (*Options, error) {
 	}
 	o.Output = outFunc
 	o.Error = func(err error) error {
-		todoerr.PrintError(args[0], err)
+		todoerr.PrintError(baseCmd, err)
 		return nil
 	}
 
@@ -146,7 +149,7 @@ OPTIONS:
   --todo-types=TYPES          Comma separated list of TODO types.
   -o, --output=TYPE           Output type (default, github).
   --version                   Print version information and exit.
-`, os.Args[0])
+`, filepath.Base(os.Args[0]))
 }
 
 // PrintVersion prints version information.
@@ -157,5 +160,5 @@ func (o *Options) PrintVersion() {
 Copyright (c) Google LLC
 License Apache License Version 2.0
 
-%s`, os.Args[0], versionInfo.GitVersion, versionInfo.String())
+%s`, filepath.Base(os.Args[0]), versionInfo.GitVersion, versionInfo.String())
 }

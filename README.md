@@ -61,20 +61,28 @@ There are a few ways to format a TODO comment with metadata.
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
 finds.
 
+```shell
+$ todos
+internal/scanner/config.go:134:// TODO: Perl supports strings with any delimiter.
+internal/walker/walker.go:213:// TODO(github.com/ianlewis/linguist/issues/1): Update when linguist supports Windows.
+```
+
 ### Install the todos CLI
 
 #### Install from source
 
-Install the latest HEAD verison using `go install`:
+Install the latest version using `go install`:
 
 ```shell
-go install github.com/ianlewis/todos
+go install github.com/ianlewis/todos/internal/cmd/todos
 ```
 
 ## Development
 
 ### Running tests
 
+You can run unit tests using the `unit-test` make target:
+
 ```shell
-go test ./...
+make unit-test
 ```
