@@ -93,13 +93,16 @@ func New(args []string) (*Options, error) {
 
 	var outType string
 	var todoTypes string
+	var excludeHidden bool
 
 	var o Options
 	fs := flag.NewFlagSet("todos", flag.ExitOnError)
 	fs.BoolVar(&o.Help, "help", false, "print help and exit")
 	fs.BoolVar(&o.Help, "h", false, "print help and exit")
 	fs.BoolVar(&o.Version, "version", false, "print version information and exit")
-	fs.BoolVar(&o.IncludeHidden, "include-hidden", false, "include hidden files and directories")
+
+	fs.BoolVar(&excludeHidden, "exclude-hidden", false, "exclude hidden files and directories")
+
 	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
 	fs.StringVar(&todoTypes, "todo-types", strings.Join(todos.DefaultTypes, ","), "comma separated list of TODO types")
@@ -113,6 +116,8 @@ func New(args []string) (*Options, error) {
 	if err := fs.Parse(args[1:]); err != nil {
 		return nil, fmt.Errorf("%w: %w", todoerr.ErrFlagParse, err)
 	}
+
+	o.IncludeHidden = !excludeHidden
 
 	outFunc, ok := outTypes[outType]
 	if !ok {
@@ -143,7 +148,7 @@ Search for TODOS in code.
 
 OPTIONS:
   -h, --help                  Print help and exit.
-  --include-hidden            Include hidden files and directories.
+  --exclude-hidden            Exclude hidden files and directories.
   --include-docs              Include documentation.
   --include-vendored          Include vendored directories.
   --todo-types=TYPES          Comma separated list of TODO types.
