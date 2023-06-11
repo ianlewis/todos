@@ -89,16 +89,18 @@ func New(args []string) (*Options, error) {
 		o.RepoOwner = parts[0]
 		o.RepoName = parts[1]
 	} else {
-		return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
+		if !o.Help && !o.Version {
+			return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
+		}
 	}
 
 	// Validate the git sha
-	if !gitShaMatch.MatchString(o.Sha) {
+	if !gitShaMatch.MatchString(o.Sha) && !o.Help && !o.Version {
 		return nil, fmt.Errorf("%w: invalid git digest", ErrFlagParse)
 	}
 
 	o.Token = os.Getenv("GITHUB_TOKEN")
-	if tokenFile != "" {
+	if tokenFile != "" && !o.Help && !o.Version {
 		bytes, err := ioutil.ReadFile(tokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrFlagParse, err)

@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TODO(https://github.com/ianlewis/todos/issues/48): open issue
-// TODO(https://github.com/ianlewis/todos/issues/58): open issue
-
 package reopener
 
 import (
@@ -89,7 +86,7 @@ func New(ctx context.Context, opts *options.Options) (*IssueReopener, error) {
 
 // ReopenAll scans the given paths for TODOs and reopens any closed issues it
 // finds. It returns the last error encountered.
-func (r *IssueReopener) ReopenAll(ctx context.Context) error {
+func (r *IssueReopener) ReopenAll(ctx context.Context) bool {
 	w := walker.New(&walker.Options{
 		TODOFunc:  r.handleTODO,
 		ErrorFunc: r.handleErr,
@@ -108,7 +105,7 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) error {
 
 	r.reopenAll(ctx)
 
-	return r.err
+	return r.err != nil
 }
 
 // handleTODO implements walker.TODOHandler
@@ -154,13 +151,13 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 			}
 			continue
 		}
-		if issue.State == nil || *issue.State == "open" {
+		if mustString(issue.State) == "open" {
 			// The issue is still open. Do nothing.
 			continue
 		}
 
 		if r.options.DryRun {
-			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d\n", r.options.RepoOwner, r.options.RepoName, id)
+			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d : %s\n", r.options.RepoOwner, r.options.RepoName, id, mustString(issue.Title))
 			continue
 		}
 
@@ -181,7 +178,6 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 		for i, todoRef := range issueRef.TODOs {
 			fmt.Fprintf(
 				&comment,
-				// TODO: Reference at the current commit.
 				"%d. [%s:%d](https://github.com/%s/%s/blob/%s/%s#L%d): %s\n",
 				i+1,
 				todoRef.FileName,

@@ -88,7 +88,10 @@ func Run(opts *options.Options) error {
 	if err != nil {
 		return err
 	}
-	return r.ReopenAll(ctx)
+	if r.ReopenAll(ctx) {
+		return ErrReopen
+	}
+	return nil
 }
 
 func main() {
