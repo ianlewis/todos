@@ -52,16 +52,6 @@ type TODO struct {
 	CommentLine int
 }
 
-// DefaultTypes is the default set of TODO types.
-var DefaultTypes = []string{
-	"TODO",
-	"FIXME",
-	"BUG",
-	"HACK",
-	"XXX",
-	"COMBAK",
-}
-
 // Config is configuration for the TODOScanner.
 type Config struct {
 	Types []string

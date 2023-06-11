@@ -99,7 +99,6 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) error {
 		// TODO: Support walker config.
 		IncludeHidden:   false,
 		IncludeVendored: false,
-		IncludeDocs:     false,
 		Paths:           r.options.Paths,
 	})
 
