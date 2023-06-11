@@ -69,8 +69,8 @@ type IssueReopener struct {
 	err error
 }
 
-// New returns a new IssueReopener
-func New(ctx context.Context, opts *options.Options) (*IssueReopener, error) {
+// New returns a new IssueReopener.
+func New(ctx context.Context, opts *options.Options) *IssueReopener {
 	var client *github.Client
 	if opts.Token == "" {
 		client = github.NewClient(nil)
@@ -81,7 +81,7 @@ func New(ctx context.Context, opts *options.Options) (*IssueReopener, error) {
 	return &IssueReopener{
 		client:  client,
 		options: opts,
-	}, nil
+	}
 }
 
 // ReopenAll scans the given paths for TODOs and reopens any closed issues it
@@ -108,7 +108,7 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) bool {
 	return r.err != nil
 }
 
-// handleTODO implements walker.TODOHandler
+// handleTODO implements walker.TODOHandler.
 func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 	match := labelMatch.FindStringSubmatch(ref.TODO.Label)
 	if len(match) == 0 {
@@ -130,7 +130,7 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 	return nil
 }
 
-// handleErr implements walker.ErrorHandler
+// handleErr implements walker.ErrorHandler.
 func (r *IssueReopener) handleErr(err error) error {
 	r.err = err
 	fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
@@ -157,7 +157,13 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 		}
 
 		if r.options.DryRun {
-			fmt.Printf("[dry-run] Reopening https://github.com/%s/%s/issues/%d : %s\n", r.options.RepoOwner, r.options.RepoName, id, mustString(issue.Title))
+			fmt.Printf(
+				"[dry-run] Reopening https://github.com/%s/%s/issues/%d : %s\n",
+				r.options.RepoOwner,
+				r.options.RepoName,
+				id,
+				mustString(issue.Title),
+			)
 			continue
 		}
 
@@ -220,7 +226,7 @@ func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, e
 
 	issue, _, err := r.client.Issues.Get(ctx, r.options.RepoOwner, r.options.RepoName, id)
 	if err != nil {
-		return issue, err
+		return issue, fmt.Errorf("getting issue: %w", err)
 	}
 	r.issues.cache[id] = issue
 	return issue, nil
@@ -237,7 +243,7 @@ func (r *IssueReopener) addToRef(id int, todo *walker.TODORef) *IssueRef {
 
 	ref, ok := r.refs.cache[id]
 	if !ok {
-		ref := &IssueRef{
+		ref = &IssueRef{
 			ID:    id,
 			TODOs: []*walker.TODORef{todo},
 		}

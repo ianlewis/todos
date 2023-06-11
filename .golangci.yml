@@ -92,6 +92,7 @@ linters-settings:
           - "github.com/ianlewis/todos"
           - "github.com/ianlewis/linguist"
           - "github.com/saintfish/chardet"
+          - "github.com/google/go-github"
           - "sigs.k8s.io/release-utils/version"
         deny:
           - pkg: "ianlewis/todos/internal/testutils"

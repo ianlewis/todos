@@ -84,10 +84,7 @@ func Run(opts *options.Options) error {
 
 	// TODO: Support timeouts etc.
 	ctx := context.Background()
-	r, err := reopener.New(ctx, opts)
-	if err != nil {
-		return err
-	}
+	r := reopener.New(ctx, opts)
 	if r.ReopenAll(ctx) {
 		return ErrReopen
 	}

@@ -18,7 +18,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -88,10 +87,8 @@ func New(args []string) (*Options, error) {
 	if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
 		o.RepoOwner = parts[0]
 		o.RepoName = parts[1]
-	} else {
-		if !o.Help && !o.Version {
-			return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
-		}
+	} else if !o.Help && !o.Version {
+		return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
 	}
 
 	// Validate the git sha
@@ -101,7 +98,7 @@ func New(args []string) (*Options, error) {
 
 	o.Token = os.Getenv("GITHUB_TOKEN")
 	if tokenFile != "" && !o.Help && !o.Version {
-		bytes, err := ioutil.ReadFile(tokenFile)
+		bytes, err := os.ReadFile(tokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrFlagParse, err)
 		}
