@@ -71,9 +71,6 @@ type Options struct {
 	// IncludeHidden indicates including hidden files & directories.
 	IncludeHidden bool
 
-	// IncludeDocs indicates including documentation files.
-	IncludeDocs bool
-
 	// IncludeVendored indicates including vendored directories.
 	IncludeVendored bool
 
@@ -103,7 +100,6 @@ func New(args []string) (*Options, error) {
 
 	fs.BoolVar(&excludeHidden, "exclude-hidden", false, "exclude hidden files and directories")
 
-	fs.BoolVar(&o.IncludeDocs, "include-docs", false, "include documentation")
 	fs.BoolVar(&o.IncludeVendored, "include-vendored", false, "include vendored directories")
 	fs.StringVar(&todoTypes, "todo-types", strings.Join(todos.DefaultTypes, ","), "comma separated list of TODO types")
 	fs.StringVar(&outType, "o", "default", "output type (default, github)")
@@ -149,7 +145,6 @@ Search for TODOS in code.
 OPTIONS:
   -h, --help                  Print help and exit.
   --exclude-hidden            Exclude hidden files and directories.
-  --include-docs              Include documentation.
   --include-vendored          Include vendored directories.
   --todo-types=TYPES          Comma separated list of TODO types.
   -o, --output=TYPE           Output type (default, github).
