@@ -63,6 +63,43 @@ func TestTODOScanner(t *testing.T) {
 		expected []*TODO
 		errCheck func(error)
 	}{
+		"default_types.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+					{
+						Text: "// FIXME",
+						Line: 10,
+					},
+				},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO",
+					Line:        5,
+					CommentLine: 5,
+				},
+				{
+					Type:        "FIXME",
+					Text:        "// FIXME",
+					Line:        10,
+					CommentLine: 10,
+				},
+			},
+		},
+
 		"line_comments_basic.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{

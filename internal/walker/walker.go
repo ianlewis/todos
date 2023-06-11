@@ -55,10 +55,6 @@ type Options struct {
 	// paths are always processed if there are specified explicitly in `paths`.
 	IncludeHidden bool
 
-	// IncludeDocs indicates whether docs paths should be processed. Docs
-	// paths are always processed if there are specified explicitly in `paths`.
-	IncludeDocs bool
-
 	// IncludeVendored indicates whether vendored paths should be processed. Vendored
 	// paths are always processed if there are specified explicitly in `paths`.
 	IncludeVendored bool
@@ -215,9 +211,6 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		fullPath += "/"
 	}
 	if !w.options.IncludeVendored && linguist.IsVendored(fullPath) {
-		return fs.SkipDir
-	}
-	if !w.options.IncludeDocs && linguist.IsDocumentation(fullPath) {
 		return fs.SkipDir
 	}
 	return nil

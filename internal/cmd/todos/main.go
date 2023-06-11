@@ -46,7 +46,6 @@ func Run(opts *options.Options) error {
 		TODOFunc:        opts.Output,
 		ErrorFunc:       opts.Error,
 		IncludeHidden:   opts.IncludeHidden,
-		IncludeDocs:     opts.IncludeDocs,
 		IncludeVendored: opts.IncludeVendored,
 		Paths:           opts.Paths,
 	})
