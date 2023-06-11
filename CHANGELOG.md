@@ -10,10 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed in X.Y.Z
 
 - Leading whitespaces is now trimmed from TODOS in multi-line comments.
+- The `--include-hidden` option was replaced with the `--exclude-hidden`
+  option and including hidden files was made the default.
 
 ## Fixed in X.Y.Z
 
 - Hidden, Vendored, and Docs files are now properly excluded by default.
+
+## Removed in X.Y.Z
+
+- The `--include-docs` option was removed.
 
 ## [0.1.0] - 2023-05-24
 
