@@ -21,6 +21,8 @@ func strP(s string) *string {
 }
 
 func TestMustString(t *testing.T) {
+	t.Parallel()
+
 	testCases := map[string]struct {
 		strP     *string
 		expected string
@@ -42,6 +44,8 @@ func TestMustString(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			if got, want := MustString(tc.strP), tc.expected; got != want {
 				t.Errorf("unexpected value, got: %q, want: %q", got, want)
 			}
@@ -50,6 +54,8 @@ func TestMustString(t *testing.T) {
 }
 
 func TestFirstString(t *testing.T) {
+	t.Parallel()
+
 	testCases := map[string]struct {
 		str      []string
 		expected string
@@ -75,6 +81,8 @@ func TestFirstString(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			if got, want := FirstString(tc.str...), tc.expected; got != want {
 				t.Errorf("unexpected value, got: %q, want: %q", got, want)
 			}
