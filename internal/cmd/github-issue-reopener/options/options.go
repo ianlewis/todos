@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 	"sigs.k8s.io/release-utils/version"
 )
 
@@ -96,7 +97,7 @@ func New(args []string) (*Options, error) {
 		return nil, fmt.Errorf("%w: invalid git digest", ErrFlagParse)
 	}
 
-	o.Token = os.Getenv("GITHUB_TOKEN")
+	o.Token = util.FirstString(os.Getenv("GH_TOKEN"), os.Getenv("GITHUB_TOKEN"))
 	if tokenFile != "" && !o.Help && !o.Version {
 		bytes, err := os.ReadFile(tokenFile)
 		if err != nil {
@@ -123,7 +124,7 @@ OPTIONS:
   --repo=OWNER/REPO           GitHub Repository. Defaults to GITHUB_REPOSITORY.
   --sha=SHA1                  Git digest of current checkout. Defaults to GITHUB_SHA.
   --dry-run                   Perform a dry-run. Don't take any action.
-  --token-file=FILE           File containing the GitHub token.
+  --token-file=FILE           File containing the GitHub token. Defaults to GH_TOKEN,GITHUB_TOKEN.
   --version                   Print version information and exit.
 `, os.Args[0])
 }

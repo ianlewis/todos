@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-github/v52/github"
 
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
+	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 	"github.com/ianlewis/todos/internal/walker"
 )
 
@@ -151,7 +152,7 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 			}
 			continue
 		}
-		if mustString(issue.State) == "open" {
+		if util.MustString(issue.State) == "open" {
 			// The issue is still open. Do nothing.
 			continue
 		}
@@ -162,7 +163,7 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 				r.options.RepoOwner,
 				r.options.RepoName,
 				id,
-				mustString(issue.Title),
+				util.MustString(issue.Title),
 			)
 			continue
 		}

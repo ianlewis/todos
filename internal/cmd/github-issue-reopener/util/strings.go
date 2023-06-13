@@ -12,11 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package reopener
+package util
 
-func mustString(s *string) string {
+// MustString returns the dereferenced string or "" if nil.
+func MustString(s *string) string {
 	if s != nil {
 		return *s
+	}
+	return ""
+}
+
+// FirstString returns the first non-empty string. Return "" if all strings are
+// empty.
+func FirstString(s ...string) string {
+	for _, ss := range s {
+		if ss != "" {
+			return ss
+		}
 	}
 	return ""
 }
