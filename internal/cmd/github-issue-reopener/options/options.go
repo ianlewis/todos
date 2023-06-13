@@ -22,8 +22,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 	"sigs.k8s.io/release-utils/version"
+
+	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 )
 
 var gitShaMatch = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
