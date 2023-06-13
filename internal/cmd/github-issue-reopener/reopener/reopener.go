@@ -116,7 +116,7 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 	}
 
 	// Check if the URL matches the owner and repo name.
-	if match[3] != r.options.RepoOwner || match[4] != r.options.RepoName {
+	if (match[3] != "" || match[4] != "") && (match[3] != r.options.RepoOwner || match[4] != r.options.RepoName) {
 		return nil
 	}
 
