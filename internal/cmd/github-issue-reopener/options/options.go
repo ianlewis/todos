@@ -21,6 +21,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"sigs.k8s.io/release-utils/version"
 
@@ -49,6 +50,9 @@ type Options struct {
 	// Token is the GitHub Token.
 	Token string
 
+	// Timeout is a timeout for the entire operation.
+	Timeout time.Duration
+
 	// Version indicates the command should print version info and exit.
 	Version bool
 
@@ -75,6 +79,7 @@ func New(args []string) (*Options, error) {
 	fs.BoolVar(&o.Version, "version", false, "print version information and exit")
 	fs.StringVar(&repo, "repo", repo, "The GitHub repository of the form <owner>/<name>")
 	fs.StringVar(&o.Sha, "sha", o.Sha, "The SHA digest of the current checkout")
+	fs.DurationVar(&o.Timeout, "timeout", 0, "Timeout for the scanning the code.")
 	fs.StringVar(&tokenFile, "token-file", "", "File containing the GitHub token")
 	fs.BoolVar(&o.DryRun, "dry-run", false, "Perform a dry-run. Don't take any action.")
 	fs.Usage = func() {
@@ -130,6 +135,7 @@ OPTIONS:
   --repo=OWNER/REPO           GitHub Repository. Defaults to GITHUB_REPOSITORY.
   --sha=SHA1                  Git digest of current checkout. Defaults to GITHUB_SHA.
   --dry-run                   Perform a dry-run. Don't take any action.
+  --timeout=DURATION          Timeout for the entire scan (e.g. 10s, 5m, etc.).
   --token-file=FILE           File containing the GitHub token. Defaults to GH_TOKEN,GITHUB_TOKEN.
   --version                   Print version information and exit.
 `, os.Args[0])

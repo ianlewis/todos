@@ -16,6 +16,7 @@ package reopener
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -135,6 +136,9 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 func (r *IssueReopener) handleErr(err error) error {
 	r.err = err
 	fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
 	return nil
 }
 

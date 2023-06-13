@@ -82,8 +82,12 @@ func Run(opts *options.Options) error {
 		return nil
 	}
 
-	// TODO: Support timeouts etc.
 	ctx := context.Background()
+	if opts.Timeout != 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(context.Background(), opts.Timeout)
+		defer cancel()
+	}
 	r := reopener.New(ctx, opts)
 	if r.ReopenAll(ctx) {
 		return ErrReopen
