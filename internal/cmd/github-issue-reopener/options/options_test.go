@@ -37,7 +37,7 @@ func merge(dst, src map[string]string) map[string]string {
 	return newDst
 }
 
-//nolint:paralleltest // fixture uses Getenv/Setenv and cannot be run in parallel.
+//nolint:paralleltest // Test uses t.Setenv and cannot be run in parallel.
 func TestNew(t *testing.T) {
 	defaultOwner := "ianlewis"
 	defaultRepo := "todos"
