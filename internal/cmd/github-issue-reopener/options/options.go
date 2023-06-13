@@ -86,20 +86,25 @@ func New(args []string) (*Options, error) {
 		return nil, fmt.Errorf("%w: %w", ErrFlagParse, err)
 	}
 
+	// Return early to support the --help and --version flags.
+	if o.Help || o.Version {
+		return &o, nil
+	}
+
 	if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 {
 		o.RepoOwner = parts[0]
 		o.RepoName = parts[1]
-	} else if !o.Help && !o.Version {
+	} else {
 		return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
 	}
 
 	// Validate the git sha
-	if !gitShaMatch.MatchString(o.Sha) && !o.Help && !o.Version {
+	if !gitShaMatch.MatchString(o.Sha) {
 		return nil, fmt.Errorf("%w: invalid git digest", ErrFlagParse)
 	}
 
 	o.Token = util.FirstString(os.Getenv("GH_TOKEN"), os.Getenv("GITHUB_TOKEN"))
-	if tokenFile != "" && !o.Help && !o.Version {
+	if tokenFile != "" {
 		bytes, err := os.ReadFile(tokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrFlagParse, err)
