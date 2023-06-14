@@ -126,6 +126,8 @@ func Test_labelMatch(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			if got, want := labelMatch.FindStringSubmatch(tc.label), tc.match; !matchEqual(got, want) {
 				t.Fatalf("unexpected match (-want +got):\n%s", cmp.Diff(want, got))
 			}
@@ -238,6 +240,8 @@ func Test_handleTODO(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			r := New(context.Background(), &options.Options{
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
