@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -65,15 +66,16 @@ type Options struct {
 
 // New parses the given command-line args and returns a new options instance.
 func New(args []string) (*Options, error) {
-	var o Options
+	baseCmd := filepath.Base(args[0])
 
 	// Set defaults from the environment.
+	var o Options
 	repo := os.Getenv("GITHUB_REPOSITORY")
 	o.Sha = os.Getenv("GITHUB_SHA")
 
 	var tokenFile string
 
-	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	fs := flag.NewFlagSet(baseCmd, flag.ContinueOnError)
 	fs.BoolVar(&o.Help, "help", false, "print help and exit")
 	fs.BoolVar(&o.Help, "h", false, "print help and exit")
 	fs.BoolVar(&o.Version, "version", false, "print version information and exit")
@@ -83,8 +85,8 @@ func New(args []string) (*Options, error) {
 	fs.StringVar(&tokenFile, "token-file", "", "File containing the GitHub token")
 	fs.BoolVar(&o.DryRun, "dry-run", false, "Perform a dry-run. Don't take any action.")
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", args[0])
-		fmt.Fprintf(fs.Output(), "Try '%s --help' for more information.\n", args[0])
+		fmt.Fprintf(fs.Output(), "Usage: %s [OPTION]... [PATH]...\n", baseCmd)
+		fmt.Fprintf(fs.Output(), "Try '%s --help' for more information.\n", baseCmd)
 	}
 
 	if err := fs.Parse(args[1:]); err != nil {
@@ -138,7 +140,7 @@ OPTIONS:
   --timeout=DURATION          Timeout for the entire scan (e.g. 10s, 5m, etc.).
   --token-file=FILE           File containing the GitHub token. Defaults to GH_TOKEN,GITHUB_TOKEN.
   --version                   Print version information and exit.
-`, os.Args[0])
+`, filepath.Base(os.Args[0]))
 }
 
 // PrintVersion prints version information.
@@ -149,5 +151,5 @@ func (o *Options) PrintVersion() {
 Copyright (c) Google LLC
 License Apache License Version 2.0
 
-%s`, os.Args[0], versionInfo.GitVersion, versionInfo.String())
+%s`, filepath.Base(os.Args[0]), versionInfo.GitVersion, versionInfo.String())
 }

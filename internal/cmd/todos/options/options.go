@@ -93,7 +93,7 @@ func New(args []string) (*Options, error) {
 	var excludeHidden bool
 
 	var o Options
-	fs := flag.NewFlagSet("todos", flag.ExitOnError)
+	fs := flag.NewFlagSet(baseCmd, flag.ExitOnError)
 	fs.BoolVar(&o.Help, "help", false, "print help and exit")
 	fs.BoolVar(&o.Help, "h", false, "print help and exit")
 	fs.BoolVar(&o.Version, "version", false, "print version information and exit")
