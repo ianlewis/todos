@@ -39,7 +39,7 @@ import (
 // - 1234
 //
 // TODO: Support vanity issue urls (e.g. golang.org/issues/123).
-var labelMatch = regexp.MustCompile("((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)")
+var labelMatch = regexp.MustCompile(`^\s*((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)\s*$`)
 
 // IssueRef is a set of references to an issue.
 type IssueRef struct {

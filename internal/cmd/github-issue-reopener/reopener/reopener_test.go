@@ -97,9 +97,27 @@ func Test_labelMatch(t *testing.T) {
 		},
 		"number only match": {
 			label: "123",
-			match: nil,
+			match: []string{
+				"123",
+				"",
+				"",
+				"",
+				"",
+				"123",
+			},
 		},
-		"regression test": {
+		"whitespace": {
+			label: "   123    ",
+			match: []string{
+				"   123    ",
+				"",
+				"",
+				"",
+				"",
+				"123",
+			},
+		},
+		"invalid url": {
 			label: "github.com/ianlewis/todos/123",
 			match: nil,
 		},
