@@ -64,6 +64,11 @@ func newTODOsApp() *cli.App {
 				DisableDefaultText: true,
 			},
 			&cli.BoolFlag{
+				Name:               "include-vcs",
+				Usage:              "Include version control directories (.git, .hg, .svn)",
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
 				Name:               "include-vendored",
 				Usage:              "Include vendored directories",
 				DisableDefaultText: true,
@@ -178,6 +183,8 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	o := walker.Options{}
 
 	o.IncludeHidden = !c.Bool("exclude-hidden")
+	o.IncludeVCS = c.Bool("include-vcs")
+	o.IncludeVendored = c.Bool("include-vendored")
 
 	outType := c.String("output")
 	outFunc, ok := outTypes[outType]

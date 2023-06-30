@@ -311,6 +311,34 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Paths:         []string{"."},
 			},
 		},
+		"include-vcs": {
+			args: []string{"--include-vcs"},
+			flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "include-vcs",
+				},
+			},
+			expected: &walker.Options{
+				Config:        &todos.Config{},
+				IncludeHidden: true,
+				IncludeVCS:    true,
+				Paths:         []string{"."},
+			},
+		},
+		"include-vendored": {
+			args: []string{"--include-vendored"},
+			flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "include-vendored",
+				},
+			},
+			expected: &walker.Options{
+				Config:          &todos.Config{},
+				IncludeHidden:   true,
+				IncludeVendored: true,
+				Paths:           []string{"."},
+			},
+		},
 		"paths": {
 			args: []string{"/path/to/code"},
 			expected: &walker.Options{
