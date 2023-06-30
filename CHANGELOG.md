@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Leading whitespaces is now trimmed from TODOS in multi-line comments.
 - The `--include-hidden` option was replaced with the `--exclude-hidden`
   option and including hidden files was made the default.
+- An `--include-vcs` option was added and the VCS directories `.git`, `.hg`,
+  and `.svn` are skipped by default.
 
 ## Fixed in X.Y.Z
 
