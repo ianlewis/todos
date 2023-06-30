@@ -134,6 +134,9 @@ Copyright (c) Google LLC
 
 func outCLI(w io.Writer) walker.TODOHandler {
 	return func(o *walker.TODORef) error {
+		if o == nil {
+			return nil
+		}
 		fmt.Fprintf(w, "%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
@@ -147,6 +150,9 @@ func outCLI(w io.Writer) walker.TODOHandler {
 
 func outGithub(w io.Writer) walker.TODOHandler {
 	return func(o *walker.TODORef) error {
+		if o == nil {
+			return nil
+		}
 		typ := "notice"
 		switch o.TODO.Type {
 		case "TODO", "HACK", "COMBAK":
@@ -160,6 +166,8 @@ func outGithub(w io.Writer) walker.TODOHandler {
 }
 
 var outTypes = map[string]func(io.Writer) walker.TODOHandler{
+	// NOTE: An empty value is treated as the default value.
+	"":        outCLI,
 	"default": outCLI,
 	"github":  outGithub,
 }
@@ -174,6 +182,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	if !ok {
 		return nil, fmt.Errorf("%w: invalid output type: %v", ErrFlagParse, outType)
 	}
+
 	o.TODOFunc = outFunc(c.App.Writer)
 	o.ErrorFunc = func(err error) error {
 		fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err)
@@ -181,8 +190,12 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	}
 
 	o.Config = &todos.Config{}
-	for _, todoType := range strings.Split(c.String("todo-types"), ",") {
-		o.Config.Types = append(o.Config.Types, strings.TrimSpace(todoType))
+
+	todoTypesStr := c.String("todo-types")
+	if todoTypesStr != "" {
+		for _, todoType := range strings.Split(todoTypesStr, ",") {
+			o.Config.Types = append(o.Config.Types, strings.TrimSpace(todoType))
+		}
 	}
 
 	o.Paths = c.Args().Slice()
