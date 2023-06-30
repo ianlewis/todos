@@ -115,7 +115,10 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 		t.Fatalf("unexpected %q in output: \n%q", ErrWalk.Error(), b.String())
 	}
 
-	if diff := cmp.Diff(ExitCodeWalkError, exitCode); diff != "" {
+	if exitCode == nil {
+		t.Fatalf("unexpected exit code, want: %v, got: %v", ExitCodeWalkError, exitCode)
+	}
+	if diff := cmp.Diff(ExitCodeWalkError, *exitCode); diff != "" {
 		t.Errorf("unexpected exit code (-want, +got): \n%s", diff)
 	}
 }

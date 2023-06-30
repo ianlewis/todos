@@ -119,12 +119,14 @@ Copyright (c) Google LLC
 			// has presumably already been handled.
 			if errors.Is(err, ErrWalk) {
 				cli.OsExiter(ExitCodeWalkError)
+				return
 			}
 
 			// ExitCode return an exit code for the given error.
 			fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", filepath.Base(os.Args[0]), err)
 			if errors.Is(err, ErrFlagParse) {
 				cli.OsExiter(ExitCodeFlagParseError)
+				return
 			}
 
 			cli.OsExiter(ExitCodeUnknownError)
