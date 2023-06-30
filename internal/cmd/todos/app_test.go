@@ -94,6 +94,32 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	}
 }
 
+// nolint:paralleltest // modifies cli.OsExiter
+func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
+	oldExiter := cli.OsExiter
+	var exitCode *int
+	cli.OsExiter = func(c int) {
+		exitCode = &c
+	}
+	defer func() {
+		cli.OsExiter = oldExiter
+	}()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.ErrWriter = &b
+	c := newContext(app, nil)
+	app.ExitErrHandler(c, ErrWalk)
+
+	if strings.Contains(b.String(), ErrWalk.Error()) {
+		t.Fatalf("unexpected %q in output: \n%q", ErrWalk.Error(), b.String())
+	}
+
+	if diff := cmp.Diff(ExitCodeWalkError, exitCode); diff != "" {
+		t.Errorf("unexpected exit code (-want, +got): \n%s", diff)
+	}
+}
+
 func Test_outCLI(t *testing.T) {
 	t.Parallel()
 
