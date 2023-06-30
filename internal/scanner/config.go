@@ -36,6 +36,7 @@ var (
 		"JavaScript":   &JavascriptConfig,
 		// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
 		"JSON":        &JavascriptConfig,
+		"Lua":         &LuaConfig,
 		"Makefile":    &MakefileConfig,
 		"Objective-C": &ObjectiveCConfig,
 		"Perl":        &PerlConfig,
@@ -105,6 +106,17 @@ var (
 		LineCommentStart:      []string{"//"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"}, // character
+		},
+	}
+
+	// LuaConfig is a config for Lua.
+	LuaConfig = Config{
+		LineCommentStart:      []string{"--"},
+		MultilineCommentStart: "--[[",
+		MultilineCommentEnd:   "--]]",
 		Strings: [][2]string{
 			{"\"", "\""},
 			{"'", "'"}, // character
