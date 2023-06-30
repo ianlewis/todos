@@ -94,7 +94,7 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	}
 }
 
-// nolint:paralleltest // modifies cli.OsExiter
+//nolint:paralleltest // modifies cli.OsExiter
 func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	oldExiter := cli.OsExiter
 	var exitCode *int
