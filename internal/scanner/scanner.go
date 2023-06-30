@@ -214,29 +214,28 @@ func (s *CommentScanner) Scan() bool {
 func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 	for {
 		// Check for line comment
-		for _, start := range s.config.LineCommentStart {
-			eq, err := s.peekEqual(start)
-			if err != nil {
-				return st, err
-			}
-			if eq {
-				return &stateLineComment{}, nil
-			}
+		m, err := s.lineMatch()
+		if err != nil {
+			return st, err
 		}
 
-		// Check for line comment
-		if len(s.config.MultilineCommentStart) != 0 {
-			if eq, err := s.peekEqual(s.config.MultilineCommentStart); err == nil && eq {
-				// Discard the opening. It will be added by processMultilineComment.
-				if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
-					return st, errDiscard
-				}
-				return &stateMultilineComment{
-					line: s.line,
-				}, nil
-			} else if err != nil {
-				return st, err
+		mm, err := s.multiLineMatch()
+		if err != nil {
+			return st, err
+		}
+
+		if len(m) > 0 || len(mm) > 0 {
+			if len(m) >= len(mm) {
+				return &stateLineComment{}, nil
 			}
+
+			// Discard the opening. It will be added by processMultilineComment.
+			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
+				return st, errDiscard
+			}
+			return &stateMultilineComment{
+				line: s.line,
+			}, nil
 		}
 
 		// Check for string
@@ -261,6 +260,32 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 			return st, err
 		}
 	}
+}
+
+func (s *CommentScanner) lineMatch() ([]rune, error) {
+	// Check for line comment
+	for _, start := range s.config.LineCommentStart {
+		eq, err := s.peekEqual(start)
+		if err != nil {
+			return nil, err
+		}
+		if eq {
+			return start, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *CommentScanner) multiLineMatch() ([]rune, error) {
+	// Check for line comment
+	if len(s.config.MultilineCommentStart) != 0 {
+		if eq, err := s.peekEqual(s.config.MultilineCommentStart); err == nil && eq {
+			return s.config.MultilineCommentStart, nil
+		} else if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 // processString processes strings and returns the next state.
