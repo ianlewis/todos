@@ -16,6 +16,8 @@ package main
 
 import (
 	"flag"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -23,9 +25,74 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/urfave/cli/v2"
 
+	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
+
+func newContext(app *cli.App, args []string) *cli.Context {
+	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	for _, f := range app.Flags {
+		if err := f.Apply(fs); err != nil {
+			panic(err)
+		}
+	}
+	if err := fs.Parse(args); err != nil {
+		panic(err)
+	}
+	return cli.NewContext(app, fs, nil)
+}
+
+func Test_TODOsApp_version(t *testing.T) {
+	t.Parallel()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.Writer = &b
+	c := newContext(app, []string{"--version"})
+	if err := app.Action(c); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	versionTitle := app.Name + " devel"
+	if !strings.HasPrefix(b.String(), versionTitle) {
+		t.Fatalf("expected %q in output: \n%q", versionTitle, b.String())
+	}
+}
+
+func Test_TODOsApp_Walk(t *testing.T) {
+	t.Parallel()
+
+	dir := testutils.Must(os.MkdirTemp("", "code"))
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
+
+	files := map[string]string{
+		"foo.go": "// TODO: foo",
+		"bar.go": "// TODO: bar",
+	}
+
+	for path, src := range files {
+		fullPath := filepath.Join(dir, path)
+		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
+		testutils.Check(os.WriteFile(fullPath, []byte(src), 0o600))
+	}
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.Writer = &b
+	c := newContext(app, []string{dir})
+	if err := app.Action(c); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for path := range files {
+		if !strings.Contains(b.String(), path) {
+			t.Fatalf("expected %q in output: \n%q", path, b.String())
+		}
+	}
+}
 
 func Test_outCLI(t *testing.T) {
 	t.Parallel()
@@ -238,20 +305,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			app := cli.App{
+			app := &cli.App{
 				Flags: tc.flags,
 			}
-			app.Setup()
-			fs := flag.NewFlagSet("", flag.ContinueOnError)
-			for _, f := range tc.flags {
-				if err := f.Apply(fs); err != nil {
-					panic(err)
-				}
-			}
-			if err := fs.Parse(tc.args); err != nil {
-				panic(err)
-			}
-			c := cli.NewContext(&app, fs, nil)
+			c := newContext(app, tc.args)
 
 			o, err := walkerOptionsFromContext(c)
 
