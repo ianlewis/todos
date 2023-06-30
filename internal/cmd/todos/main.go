@@ -19,5 +19,9 @@ import (
 )
 
 func main() {
-	newTODOsApp().Run(os.Args)
+	// NOTE: Errors are handled in the app itself so Run should never return an
+	// error.
+	if err := newTODOsApp().Run(os.Args); err != nil {
+		panic(err)
+	}
 }
