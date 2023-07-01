@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: PR Title
-
-on:
-  pull_request:
-    types: [opened, edited, reopened, synchronize]
-  merge_group:
-
-permissions: read-all
-
-jobs:
-  validate:
-    name: Validate PR Title
-    runs-on: ubuntu-latest
-    steps:
-      - uses: thehanimo/pr-title-checker@0cf5902181e78341bb97bb06646396e5bd354b3f # v1.4.0
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          configuration_path: ".github/pr-title-checker-config.json"
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"

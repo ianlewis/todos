@@ -16,42 +16,12 @@ package main
 
 import (
 	"os"
-
-	todoerr "github.com/ianlewis/todos/internal/cmd/todos/errors"
-	"github.com/ianlewis/todos/internal/cmd/todos/options"
-	"github.com/ianlewis/todos/internal/walker"
 )
 
 func main() {
-	opts, err := options.New(os.Args)
-	if err != nil {
-		todoerr.Exit(err)
+	// NOTE: Errors are handled in the app itself so Run should never return an
+	// error.
+	if err := newTODOsApp().Run(os.Args); err != nil {
+		panic(err)
 	}
-	todoerr.Exit(Run(opts))
-}
-
-// Run runs the the `todos` command.
-func Run(opts *options.Options) error {
-	if opts.Help {
-		opts.PrintLongUsage()
-		return nil
-	}
-
-	if opts.Version {
-		opts.PrintVersion()
-		return nil
-	}
-
-	w := walker.New(&walker.Options{
-		TODOFunc:        opts.Output,
-		ErrorFunc:       opts.Error,
-		IncludeHidden:   opts.IncludeHidden,
-		IncludeVendored: opts.IncludeVendored,
-		Paths:           opts.Paths,
-	})
-	if w.Walk() {
-		return todoerr.ErrWalk
-	}
-
-	return nil
 }
