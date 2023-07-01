@@ -120,6 +120,7 @@ linters-settings:
           # Dependencies.
           - "github.com/google/go-cmp/cmp"
           - "github.com/urfave/cli/v2"
+          - "github.com/migueleliasweb/go-github-mock/src/mock"
         deny:
           - pkg: "reflect"
             desc: Use go-cmp instead.
