@@ -37,7 +37,7 @@ import (
 // - #1234
 // - 1234
 //
-// TODO: Support vanity issue urls (e.g. golang.org/issues/123).
+// TODO(#100): Support vanity issue urls (e.g. golang.org/issues/123).
 var labelMatch = regexp.MustCompile(`^\s*((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)\s*$`)
 
 // ErrAPI is an error that occurs with the GitHub API.
