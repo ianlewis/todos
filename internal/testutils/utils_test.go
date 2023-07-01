@@ -17,6 +17,8 @@ package testutils
 import (
 	"errors"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 var errTest = errors.New("error")
@@ -84,5 +86,40 @@ func TestMust(t *testing.T) {
 			}
 		}()
 		Must("test", errTest)
+	})
+}
+
+func TestAsPtr(t *testing.T) {
+	t.Parallel()
+
+	t.Run("int", func(t *testing.T) {
+		t.Parallel()
+
+		v := AsPtr(123)
+		if got, want := *v, 123; got != want {
+			t.Errorf("unexpected return value, got: %v, want: %v", got, want)
+		}
+	})
+
+	t.Run("string", func(t *testing.T) {
+		t.Parallel()
+
+		v := AsPtr("test")
+		if got, want := *v, "test"; got != want {
+			t.Errorf("unexpected return value, got: %v, want: %v", got, want)
+		}
+	})
+
+	t.Run("struct", func(t *testing.T) {
+		t.Parallel()
+
+		// NOTE: can't use struct{}{} since it's a constant value.
+		// NOTE: the struct is copied as it's passed to AsPtr by value.
+		input := struct{ Foo int }{}
+		got := AsPtr(input)
+		want := &input
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("unexpected return value (-want, +got)\n%s", diff)
+		}
 	})
 }
