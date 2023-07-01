@@ -21,7 +21,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
@@ -242,7 +241,7 @@ func Test_handleTODO(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			r := New(context.Background(), &options.Options{
+			r := New(context.Background(), &Options{
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
 			})
