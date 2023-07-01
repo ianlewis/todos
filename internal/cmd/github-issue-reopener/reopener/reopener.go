@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/go-github/v52/github"
 
-	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 	"github.com/ianlewis/todos/internal/walker"
 )
@@ -50,11 +49,32 @@ type IssueRef struct {
 	TODOs []*walker.TODORef
 }
 
+// Options is options for the IssueReopener.
+type Options struct {
+	// DryRun indicates that changes will only be printed and not actually executed.
+	DryRun bool
+
+	// Paths are the paths to walk to look for TODOs to reopen.
+	Paths []string
+
+	// RepoOwner is the repository owner.
+	RepoOwner string
+
+	// RepoName is the repository name.
+	RepoName string
+
+	// Sha of the current checkout.
+	Sha string
+
+	// Token is the GitHub Token.
+	Token string
+}
+
 // IssueReopener is reopens issues referenced by TODOs.
 type IssueReopener struct {
 	client *github.Client
 
-	options *options.Options
+	options *Options
 
 	// issues is a local cache of issues.
 	issues struct {
@@ -72,7 +92,7 @@ type IssueReopener struct {
 }
 
 // New returns a new IssueReopener.
-func New(ctx context.Context, opts *options.Options) *IssueReopener {
+func New(ctx context.Context, opts *Options) *IssueReopener {
 	var client *github.Client
 	if opts.Token == "" {
 		client = github.NewClient(nil)
@@ -124,6 +144,7 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 
 	id, err := strconv.Atoi(match[5])
 	if err != nil {
+		fmt.Printf("Unable to ")
 		// issue is not a number.
 		return nil
 	}
