@@ -131,17 +131,16 @@ var gitShaMatch = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 func reopenerOptionsFromContext(c *cli.Context) (*reopener.Options, error) {
 	o := reopener.Options{}
 
-	// DryRun
+	// Set DryRun.
 	o.DryRun = c.Bool("dry-run")
 
-	// Paths
+	// Set Paths.
 	o.Paths = c.Args().Slice()
 	if len(o.Paths) == 0 {
 		o.Paths = []string{"."}
 	}
 
-	// RepoName
-	// RepoOwner
+	// Set the RepoName and RepoOwner.
 	repo := c.String("repo")
 	if repo == "" {
 		repo = os.Getenv("GITHUB_REPOSITORY")
@@ -153,7 +152,7 @@ func reopenerOptionsFromContext(c *cli.Context) (*reopener.Options, error) {
 		return nil, fmt.Errorf("%w: invalid repo: %q", ErrFlagParse, repo)
 	}
 
-	// Sha
+	// Set Sha.
 	o.Sha = c.String("sha")
 	if o.Sha == "" {
 		o.Sha = os.Getenv("GITHUB_SHA")
@@ -162,7 +161,7 @@ func reopenerOptionsFromContext(c *cli.Context) (*reopener.Options, error) {
 		return nil, fmt.Errorf("%w: invalid git digest", ErrFlagParse)
 	}
 
-	// Token
+	// Set Token.
 	o.Token = util.FirstString(os.Getenv("GH_TOKEN"), os.Getenv("GITHUB_TOKEN"))
 	tokenFile := c.String("token-file")
 	if tokenFile != "" {
