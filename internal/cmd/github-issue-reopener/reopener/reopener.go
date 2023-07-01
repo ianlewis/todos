@@ -115,10 +115,10 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) bool {
 	w := walker.New(&walker.Options{
 		TODOFunc:  r.handleTODO,
 		ErrorFunc: r.handleErr,
-		// TODO: Support TODO config.
+		// TODO(#101): Support TODO config.
 		Config: nil,
 
-		// TODO: Support walker config.
+		// TODO(#102): Support walker config.
 		IncludeHidden:   false,
 		IncludeVendored: false,
 		Paths:           r.options.Paths,
