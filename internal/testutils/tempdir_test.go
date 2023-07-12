@@ -130,7 +130,7 @@ func TestTempDir(t *testing.T) {
 					t.Fatalf("unexpected directory: %q", fullPath)
 				}
 
-				if got, want := info.Mode(), f.Mode; got != want {
+				if got, want := info.Mode(), f.Mode; !compareMode(got, want) {
 					t.Errorf("unexpected mode, got: %v, want: %v", got, want)
 				}
 
