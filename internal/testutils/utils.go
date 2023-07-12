@@ -28,3 +28,8 @@ func Must[T any](val T, err error) T {
 	}
 	return val
 }
+
+// AsPtr returns the value as a pointer.
+func AsPtr[T any](i T) *T {
+	return &i
+}
