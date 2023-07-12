@@ -34,9 +34,6 @@ type File struct {
 
 	// Mode is the file permissions mode.
 	Mode os.FileMode
-
-	// IsDir specifies if it's a directory.
-	IsDir bool
 }
 
 // NewTempDir creates a new TempDir. This creates a new temporary directory and
@@ -45,7 +42,7 @@ type File struct {
 func NewTempDir(files []*File) *TempDir {
 	d := &TempDir{}
 
-	d.dir = Must(os.MkdirTemp("", "code"))
+	d.dir = Must(os.MkdirTemp("", "testutils"))
 	cleanup, cancel := WithCancel(func() {
 		d.Cleanup()
 	}, nil)
@@ -53,12 +50,8 @@ func NewTempDir(files []*File) *TempDir {
 
 	for _, file := range files {
 		fullPath := filepath.Join(d.dir, file.Path)
-		if !file.IsDir {
-			Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
-			Check(os.WriteFile(fullPath, file.Contents, file.Mode))
-		} else {
-			Check(os.MkdirAll(fullPath, file.Mode))
-		}
+		Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
+		Check(os.WriteFile(fullPath, file.Contents, file.Mode))
 	}
 
 	cancel()
