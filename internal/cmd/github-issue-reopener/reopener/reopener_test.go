@@ -16,12 +16,17 @@ package reopener
 
 import (
 	"context"
+	"net/http"
+	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/google/go-github/v52/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 
-	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
+	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
@@ -161,7 +166,7 @@ func Test_handleTODO(t *testing.T) {
 			},
 			expected: map[int]*IssueRef{
 				123: {
-					ID: 123,
+					Number: 123,
 					TODOs: []*walker.TODORef{
 						{
 							FileName: "test.go",
@@ -207,7 +212,7 @@ func Test_handleTODO(t *testing.T) {
 			},
 			expected: map[int]*IssueRef{
 				123: {
-					ID: 123,
+					Number: 123,
 					TODOs: []*walker.TODORef{
 						{
 							FileName: "test.go",
@@ -242,7 +247,7 @@ func Test_handleTODO(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			r := New(context.Background(), &options.Options{
+			r := New(context.Background(), &Options{
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
 			})
@@ -253,8 +258,140 @@ func Test_handleTODO(t *testing.T) {
 				}
 			}
 
-			if diff := cmp.Diff(tc.expected, r.refs.cache, cmpopts.EquateErrors()); diff != "" {
+			if diff := cmp.Diff(tc.expected, r.refs.cache); diff != "" {
 				t.Fatalf("unexpected result (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_loadIssue(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		issueNumber int
+		owner       string
+		repo        string
+		cached      *github.Issue
+		remote      *github.Issue
+
+		expected *github.Issue
+		err      error
+	}{
+		"cached no remote": {
+			issueNumber: 123,
+			owner:       "ianlewis",
+			repo:        "todos",
+			cached: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+
+			expected: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+		},
+		"cached w/ remote": {
+			issueNumber: 123,
+			owner:       "ianlewis",
+			repo:        "todos",
+			cached: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+			remote: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: different title"),
+				State:  testutils.AsPtr("closed"),
+			},
+			expected: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+		},
+		"not cached": {
+			issueNumber: 123,
+			owner:       "ianlewis",
+			repo:        "todos",
+			remote: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+
+			expected: &github.Issue{
+				Number: testutils.AsPtr(123),
+				Title:  testutils.AsPtr("bug: this is a bug"),
+				State:  testutils.AsPtr("open"),
+			},
+		},
+		"not cached no remote": {
+			issueNumber: 123,
+			owner:       "ianlewis",
+			repo:        "todos",
+			err:         ErrAPI,
+		},
+	}
+
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			r := New(context.Background(), &Options{
+				RepoOwner: tc.owner,
+				RepoName:  tc.repo,
+			})
+			r.client = github.NewClient(mock.NewMockedHTTPClient(
+				mock.WithRequestMatchHandler(
+					mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if tc.remote != nil {
+							pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
+							parts := pathMatch.FindStringSubmatch(r.URL.Path)
+							if len(parts) != 4 {
+								t.Fatalf("not enough match parts for path %q: %q", r.URL.Path, parts)
+							}
+							repoOwner := parts[1]
+							repoName := parts[2]
+							issueNumber, err := strconv.Atoi(parts[3])
+							if err != nil {
+								t.Fatalf("bad issue number %q: %v", parts[3], err)
+							}
+
+							if repoOwner == tc.owner && repoName == tc.repo && issueNumber == *tc.remote.Number {
+								_ = testutils.Must(w.Write(mock.MustMarshal(tc.remote)))
+								return
+							}
+						}
+
+						http.NotFound(w, r)
+					}),
+				),
+			))
+
+			if tc.cached != nil {
+				r.issues.cache = map[int]*github.Issue{
+					*tc.cached.Number: tc.cached,
+				}
+			}
+
+			issue, err := r.loadIssue(context.Background(), tc.issueNumber)
+			if diff := cmp.Diff(tc.err, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.expected, issue); diff != "" {
+				t.Fatalf("unexpected result (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.expected, r.issues.cache[tc.issueNumber]); diff != "" {
+				t.Fatalf("unexpected cached result (-want +got):\n%s", diff)
 			}
 		})
 	}

@@ -87,10 +87,15 @@ linters-settings:
           - $all
           - "!$test"
         allow:
+          # Go standard library
           - $gostd
+
+          # This project.
+          - "github.com/ianlewis/todos"
+
+          # Dependencies.
           - "github.com/fatih/color"
           - "github.com/google/go-github"
-          - "github.com/ianlewis/todos"
           - "github.com/ianlewis/linguist"
           - "github.com/saintfish/chardet"
           - "github.com/urfave/cli/v2"
@@ -106,10 +111,17 @@ linters-settings:
         files:
           - $test
         allow:
+          # Go standard library
           - $gostd
+
+          # This project.
           - "github.com/ianlewis/todos"
+
+          # Dependencies.
           - "github.com/google/go-cmp/cmp"
+          - "github.com/google/go-github"
           - "github.com/urfave/cli/v2"
+          - "github.com/migueleliasweb/go-github-mock/src/mock"
         deny:
           - pkg: "reflect"
             desc: Use go-cmp instead.

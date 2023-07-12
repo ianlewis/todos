@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/go-github/v52/github"
 
-	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/options"
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
 	"github.com/ianlewis/todos/internal/walker"
 )
@@ -38,23 +37,47 @@ import (
 // - #1234
 // - 1234
 //
-// TODO: Support vanity issue urls (e.g. golang.org/issues/123).
+// TODO(#100): Support vanity issue urls (e.g. golang.org/issues/123).
 var labelMatch = regexp.MustCompile(`^\s*((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)\s*$`)
+
+// ErrAPI is an error that occurs with the GitHub API.
+var ErrAPI = errors.New("GitHub API error")
 
 // IssueRef is a set of references to an issue.
 type IssueRef struct {
-	// ID is the issue ID.
-	ID int
+	// Number is the issue number.
+	Number int
 
 	// TODOs is a list of todos referencing this issue.
 	TODOs []*walker.TODORef
+}
+
+// Options is options for the IssueReopener.
+type Options struct {
+	// DryRun indicates that changes will only be printed and not actually executed.
+	DryRun bool
+
+	// Paths are the paths to walk to look for TODOs to reopen.
+	Paths []string
+
+	// RepoOwner is the repository owner.
+	RepoOwner string
+
+	// RepoName is the repository name.
+	RepoName string
+
+	// Sha of the current checkout.
+	Sha string
+
+	// Token is the GitHub Token.
+	Token string
 }
 
 // IssueReopener is reopens issues referenced by TODOs.
 type IssueReopener struct {
 	client *github.Client
 
-	options *options.Options
+	options *Options
 
 	// issues is a local cache of issues.
 	issues struct {
@@ -72,7 +95,7 @@ type IssueReopener struct {
 }
 
 // New returns a new IssueReopener.
-func New(ctx context.Context, opts *options.Options) *IssueReopener {
+func New(ctx context.Context, opts *Options) *IssueReopener {
 	var client *github.Client
 	if opts.Token == "" {
 		client = github.NewClient(nil)
@@ -92,10 +115,10 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) bool {
 	w := walker.New(&walker.Options{
 		TODOFunc:  r.handleTODO,
 		ErrorFunc: r.handleErr,
-		// TODO: Support TODO config.
+		// TODO(#101): Support TODO config.
 		Config: nil,
 
-		// TODO: Support walker config.
+		// TODO(#102): Support walker config.
 		IncludeHidden:   false,
 		IncludeVendored: false,
 		Paths:           r.options.Paths,
@@ -122,13 +145,14 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 		return nil
 	}
 
-	id, err := strconv.Atoi(match[5])
+	number, err := strconv.Atoi(match[5])
 	if err != nil {
+		fmt.Printf("bad issue number %q: %v", match[5], err)
 		// issue is not a number.
 		return nil
 	}
 
-	_ = r.addToRef(id, ref)
+	_ = r.addToRef(number, ref)
 	return nil
 }
 
@@ -177,7 +201,7 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 		req := &github.IssueRequest{State: github.String("open")}
 		_, _, err = r.client.Issues.Edit(ctx, r.options.RepoOwner, r.options.RepoName, id, req)
 		if err != nil {
-			err = fmt.Errorf("reopening issue %d: %w", id, err)
+			err = fmt.Errorf("%w: %w", ErrAPI, err)
 			if herr := r.handleErr(err); herr != nil {
 				return
 			}
@@ -207,7 +231,7 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 			Reactions: &github.Reactions{Confused: github.Int(1)},
 		}
 		if _, _, err := r.client.Issues.CreateComment(ctx, r.options.RepoOwner, r.options.RepoName, id, cmt); err != nil {
-			err = fmt.Errorf("posting comment: %d: %w", id, err)
+			err = fmt.Errorf("%w: %w", ErrAPI, err)
 			if herr := r.handleErr(err); herr != nil {
 				return
 			}
@@ -217,7 +241,7 @@ func (r *IssueReopener) reopenAll(ctx context.Context) {
 }
 
 // loadIssue gets the issue by number.
-func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, error) {
+func (r *IssueReopener) loadIssue(ctx context.Context, number int) (*github.Issue, error) {
 	r.issues.Lock()
 	defer r.issues.Unlock()
 
@@ -225,20 +249,20 @@ func (r *IssueReopener) loadIssue(ctx context.Context, id int) (*github.Issue, e
 		r.issues.cache = make(map[int]*github.Issue)
 	}
 
-	if issue, ok := r.issues.cache[id]; ok {
+	if issue, ok := r.issues.cache[number]; ok {
 		return issue, nil
 	}
 
-	issue, _, err := r.client.Issues.Get(ctx, r.options.RepoOwner, r.options.RepoName, id)
+	issue, _, err := r.client.Issues.Get(ctx, r.options.RepoOwner, r.options.RepoName, number)
 	if err != nil {
-		return issue, fmt.Errorf("getting issue: %w", err)
+		return issue, fmt.Errorf("%w: %w", ErrAPI, err)
 	}
-	r.issues.cache[id] = issue
+	r.issues.cache[number] = issue
 	return issue, nil
 }
 
 // addToRef gets the IssueRef and adds the todo to it.
-func (r *IssueReopener) addToRef(id int, todo *walker.TODORef) *IssueRef {
+func (r *IssueReopener) addToRef(number int, todo *walker.TODORef) *IssueRef {
 	r.refs.Lock()
 	defer r.refs.Unlock()
 
@@ -246,13 +270,13 @@ func (r *IssueReopener) addToRef(id int, todo *walker.TODORef) *IssueRef {
 		r.refs.cache = make(map[int]*IssueRef)
 	}
 
-	ref, ok := r.refs.cache[id]
+	ref, ok := r.refs.cache[number]
 	if !ok {
 		ref = &IssueRef{
-			ID:    id,
-			TODOs: []*walker.TODORef{todo},
+			Number: number,
+			TODOs:  []*walker.TODORef{todo},
 		}
-		r.refs.cache[id] = ref
+		r.refs.cache[number] = ref
 	} else {
 		ref.TODOs = append(ref.TODOs, todo)
 	}

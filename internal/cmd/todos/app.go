@@ -55,7 +55,7 @@ var (
 // newTODOsApp returns a new `todos` application.
 func newTODOsApp() *cli.App {
 	return &cli.App{
-		Name:  "todos",
+		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
