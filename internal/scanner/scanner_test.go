@@ -36,6 +36,7 @@ var scannerTestCases = []*struct {
 		line int
 	}
 }{
+	// Go
 	{
 		name: "line_comments.go",
 		src: `package foo
@@ -61,33 +62,6 @@ var scannerTestCases = []*struct {
 			{
 				text: "// Random comment",
 				line: 6,
-			},
-		},
-	},
-	{
-		name: "line_comments.php",
-		src: `// file comment
-
-			# TODO is a function.
-			function TODO() {
-				return // Random comment
-			}`,
-		config: PHPConfig,
-		comments: []struct {
-			text string
-			line int
-		}{
-			{
-				text: "// file comment",
-				line: 1,
-			},
-			{
-				text: "# TODO is a function.",
-				line: 3,
-			},
-			{
-				text: "// Random comment",
-				line: 5,
 			},
 		},
 	},
@@ -208,35 +182,150 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+
+	// PHP
 	{
-		name: "raw_string.rb",
-		src: `# file comment
+		name: "line_comments.php",
+		src: `// file comment
 
-			z = %{
 			# TODO is a function.
-			}
-
-			def foo()
-				# Random comment
-				x = "\"# Random comment x"
-				y = '\'# Random comment y'
-				return x + y
-			end`,
-		config: RubyConfig,
+			function TODO() {
+				return // Random comment
+			}`,
+		config: PHPConfig,
 		comments: []struct {
 			text string
 			line int
 		}{
 			{
-				text: "# file comment",
+				text: "// file comment",
 				line: 1,
 			},
 			{
-				text: "# Random comment",
-				line: 8,
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 5,
 			},
 		},
 	},
+
+	// Lua
+	{
+		name: "line_comments.lua",
+		src: `-- package comment
+
+			-- TODO is a function.
+			function TODO() {
+				return -- Random comment
+			}`,
+		config: LuaConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- package comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "-- Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.lua",
+		src: `-- package comment
+
+			-- TODO is a function.
+			func TODO() {
+				x = "-- Random comment"
+				y = '-- Random comment'
+				return x + y
+			}`,
+		config: LuaConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- package comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.lua",
+		src: `-- package comment
+
+			-- TODO is a function.
+			func TODO() {
+				x = "\"-- Random comment"
+				y = '\'-- Random comment'
+				return x + y
+			}`,
+		config: LuaConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- package comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "multi_line.lua",
+		src: `-- package comment
+
+			--[[
+			TODO is a function.
+			--]]
+			func TODO() {
+				return -- Random comment
+			}
+			--[[ extra comment --]]`,
+		config: LuaConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- package comment",
+				line: 1,
+			},
+			{
+				text: "--[[\n\t\t\tTODO is a function.\n\t\t\t--]]",
+				line: 3,
+			},
+			{
+				text: "-- Random comment",
+				line: 7,
+			},
+			{
+				text: "--[[ extra comment --]]",
+				line: 9,
+			},
+		},
+	},
+
+	// Python
 	{
 		name: "raw_string.py",
 		src: `# file comment
@@ -295,6 +384,39 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+
+	// Ruby
+	{
+		name: "raw_string.rb",
+		src: `# file comment
+
+			z = %{
+			# TODO is a function.
+			}
+
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`,
+		config: RubyConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# Random comment",
+				line: 8,
+			},
+		},
+	},
+
+	// Shell
 	{
 		name: "line_comments.sh",
 		src: `#!/bin/bash

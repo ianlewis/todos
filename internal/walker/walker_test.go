@@ -28,91 +28,35 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 )
 
-func newFixture(files map[string]string, types, paths []string, hidden, vendored bool) *fixture {
-	f := &fixture{}
-	f.wd = testutils.Must(os.Getwd())
-
-	f.dir = testutils.Must(os.MkdirTemp("", "code"))
-	cleanup, cancel := testutils.WithCancel(func() {
-		f.cleanup()
-	}, nil)
-	defer cleanup()
-	testutils.Check(os.Chdir(f.dir))
-
-	for path, src := range files {
-		fullPath := filepath.Join(f.dir, path)
-		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
-		testutils.Check(os.WriteFile(fullPath, []byte(src), 0o600))
-	}
-
-	if len(paths) == 0 {
-		paths = []string{"."}
-	}
-
-	f.walker = New(&Options{
-		TODOFunc:  f.outFunc,
-		ErrorFunc: f.errFunc,
-		Config: &todos.Config{
-			Types: types,
-		},
-		Paths: paths,
-
-		IncludeHidden:   hidden,
-		IncludeVendored: vendored,
-	})
-
-	cancel()
-	return f
-}
-
-type fixture struct {
-	walker *TODOWalker
-	wd     string
-	dir    string
-	out    []*TODORef
-	err    []error
-}
-
-func (f *fixture) outFunc(r *TODORef) error {
-	f.out = append(f.out, r)
-	return nil
-}
-
-func (f *fixture) errFunc(err error) error {
-	f.err = append(f.err, err)
-	return nil
-}
-
-func (f *fixture) cleanup() {
-	testutils.Check(os.Chdir(f.wd))
-	testutils.Check(os.RemoveAll(f.dir))
-}
-
 var testCases = []struct {
 	name  string
-	files map[string]string
-	types []string
-	paths []string
-
-	hidden   bool
-	vendored bool
+	files []*testutils.File
+	opts  *Options
 
 	expected []*TODORef
 	err      bool
 }{
 	{
 		name: "single file traverse path",
-		files: map[string]string{
-			"line_comments.go": `package foo
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
@@ -128,8 +72,10 @@ var testCases = []struct {
 	},
 	{
 		name: "multi-file traverse path",
-		files: map[string]string{
-			"line_comments.go": `
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`
 				package foo
 
 				// package comment
@@ -138,8 +84,12 @@ var testCases = []struct {
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
-			"multi_line.go": `
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: "multi_line.go",
+				Contents: []byte(`
 				package foo
 
 				/*
@@ -148,9 +98,15 @@ var testCases = []struct {
 				*/
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
@@ -176,8 +132,10 @@ var testCases = []struct {
 	},
 	{
 		name: "multi-file sub-directory",
-		files: map[string]string{
-			"line_comments.go": `
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`
 				package foo
 
 				// package comment
@@ -186,8 +144,12 @@ var testCases = []struct {
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
-			filepath.Join("sub-dir", "multi_line.go"): `
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: filepath.Join("sub-dir", "multi_line.go"),
+				Contents: []byte(`
 				package foo
 
 				/*
@@ -196,9 +158,15 @@ var testCases = []struct {
 				*/
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
@@ -224,24 +192,35 @@ var testCases = []struct {
 	},
 	{
 		name: "single file",
-		files: map[string]string{
-			"not_scanned.go": `package foo
+		files: []*testutils.File{
+			{
+				Path: "not_scanned.go",
+				Contents: []byte(`package foo
 				// TODO: not read.
 				func NotRead() {
 					return
-				}`,
-
-			"line_comments.go": `package foo
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		paths: []string{"line_comments.go"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Paths: []string{"line_comments.go"},
+		},
 		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
@@ -257,35 +236,51 @@ var testCases = []struct {
 	},
 	{
 		name: "hidden file skipped",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			".line_comments.go": `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: ".line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types:    []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: nil,
 	},
 	{
 		name: "hidden file specified",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			".line_comments.go": `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: ".line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		paths: []string{".line_comments.go"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Paths: []string{".line_comments.go"},
+		},
 		expected: []*TODORef{
 			{
 				FileName: ".line_comments.go",
@@ -301,20 +296,28 @@ var testCases = []struct {
 	},
 	{
 		name: "hidden file processed",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			".line_comments.go": `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: ".line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		// NOTE: Include hidden files.
-		hidden: true,
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			// NOTE: Include hidden files.
+			IncludeHidden: true,
+		},
 		expected: []*TODORef{
 			{
 				FileName: ".line_comments.go",
@@ -330,33 +333,49 @@ var testCases = []struct {
 	},
 	{
 		name: "vendored file skipped",
-		files: map[string]string{
-			filepath.Join("vendor", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types:    []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: nil,
 	},
 	{
 		name: "vendored file specified",
-		files: map[string]string{
-			filepath.Join("vendor", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		paths: []string{filepath.Join("vendor", "line_comments.go")},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Paths: []string{filepath.Join("vendor", "line_comments.go")},
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "line_comments.go"),
@@ -372,19 +391,27 @@ var testCases = []struct {
 	},
 	{
 		name: "vendored file processed",
-		files: map[string]string{
-			filepath.Join("vendor", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		// NOTE: Include vendored files.
-		vendored: true,
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			IncludeVendored: true,
+			Paths:           []string{filepath.Join("vendor", "line_comments.go")},
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "line_comments.go"),
@@ -400,35 +427,51 @@ var testCases = []struct {
 	},
 	{
 		name: "hidden dir skipped",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			filepath.Join(".somepath", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: filepath.Join(".somepath", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types:    []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: nil,
 	},
 	{
 		name: "hidden dir specified",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			filepath.Join(".somepath", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: filepath.Join(".somepath", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		paths: []string{filepath.Join(".somepath")},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Paths: []string{filepath.Join(".somepath")},
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join(".somepath", "line_comments.go"),
@@ -444,20 +487,28 @@ var testCases = []struct {
 	},
 	{
 		name: "hidden dir processed",
-		files: map[string]string{
-			// NOTE: Files starting with '.' should be hidden on all platforms.
-			filepath.Join(".somepath", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				// NOTE: Files starting with '.' should be hidden on all platforms.
+				Path: filepath.Join(".somepath", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		// NOTE: Include hidden files.
-		hidden: true,
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			// NOTE: Include hidden files.
+			IncludeHidden: true,
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join(".somepath", "line_comments.go"),
@@ -473,33 +524,49 @@ var testCases = []struct {
 	},
 	{
 		name: "vendored dir skipped",
-		files: map[string]string{
-			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "pkgname", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types:    []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: nil,
 	},
 	{
 		name: "vendored dir specified",
-		files: map[string]string{
-			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "pkgname", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		paths: []string{filepath.Join("vendor", "pkgname")},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Paths: []string{filepath.Join("vendor", "pkgname")},
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
@@ -515,19 +582,27 @@ var testCases = []struct {
 	},
 	{
 		name: "vendored dir processed",
-		files: map[string]string{
-			filepath.Join("vendor", "pkgname", "line_comments.go"): `package foo
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "pkgname", "line_comments.go"),
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
 				// TODO: some task.
 				func TODO() {
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
-		// NOTE: Include vendored files.
-		vendored: true,
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			// NOTE: Include vendored files.
+			IncludeVendored: true,
+		},
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join("vendor", "pkgname", "line_comments.go"),
@@ -543,8 +618,10 @@ var testCases = []struct {
 	},
 	{
 		name: "single file traverse path multiple todos",
-		files: map[string]string{
-			"line_comments.go": `package foo
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
 				// package comment
 
 				// TODO is a function.
@@ -552,9 +629,15 @@ var testCases = []struct {
 				func TODO() {
 					// TODO: some other task.
 					return // Random comment
-				}`,
+				}`),
+				Mode: 0o600,
+			},
 		},
-		types: []string{"TODO"},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
 		expected: []*TODORef{
 			{
 				FileName: "line_comments.go",
@@ -580,16 +663,70 @@ var testCases = []struct {
 	},
 }
 
+type fixture struct {
+	dir *testutils.TempDir
+	wd  string
+	out []*TODORef
+	err []error
+}
+
+func (f *fixture) cleanup() {
+	testutils.Check(os.Chdir(f.wd))
+	f.dir.Cleanup()
+}
+
+func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) {
+	dir := testutils.NewTempDir(files)
+	cleanup, cancel := testutils.WithCancel(func() {
+		dir.Cleanup()
+	}, nil)
+	defer cleanup()
+
+	wd := testutils.Must(os.Getwd())
+
+	testutils.Check(os.Chdir(dir.Dir()))
+
+	if len(opts.Paths) == 0 {
+		opts.Paths = []string{"."}
+	}
+
+	f := &fixture{
+		dir: dir,
+		wd:  wd,
+	}
+
+	todoFunc := opts.TODOFunc
+	opts.TODOFunc = func(r *TODORef) error {
+		f.out = append(f.out, r)
+		if todoFunc != nil {
+			return todoFunc(r)
+		}
+		return nil
+	}
+
+	errFunc := opts.ErrorFunc
+	opts.ErrorFunc = func(err error) error {
+		f.err = append(f.err, err)
+		if errFunc != nil {
+			return errFunc(err)
+		}
+		return nil
+	}
+
+	cancel()
+	return f, New(opts)
+}
+
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
 func TestTODOWalker(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			f := newFixture(tc.files, tc.types, tc.paths, tc.hidden, tc.vendored)
+			f, w := newFixture(tc.files, tc.opts)
 			defer f.cleanup()
 
-			if got, want := f.walker.Walk(), tc.err; got != want {
+			if got, want := w.Walk(), tc.err; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v", got, want)
 			}
 
@@ -608,23 +745,32 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		panic(fmt.Sprintf("assertion failure: %s exists.", notExistsPath))
 	}
 
-	files := map[string]string{
-		"line_comments.go": `package foo
+	files := []*testutils.File{
+		{
+			Path: "line_comments.go",
+			Contents: []byte(`package foo
 			// package comment
 
 			// TODO is a function.
 			// TODO: some task.
 			func TODO() {
 				return // Random comment
-			}`,
+			}`),
+			Mode: 0o600,
+		},
 	}
 
-	f := newFixture(files, []string{"TODO"}, nil, false, false)
+	opts := &Options{
+		Config: &todos.Config{
+			Types: []string{"TODO"},
+		},
+		Paths: []string{"line_comments.go", notExistsPath},
+	}
+
+	f, w := newFixture(files, opts)
 	defer f.cleanup()
 
-	walker := f.walker
-	walker.options.Paths = append(walker.options.Paths, notExistsPath)
-	if got, want := walker.Walk(), true; got != want {
+	if got, want := w.Walk(), true; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
 	}
 
@@ -664,8 +810,9 @@ func TestTODOWalker_DefaultOptions(t *testing.T) {
 
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
 func TestTODOWalker_StopEarly(t *testing.T) {
-	files := map[string]string{
-		"line_comments.go": `package foo
+	file := &testutils.File{
+		Path: "line_comments.go",
+		Contents: []byte(`package foo
 			// package comment
 
 			// TODO is a function.
@@ -673,21 +820,24 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 			func TODO() {
 				// TODO: some other task.
 				return // Random comment
-			}`,
+			}`),
+		Mode: 0o600,
 	}
 
-	f := newFixture(files, []string{"TODO"}, nil, false, false)
+	opts := &Options{
+		Config: &todos.Config{
+			Types: []string{"TODO"},
+		},
+		// Override the handler to cause it to stop early.
+		TODOFunc: func(r *TODORef) error {
+			return fs.SkipAll
+		},
+	}
+
+	f, w := newFixture([]*testutils.File{file}, opts)
 	defer f.cleanup()
 
-	// Override the handler to cause it to stop early.
-	f.walker.options.TODOFunc = func(r *TODORef) error {
-		if err := f.outFunc(r); err != nil {
-			return err
-		}
-		return fs.SkipAll
-	}
-
-	if got, want := f.walker.Walk(), false; got != want {
+	if got, want := w.Walk(), false; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
 	}
 

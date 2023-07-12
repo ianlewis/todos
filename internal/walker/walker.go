@@ -59,6 +59,9 @@ type Options struct {
 	// paths are always processed if there are specified explicitly in `paths`.
 	IncludeVendored bool
 
+	// IncludeVCS indicates that VCS paths (.git, .hg, .svn, etc.) should be included.
+	IncludeVCS bool
+
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
 }
@@ -202,6 +205,10 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		return fs.SkipDir
 	}
 
+	if !w.options.IncludeVCS && isVCS(fullPath) {
+		return fs.SkipDir
+	}
+
 	// NOTE: linguist only matches paths with a *nix path separators.
 	// TODO(github.com/ianlewis/linguist/issues/1): Update when linguist supports Windows.
 	fullPath = strings.ReplaceAll(fullPath, string(os.PathSeparator), "/")
@@ -279,4 +286,10 @@ func (w *TODOWalker) handleErr(prefix string, err error) error {
 		}
 	}
 	return nil
+}
+
+// isVCS returns whether the path is a vcs path. Should only be called on directories.
+func isVCS(path string) bool {
+	basePath := filepath.Base(path)
+	return basePath == ".git" || basePath == ".hg" || basePath == ".svn"
 }

@@ -89,13 +89,14 @@ linters-settings:
         allow:
           - $gostd
           - "github.com/fatih/color"
+          - "github.com/google/go-github"
           - "github.com/ianlewis/todos"
           - "github.com/ianlewis/linguist"
           - "github.com/saintfish/chardet"
-          - "github.com/google/go-github"
+          - "github.com/urfave/cli/v2"
           - "sigs.k8s.io/release-utils/version"
         deny:
-          - pkg: "ianlewis/todos/internal/testutils"
+          - pkg: "github.com/ianlewis/todos/internal/testutils"
             desc: Please don't use testutils package
           - pkg: "reflect"
             desc: Please don't use reflect package
@@ -108,6 +109,7 @@ linters-settings:
           - $gostd
           - "github.com/ianlewis/todos"
           - "github.com/google/go-cmp/cmp"
+          - "github.com/urfave/cli/v2"
         deny:
           - pkg: "reflect"
             desc: Use go-cmp instead.

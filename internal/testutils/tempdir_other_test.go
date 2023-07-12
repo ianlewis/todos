@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+//go:build !windows
 
-import (
-	"os"
-)
+package testutils
 
-func main() {
-	// NOTE: Errors are handled in the app itself so Run should never return an
-	// error.
-	if err := newTODOsApp().Run(os.Args); err != nil {
-		panic(err)
-	}
+import "os"
+
+func compareMode(l, r os.FileMode) bool {
+	return l == r
 }

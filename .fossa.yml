@@ -12,21 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: PR Title
+version: 3
 
-on:
-  pull_request:
-    types: [opened, edited, reopened, synchronize]
-  merge_group:
-
-permissions: read-all
-
-jobs:
-  validate:
-    name: Validate PR Title
-    runs-on: ubuntu-latest
-    steps:
-      - uses: thehanimo/pr-title-checker@0cf5902181e78341bb97bb06646396e5bd354b3f # v1.4.0
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          configuration_path: ".github/pr-title-checker-config.json"
+targets:
+  exclude:
+    - type: setuptools
+    - type: npm
