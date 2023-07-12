@@ -19,7 +19,8 @@ import (
 	"path/filepath"
 )
 
-// TempDir is a temporary directory which is set up with a direcotry structure with some files for testing.
+// TempDir is a temporary directory which is set up with a directory structure
+// with some files for testing.
 type TempDir struct {
 	dir string
 }
@@ -38,7 +39,8 @@ type File struct {
 
 // NewTempDir creates a new TempDir. This creates a new temporary directory and
 // fills it with the files given. Intermediate directories are created
-// automatically with 0700 permissions.
+// automatically with 0700 permissions. This function panics if an error occurs
+// when creating the files.
 func NewTempDir(files []*File) *TempDir {
 	d := &TempDir{}
 

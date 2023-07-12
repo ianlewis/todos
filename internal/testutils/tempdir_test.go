@@ -23,6 +23,8 @@ import (
 )
 
 func TestTempDir(t *testing.T) {
+	t.Parallel()
+
 	testCases := map[string]struct {
 		files       []*File
 		expectPanic bool
@@ -103,6 +105,8 @@ func TestTempDir(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			defer func() {
 				if r := recover(); r != nil && !tc.expectPanic {
 					t.Fatalf("unexpected panic: %v", r)
