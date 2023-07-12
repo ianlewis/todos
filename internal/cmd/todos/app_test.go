@@ -16,8 +16,6 @@ package main
 
 import (
 	"flag"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -63,33 +61,33 @@ func Test_TODOsApp_version(t *testing.T) {
 func Test_TODOsApp_Walk(t *testing.T) {
 	t.Parallel()
 
-	dir := testutils.Must(os.MkdirTemp("", "code"))
-	defer func() {
-		_ = os.RemoveAll(dir)
-	}()
-
-	files := map[string]string{
-		"foo.go": "// TODO: foo",
-		"bar.go": "// TODO: bar",
+	files := []*testutils.File{
+		{
+			Path:     "foo.go",
+			Contents: []byte("// TODO: foo"),
+			Mode:     0o600,
+		},
+		{
+			Path:     "bar.go",
+			Contents: []byte("// TODO: bar"),
+			Mode:     0o600,
+		},
 	}
 
-	for path, src := range files {
-		fullPath := filepath.Join(dir, path)
-		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
-		testutils.Check(os.WriteFile(fullPath, []byte(src), 0o600))
-	}
+	d := testutils.NewTempDir(files)
+	defer d.Cleanup()
 
 	app := newTODOsApp()
 	var b strings.Builder
 	app.Writer = &b
-	c := newContext(app, []string{dir})
+	c := newContext(app, []string{d.Dir()})
 	if err := app.Action(c); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	for path := range files {
-		if !strings.Contains(b.String(), path) {
-			t.Fatalf("expected %q in output: \n%q", path, b.String())
+	for i := range files {
+		if !strings.Contains(b.String(), files[i].Path) {
+			t.Fatalf("expected %q in output: \n%q", files[i].Path, b.String())
 		}
 	}
 }
