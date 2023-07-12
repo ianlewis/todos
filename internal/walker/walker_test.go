@@ -24,69 +24,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 )
-
-func newFixture(files map[string]string, types, paths []string, hidden, vendored bool) *fixture {
-	f := &fixture{}
-	f.wd = testutils.Must(os.Getwd())
-
-	f.dir = testutils.Must(os.MkdirTemp("", "code"))
-	cleanup, cancel := testutils.WithCancel(func() {
-		f.cleanup()
-	}, nil)
-	defer cleanup()
-	testutils.Check(os.Chdir(f.dir))
-
-	for path, src := range files {
-		fullPath := filepath.Join(f.dir, path)
-		testutils.Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
-		testutils.Check(os.WriteFile(fullPath, []byte(src), 0o600))
-	}
-
-	if len(paths) == 0 {
-		paths = []string{"."}
-	}
-
-	f.walker = New(&Options{
-		TODOFunc:  f.outFunc,
-		ErrorFunc: f.errFunc,
-		Config: &todos.Config{
-			Types: types,
-		},
-		Paths: paths,
-
-		IncludeHidden:   hidden,
-		IncludeVendored: vendored,
-	})
-
-	cancel()
-	return f
-}
-
-type fixture struct {
-	walker *TODOWalker
-	wd     string
-	dir    string
-	out    []*TODORef
-	err    []error
-}
-
-func (f *fixture) outFunc(r *TODORef) error {
-	f.out = append(f.out, r)
-	return nil
-}
-
-func (f *fixture) errFunc(err error) error {
-	f.err = append(f.err, err)
-	return nil
-}
-
-func (f *fixture) cleanup() {
-	testutils.Check(os.Chdir(f.wd))
-	testutils.Check(os.RemoveAll(f.dir))
-}
 
 var testCases = []struct {
 	name  string

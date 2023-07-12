@@ -97,6 +97,8 @@ linters-settings:
         deny:
           - pkg: "github.com/ianlewis/todos/internal/testutils"
             desc: Please don't use testutils package
+          - pkg: "github.com/ianlewis/todos/internal/walker/fixture"
+            desc: Please don't use walker/fixture package
           - pkg: "reflect"
             desc: Please don't use reflect package
           - pkg: "unsafe"
