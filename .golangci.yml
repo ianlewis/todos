@@ -119,6 +119,7 @@ linters-settings:
 
           # Dependencies.
           - "github.com/google/go-cmp/cmp"
+          - "github.com/google/go-github"
           - "github.com/urfave/cli/v2"
           - "github.com/migueleliasweb/go-github-mock/src/mock"
         deny:

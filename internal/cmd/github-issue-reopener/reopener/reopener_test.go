@@ -24,11 +24,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/go-github/v52/github"
+	"github.com/migueleliasweb/go-github-mock/src/mock"
 
 	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
-	"github.com/migueleliasweb/go-github-mock/src/mock"
 )
 
 func matchEqual(got, want []string) bool {
@@ -352,7 +352,6 @@ func Test_loadIssue(t *testing.T) {
 					mock.GetReposIssuesByOwnerByRepoByIssueNumber,
 					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						if tc.remote != nil {
-
 							pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
 							parts := pathMatch.FindStringSubmatch(r.URL.Path)
 							if len(parts) != 4 {
@@ -366,7 +365,7 @@ func Test_loadIssue(t *testing.T) {
 							}
 
 							if repoOwner == tc.owner && repoName == tc.repo && issueNumber == *tc.remote.Number {
-								w.Write(mock.MustMarshal(tc.remote))
+								_ = testutils.Must(w.Write(mock.MustMarshal(tc.remote)))
 								return
 							}
 						}
@@ -391,8 +390,7 @@ func Test_loadIssue(t *testing.T) {
 				t.Fatalf("unexpected result (-want +got):\n%s", diff)
 			}
 
-			cached, _ := r.issues.cache[tc.issueNumber]
-			if diff := cmp.Diff(tc.expected, cached); diff != "" {
+			if diff := cmp.Diff(tc.expected, r.issues.cache[tc.issueNumber]); diff != "" {
 				t.Fatalf("unexpected cached result (-want +got):\n%s", diff)
 			}
 		})
