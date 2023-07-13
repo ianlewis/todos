@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -71,6 +72,8 @@ type Options struct {
 
 	// Token is the GitHub Token.
 	Token string
+
+	client *http.Client
 }
 
 // IssueReopener is reopens issues referenced by TODOs.
@@ -97,10 +100,10 @@ type IssueReopener struct {
 // New returns a new IssueReopener.
 func New(ctx context.Context, opts *Options) *IssueReopener {
 	var client *github.Client
-	if opts.Token == "" {
-		client = github.NewClient(nil)
-	} else {
+	if opts.Token != "" {
 		client = github.NewTokenClient(ctx, opts.Token)
+	} else {
+		client = github.NewClient(opts.client)
 	}
 
 	return &IssueReopener{

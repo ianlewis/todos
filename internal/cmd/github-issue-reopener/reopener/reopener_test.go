@@ -17,6 +17,7 @@ package reopener
 import (
 	"context"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"testing"
@@ -30,20 +31,6 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
-
-func matchEqual(got, want []string) bool {
-	if len(got) != len(want) {
-		return false
-	}
-
-	for i := range want {
-		if got[i] != want[i] {
-			return false
-		}
-	}
-
-	return true
-}
 
 func Test_labelMatch(t *testing.T) {
 	t.Parallel()
@@ -133,8 +120,9 @@ func Test_labelMatch(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if got, want := labelMatch.FindStringSubmatch(tc.label), tc.match; !matchEqual(got, want) {
-				t.Fatalf("unexpected match (-want +got):\n%s", cmp.Diff(want, got))
+			got, want := labelMatch.FindStringSubmatch(tc.label), tc.match
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Fatalf("unexpected match (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -346,34 +334,34 @@ func Test_loadIssue(t *testing.T) {
 			r := New(context.Background(), &Options{
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
-			})
-			r.client = github.NewClient(mock.NewMockedHTTPClient(
-				mock.WithRequestMatchHandler(
-					mock.GetReposIssuesByOwnerByRepoByIssueNumber,
-					http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						if tc.remote != nil {
-							pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
-							parts := pathMatch.FindStringSubmatch(r.URL.Path)
-							if len(parts) != 4 {
-								t.Fatalf("not enough match parts for path %q: %q", r.URL.Path, parts)
-							}
-							repoOwner := parts[1]
-							repoName := parts[2]
-							issueNumber, err := strconv.Atoi(parts[3])
-							if err != nil {
-								t.Fatalf("bad issue number %q: %v", parts[3], err)
+				client: mock.NewMockedHTTPClient(
+					mock.WithRequestMatchHandler(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							if tc.remote != nil {
+								pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
+								parts := pathMatch.FindStringSubmatch(r.URL.Path)
+								if len(parts) != 4 {
+									t.Fatalf("not enough match parts for path %q: %q", r.URL.Path, parts)
+								}
+								repoOwner := parts[1]
+								repoName := parts[2]
+								issueNumber, err := strconv.Atoi(parts[3])
+								if err != nil {
+									t.Fatalf("bad issue number %q: %v", parts[3], err)
+								}
+
+								if repoOwner == tc.owner && repoName == tc.repo && issueNumber == *tc.remote.Number {
+									_ = testutils.Must(w.Write(mock.MustMarshal(tc.remote)))
+									return
+								}
 							}
 
-							if repoOwner == tc.owner && repoName == tc.repo && issueNumber == *tc.remote.Number {
-								_ = testutils.Must(w.Write(mock.MustMarshal(tc.remote)))
-								return
-							}
-						}
-
-						http.NotFound(w, r)
-					}),
+							http.NotFound(w, r)
+						}),
+					),
 				),
-			))
+			})
 
 			if tc.cached != nil {
 				r.issues.cache = map[int]*github.Issue{
@@ -392,6 +380,61 @@ func Test_loadIssue(t *testing.T) {
 
 			if diff := cmp.Diff(tc.expected, r.issues.cache[tc.issueNumber]); diff != "" {
 				t.Fatalf("unexpected cached result (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_ReopenAll(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		owner  string
+		repo   string
+		files  []*testutils.File
+		dryRun bool
+		issues []*github.Issue
+
+		expectedIDs    []int
+		expectedResult bool
+	}{}
+
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			// Use TempDir to set up directory.
+			wd := testutils.Must(os.Getwd())
+			dir := testutils.NewTempDir(tc.files)
+			defer dir.Cleanup()
+			testutils.Check(os.Chdir(dir.Dir()))
+			defer func() {
+				testutils.Check(os.Chdir(wd))
+			}()
+
+			var reopenedIDs []int
+			r := New(context.Background(), &Options{
+				RepoOwner: tc.owner,
+				RepoName:  tc.repo,
+				client: mock.NewMockedHTTPClient(
+					mock.WithRequestMatchHandler(
+						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							// FIXME: Add handler
+							http.NotFound(w, r)
+						}),
+					),
+				),
+			})
+
+			if got, want := r.ReopenAll(context.Background()), tc.expectedResult; got != want {
+				t.Errorf("unexpected result, got: %v, want: %v", got, want)
+			}
+
+			got, want := reopenedIDs, tc.expectedIDs
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Fatalf("unexpected issues (-want +got):\n%s", diff)
 			}
 		})
 	}
