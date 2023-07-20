@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -173,6 +174,41 @@ func Test_handleTODO(t *testing.T) {
 				},
 			},
 		},
+		"url_label.go": {
+			owner: "ianlewis",
+			repo:  "todos",
+			ref: []*walker.TODORef{
+				{
+					FileName: "test.go",
+					TODO: &todos.TODO{
+						Type:        "TODO",
+						Text:        "// TODO(github.com/ianlewis/todos/issues/123): Foo",
+						Label:       "github.com/ianlewis/todos/issues/123",
+						Message:     "Foo",
+						Line:        5,
+						CommentLine: 5,
+					},
+				},
+			},
+			expected: map[int]*IssueRef{
+				123: {
+					Number: 123,
+					TODOs: []*walker.TODORef{
+						{
+							FileName: "test.go",
+							TODO: &todos.TODO{
+								Type:        "TODO",
+								Text:        "// TODO(github.com/ianlewis/todos/issues/123): Foo",
+								Label:       "github.com/ianlewis/todos/issues/123",
+								Message:     "Foo",
+								Line:        5,
+								CommentLine: 5,
+							},
+						},
+					},
+				},
+			},
+		},
 		"multi-references": {
 			owner: "ianlewis",
 			repo:  "todos",
@@ -230,6 +266,76 @@ func Test_handleTODO(t *testing.T) {
 				},
 			},
 		},
+		"foo_label.go": {
+			ref: []*walker.TODORef{
+				{
+					FileName: "test.go",
+					TODO: &todos.TODO{
+						Type:        "TODO",
+						Text:        "// TODO(foo): Foo",
+						Label:       "",
+						Message:     "Foo",
+						Line:        5,
+						CommentLine: 5,
+					},
+				},
+			},
+			expected: nil,
+		},
+		"different_repo.go": {
+			owner: "ianlewis",
+			repo:  "todos",
+			ref: []*walker.TODORef{
+				{
+					FileName: "test.go",
+					TODO: &todos.TODO{
+						Type:        "TODO",
+						Text:        "// TODO(github.com/ianlewis/otherrepo/issues/123): Foo",
+						Label:       "github.com/otherowner/todos/issues/123",
+						Message:     "Foo",
+						Line:        5,
+						CommentLine: 5,
+					},
+				},
+			},
+			expected: nil,
+		},
+		"different_owner.go": {
+			owner: "ianlewis",
+			repo:  "todos",
+			ref: []*walker.TODORef{
+				{
+					FileName: "test.go",
+					TODO: &todos.TODO{
+						Type:        "TODO",
+						Text:        "// TODO(github.com/otherowner/todos/issues/123): Foo",
+						Label:       "github.com/otherowner/todos/issues/123",
+						Message:     "Foo",
+						Line:        5,
+						CommentLine: 5,
+					},
+				},
+			},
+			expected: nil,
+		},
+		"issue_no_bad_format.go": {
+			owner: "ianlewis",
+			repo:  "todos",
+			ref: []*walker.TODORef{
+				{
+					FileName: "test.go",
+					TODO: &todos.TODO{
+						Type:        "TODO",
+						Text:        "// TODO(github.com/ianlewis/todos/issues/foo): Foo",
+						Label:       "github.com/otherowner/todos/issues/foo",
+						Message:     "Foo",
+						Line:        5,
+						CommentLine: 5,
+					},
+				},
+			},
+			expected: nil,
+		},
 	}
 
 	for name, tc := range testCases {
@@ -250,6 +356,54 @@ func Test_handleTODO(t *testing.T) {
 
 			if diff := cmp.Diff(tc.expected, r.refs.cache); diff != "" {
 				t.Fatalf("unexpected result (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_handleErr(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		err      error
+		rerr     error
+		expected error
+	}{
+		"nil": {
+			err:      nil,
+			rerr:     nil,
+			expected: nil,
+		},
+		"EOF": {
+			err:      io.EOF,
+			rerr:     io.EOF,
+			expected: nil,
+		},
+		"canceled": {
+			err:      context.Canceled,
+			rerr:     context.Canceled,
+			expected: context.Canceled,
+		},
+		"deadline": {
+			err:      context.DeadlineExceeded,
+			rerr:     context.DeadlineExceeded,
+			expected: context.DeadlineExceeded,
+		},
+	}
+
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			r := New(context.Background(), &Options{})
+			err := r.handleErr(tc.err)
+			if diff := cmp.Diff(tc.rerr, r.err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tc.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -416,9 +570,8 @@ func parseAndGetIssue(owner, repo string, issues []*github.Issue, r *http.Reques
 	return nil
 }
 
+//nolint:paralleltest // uses Chdir and cannot be run in parallel.
 func Test_ReopenAll(t *testing.T) {
-	t.Parallel()
-
 	testCases := map[string]struct {
 		owner  string
 		repo   string
@@ -456,13 +609,61 @@ func Test_ReopenAll(t *testing.T) {
 			expectedIDs:    []int{321},
 			expectedResult: false,
 		},
+		"already open issue": {
+			owner: "ianlewis",
+			repo:  "todos",
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			issues: []*github.Issue{
+				{
+					Number: testutils.AsPtr(321),
+					State:  testutils.AsPtr("open"),
+					Title:  testutils.AsPtr("Test Issue"),
+				},
+			},
+			expectedIDs:    nil,
+			expectedResult: false,
+		},
+		"issue not exists": {
+			owner: "ianlewis",
+			repo:  "todos",
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			issues:         nil,
+			expectedIDs:    nil,
+			expectedResult: true,
+		},
 	}
 
 	for name, tc := range testCases {
 		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 
+		//nolint:paralleltest // uses Chdir and cannot be run in parallel.
+		t.Run(name, func(t *testing.T) {
 			// Use TempDir to set up directory.
 			wd := testutils.Must(os.Getwd())
 			dir := testutils.NewTempDir(tc.files)

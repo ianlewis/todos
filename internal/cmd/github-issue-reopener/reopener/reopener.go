@@ -150,9 +150,10 @@ func (r *IssueReopener) handleTODO(ref *walker.TODORef) error {
 
 	number, err := strconv.Atoi(match[5])
 	if err != nil {
-		fmt.Printf("bad issue number %q: %v", match[5], err)
-		// issue is not a number.
-		return nil
+		// Issue is not a number.
+		// NOTE: This should never happen because labelMatch matches the issue
+		// number.
+		panic(fmt.Sprintf("bad issue number %q: %v", match[5], err))
 	}
 
 	_ = r.addToRef(number, ref)
