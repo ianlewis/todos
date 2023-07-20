@@ -16,6 +16,8 @@ package reopener
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -342,13 +344,15 @@ func Test_loadIssue(t *testing.T) {
 								pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
 								parts := pathMatch.FindStringSubmatch(r.URL.Path)
 								if len(parts) != 4 {
-									t.Fatalf("not enough match parts for path %q: %q", r.URL.Path, parts)
+									http.NotFound(w, r)
+									return
 								}
 								repoOwner := parts[1]
 								repoName := parts[2]
 								issueNumber, err := strconv.Atoi(parts[3])
 								if err != nil {
-									t.Fatalf("bad issue number %q: %v", parts[3], err)
+									http.NotFound(w, r)
+									return
 								}
 
 								if repoOwner == tc.owner && repoName == tc.repo && issueNumber == *tc.remote.Number {
@@ -385,6 +389,33 @@ func Test_loadIssue(t *testing.T) {
 	}
 }
 
+func parseAndGetIssue(owner, repo string, issues []*github.Issue, r *http.Request) *github.Issue {
+	pathMatch := regexp.MustCompile("/repos/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)/issues/([0-9]+)")
+	parts := pathMatch.FindStringSubmatch(r.URL.Path)
+	if len(parts) != 4 {
+		return nil
+	}
+
+	repoOwner := parts[1]
+	repoName := parts[2]
+	issueNumber, err := strconv.Atoi(parts[3])
+	if err != nil {
+		return nil
+	}
+
+	if repoOwner != owner || repoName != repo {
+		return nil
+	}
+
+	for i := range issues {
+		if *issues[i].Number == issueNumber {
+			return issues[i]
+		}
+	}
+
+	return nil
+}
+
 func Test_ReopenAll(t *testing.T) {
 	t.Parallel()
 
@@ -397,7 +428,35 @@ func Test_ReopenAll(t *testing.T) {
 
 		expectedIDs    []int
 		expectedResult bool
-	}{}
+	}{
+		"reopen issue": {
+			owner: "ianlewis",
+			repo:  "todos",
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			issues: []*github.Issue{
+				{
+					Number: testutils.AsPtr(321),
+					State:  testutils.AsPtr("closed"),
+					Title:  testutils.AsPtr("Test Issue"),
+				},
+			},
+			expectedIDs:    []int{321},
+			expectedResult: false,
+		},
+	}
 
 	for name, tc := range testCases {
 		tc := tc
@@ -414,15 +473,50 @@ func Test_ReopenAll(t *testing.T) {
 			}()
 
 			var reopenedIDs []int
+			var commentedIDs []int
 			r := New(context.Background(), &Options{
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
+				Paths:     []string{"."},
 				client: mock.NewMockedHTTPClient(
 					mock.WithRequestMatchHandler(
 						mock.GetReposIssuesByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							// FIXME: Add handler
-							http.NotFound(w, r)
+							issue := parseAndGetIssue(tc.owner, tc.repo, tc.issues, r)
+							if issue == nil {
+								http.NotFound(w, r)
+								return
+							}
+
+							b, err := json.Marshal(issue)
+							if err != nil {
+								http.Error(w, fmt.Sprintf("%s: %v", http.StatusText(http.StatusInternalServerError), err), http.StatusInternalServerError)
+								return
+							}
+
+							w.Write(b)
+						}),
+					),
+					mock.WithRequestMatchHandler(
+						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							issue := parseAndGetIssue(tc.owner, tc.repo, tc.issues, r)
+							if issue == nil {
+								http.NotFound(w, r)
+								return
+							}
+							reopenedIDs = append(reopenedIDs, *issue.Number)
+						}),
+					),
+					mock.WithRequestMatchHandler(
+						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
+						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							issue := parseAndGetIssue(tc.owner, tc.repo, tc.issues, r)
+							if issue == nil {
+								http.NotFound(w, r)
+								return
+							}
+							commentedIDs = append(commentedIDs, *issue.Number)
 						}),
 					),
 				),
@@ -432,9 +526,18 @@ func Test_ReopenAll(t *testing.T) {
 				t.Errorf("unexpected result, got: %v, want: %v", got, want)
 			}
 
-			got, want := reopenedIDs, tc.expectedIDs
-			if diff := cmp.Diff(want, got); diff != "" {
-				t.Fatalf("unexpected issues (-want +got):\n%s", diff)
+			{
+				got, want := reopenedIDs, tc.expectedIDs
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Fatalf("unexpected reopened issues (-want +got):\n%s", diff)
+				}
+			}
+
+			{
+				got, want := commentedIDs, tc.expectedIDs
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Fatalf("unexpected commented issues (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
