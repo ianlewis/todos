@@ -779,11 +779,12 @@ func Test_ReopenAll(t *testing.T) {
 
 							b, err := json.Marshal(issue)
 							if err != nil {
-								http.Error(w, fmt.Sprintf("%s: %v", http.StatusText(http.StatusInternalServerError), err), http.StatusInternalServerError)
+								msg := fmt.Sprintf("%s: %v", http.StatusText(http.StatusInternalServerError), err)
+								http.Error(w, msg, http.StatusInternalServerError)
 								return
 							}
 
-							w.Write(b)
+							_ = testutils.Must(w.Write(b))
 						}),
 					),
 					mock.WithRequestMatchHandler(
