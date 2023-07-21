@@ -36,6 +36,124 @@ var scannerTestCases = []*struct {
 		line int
 	}
 }{
+	// Assembly
+	{
+		name: "line_comments.s",
+		src: `; file comment
+
+			; TODO is a function.
+			TODO:
+				ret ; Random comment`,
+		config: UnixAssemblyConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "; Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.s",
+		src: `; file comment
+
+			; TODO is a function.
+			TODO:
+				msg x "; Random comment",0
+				msg y '; Random comment',0
+				ret`,
+		config: UnixAssemblyConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.s",
+		src: `; file comment
+
+			; TODO is a function.
+			TODO:
+				msg x "\"; Random comment",0
+				msg y '\'; Random comment',0
+				ret`,
+		config: UnixAssemblyConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function.",
+				line: 3,
+			},
+			// TODO(#1): Assembly doesn't seems to support escaped double or single quotes.
+			// {
+			// 	text: "; Random comment',0",
+			// 	line: 5,
+			// },
+			// {
+			// 	text: "; Random comment',0",
+			// 	line: 6,
+			// },
+		},
+	},
+	{
+		name: "multi_line.s",
+		src: `; file comment
+
+			/*
+			TODO is a function.
+			*/
+			TODO:
+				ret ; Random comment
+			/* extra comment */`,
+		config: UnixAssemblyConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: "/*\n\t\t\tTODO is a function.\n\t\t\t*/",
+				line: 3,
+			},
+			{
+				text: "; Random comment",
+				line: 7,
+			},
+			{
+				text: "/* extra comment */",
+				line: 8,
+			},
+		},
+	},
+
 	// Go
 	{
 		name: "line_comments.go",

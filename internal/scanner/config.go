@@ -24,6 +24,7 @@ type Config struct {
 
 var (
 	languageMap = map[string]*Config{
+		"Assembly":     &AssemblyConfig,
 		"C":            &CConfig,
 		"C++":          &CPPConfig,
 		"C#":           &CSConfig,
@@ -35,21 +36,34 @@ var (
 		"Java":         &JavaConfig,
 		"JavaScript":   &JavascriptConfig,
 		// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
-		"JSON":        &JavascriptConfig,
-		"Lua":         &LuaConfig,
-		"Makefile":    &MakefileConfig,
-		"Objective-C": &ObjectiveCConfig,
-		"Perl":        &PerlConfig,
-		"PHP":         &PHPConfig,
-		"Python":      &PythonConfig,
-		"Ruby":        &RubyConfig,
-		"Scala":       &ScalaConfig,
-		"Shell":       &ShellConfig,
-		"Swift":       &SwiftConfig,
-		"TOML":        &TOMLConfig,
-		"TypeScript":  &TypescriptConfig,
-		"XML":         &XMLConfig,
-		"YAML":        &YAMLConfig,
+		"JSON":          &JavascriptConfig,
+		"Lua":           &LuaConfig,
+		"Makefile":      &MakefileConfig,
+		"Objective-C":   &ObjectiveCConfig,
+		"Perl":          &PerlConfig,
+		"PHP":           &PHPConfig,
+		"Python":        &PythonConfig,
+		"Ruby":          &RubyConfig,
+		"Scala":         &ScalaConfig,
+		"Shell":         &ShellConfig,
+		"Swift":         &SwiftConfig,
+		"TOML":          &TOMLConfig,
+		"TypeScript":    &TypescriptConfig,
+		"Unix Assembly": &UnixAssemblyConfig,
+		"XML":           &XMLConfig,
+		"YAML":          &YAMLConfig,
+	}
+
+	// AssemblyConfig is a config for Assembly.
+	AssemblyConfig = Config{
+		LineCommentStart: []string{";"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		MultilineCommentStart: "/*",
+		MultilineCommentEnd:   "*/",
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"},
+		},
 	}
 
 	// CConfig is a config for C.
@@ -193,6 +207,9 @@ var (
 
 	// TypescriptConfig is a config for Typescript.
 	TypescriptConfig = JavascriptConfig
+
+	// UnixAssemblyConfig is a config for Unix Assembly.
+	UnixAssemblyConfig = AssemblyConfig
 
 	// XMLConfig is a config for XML.
 	XMLConfig = Config{
