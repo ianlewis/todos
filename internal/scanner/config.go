@@ -183,6 +183,9 @@ var (
 		},
 	}
 
+	// RustConfig is a config for Rust.
+	RustConfig = CConfig
+
 	// ScalaConfig is a config for Scala.
 	ScalaConfig = JavaConfig
 

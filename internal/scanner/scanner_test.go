@@ -71,7 +71,7 @@ var scannerTestCases = []*struct {
 			// package comment
 
 			// TODO is a function.
-			func TODO() {
+			func TODO() string {
 				x := "// Random comment"
 				y := '// Random comment'
 				return x + y
@@ -97,7 +97,7 @@ var scannerTestCases = []*struct {
 			// package comment
 
 			// TODO is a function.
-			func TODO() {
+			func TODO() string {
 				x := "\"// Random comment"
 				y := '\'// Random comment'
 				return x + y
@@ -126,7 +126,7 @@ var scannerTestCases = []*struct {
 			// TODO is a function.
 			` + "`" + `
 
-			func TODO() {
+			func TODO() string {
 				// Random comment
 				x := "\"// Random comment"
 				y := '\'// Random comment'
@@ -412,6 +412,148 @@ var scannerTestCases = []*struct {
 			{
 				text: "# Random comment",
 				line: 8,
+			},
+		},
+	},
+
+	// Rust
+	{
+		name: "line_comments.rs",
+		src: `// file comment
+
+			// TODO is a function.
+			fn TODO() {
+				println!("fizzbuzz"); // Random comment
+			}`,
+		config: RustConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.rs",
+		src: `// file comment
+
+			// TODO is a function.
+			fn TODO() {
+				let x: String = "// Random comment";
+				let y: String = '// Random comment';
+				x + y
+			}`,
+		config: RustConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.rs",
+		src: `// file comment
+
+			// TODO is a function.
+			fn TODO() {
+				let x: String "\"// Random comment";
+				let y: String '\'// Random comment';
+				x + y
+			}`,
+		config: RustConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "multi_line_string.rs",
+		src: `// file comment
+
+			let z: String = "
+			// TODO is a function.
+			";
+
+			fn TODO() -> String {
+				// Random comment
+				let x: String = "\"// Random comment";
+				let y: String = '\'// Random comment';
+				x + y
+			}`,
+		config: RustConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// Random comment",
+				line: 8,
+			},
+		},
+	},
+	{
+		name: "multi_line.rs",
+		src: `// file comment
+
+			/*
+			TODO is a function.
+			*/
+			fn TODO() {
+				println!("fizzbuzz"); // Random comment
+			}
+			/* extra comment */`,
+		config: GoConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "/*\n\t\t\tTODO is a function.\n\t\t\t*/",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 7,
+			},
+			{
+				text: "/* extra comment */",
+				line: 9,
 			},
 		},
 	},
