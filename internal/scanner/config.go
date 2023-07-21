@@ -143,7 +143,7 @@ var (
 		MultilineCommentStart: "=",
 		MultilineCommentEnd:   "=cut",
 		Strings: [][2]string{
-			// TODO: Perl supports strings with any delimiter.
+			// TODO(#1): Perl supports strings with any delimiter.
 			{"\"", "\""},
 			{"'", "'"},
 		},
