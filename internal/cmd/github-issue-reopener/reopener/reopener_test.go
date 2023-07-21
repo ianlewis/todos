@@ -609,6 +609,34 @@ func Test_ReopenAll(t *testing.T) {
 			expectedIDs:    []int{321},
 			expectedResult: false,
 		},
+		"reopen issue dry-run": {
+			owner:  "ianlewis",
+			repo:   "todos",
+			dryRun: true,
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			issues: []*github.Issue{
+				{
+					Number: testutils.AsPtr(321),
+					State:  testutils.AsPtr("closed"),
+					Title:  testutils.AsPtr("Test Issue"),
+				},
+			},
+			expectedIDs:    nil,
+			expectedResult: false,
+		},
 		"already open issue": {
 			owner: "ianlewis",
 			repo:  "todos",
@@ -676,6 +704,7 @@ func Test_ReopenAll(t *testing.T) {
 			var reopenedIDs []int
 			var commentedIDs []int
 			r := New(context.Background(), &Options{
+				DryRun:    tc.dryRun,
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
 				Paths:     []string{"."},
