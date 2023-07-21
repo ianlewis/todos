@@ -534,7 +534,7 @@ var scannerTestCases = []*struct {
 				println!("fizzbuzz"); // Random comment
 			}
 			/* extra comment */`,
-		config: GoConfig,
+		config: RustConfig,
 		comments: []struct {
 			text string
 			line int
