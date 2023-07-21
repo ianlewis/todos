@@ -1,0 +1,33 @@
+{
+  "name": "issue-reopener",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Reopen issues that are referenced by TODOs",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'",
+    "package": "ncc build --external encoding --source-map",
+    "lint": "eslint --max-warnings 0 src/**/*.ts",
+    "all": "npm run format && npm run lint && npm run build && npm run package"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
+  "dependencies": {
+    "@actions/core": "1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.16.18",
+    "@typescript-eslint/eslint-plugin": "5.60.0",
+    "@typescript-eslint/parser": "5.60.0",
+    "@vercel/ncc": "0.36.1",
+    "eslint": "8.43.0",
+    "eslint-plugin-github": "4.8.0",
+    "prettier": "2.8.8",
+    "typescript": "5.1.3"
+  }
+}
