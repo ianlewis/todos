@@ -579,7 +579,10 @@ func Test_ReopenAll(t *testing.T) {
 		dryRun bool
 		issues []*github.Issue
 
-		expectedIDs    []int
+		reopenErr  bool
+		commentErr bool
+
+		expectedIDs    map[int]bool
 		expectedResult bool
 	}{
 		"reopen issue": {
@@ -606,7 +609,7 @@ func Test_ReopenAll(t *testing.T) {
 					Title:  testutils.AsPtr("Test Issue"),
 				},
 			},
-			expectedIDs:    []int{321},
+			expectedIDs:    map[int]bool{321: true},
 			expectedResult: false,
 		},
 		"reopen issue dry-run": {
@@ -685,6 +688,63 @@ func Test_ReopenAll(t *testing.T) {
 			expectedIDs:    nil,
 			expectedResult: true,
 		},
+		"reopen error": {
+			owner: "ianlewis",
+			repo:  "todos",
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			reopenErr: true,
+			issues: []*github.Issue{
+				{
+					Number: testutils.AsPtr(321),
+					State:  testutils.AsPtr("closed"),
+					Title:  testutils.AsPtr("Test Issue"),
+				},
+			},
+			expectedIDs:    nil,
+			expectedResult: true,
+		},
+		"comment error": {
+			owner: "ianlewis",
+			repo:  "todos",
+			files: []*testutils.File{
+				{
+					Path: "code.go",
+					Contents: []byte(`package foo
+					// package comment
+
+					// TODO is a function.
+					// TODO(#321): some task.
+					func TODO() {
+						return // Random comment
+					}`),
+					Mode: 0o600,
+				},
+			},
+			commentErr: true,
+			issues: []*github.Issue{
+				{
+					Number: testutils.AsPtr(321),
+					State:  testutils.AsPtr("closed"),
+					Title:  testutils.AsPtr("Test Issue"),
+				},
+			},
+			// NOTE: the issue will still be reopened.
+			expectedIDs:    map[int]bool{321: true},
+			expectedResult: true,
+		},
 	}
 
 	for name, tc := range testCases {
@@ -701,8 +761,7 @@ func Test_ReopenAll(t *testing.T) {
 				testutils.Check(os.Chdir(wd))
 			}()
 
-			var reopenedIDs []int
-			var commentedIDs []int
+			var reopenedIDs map[int]bool
 			r := New(context.Background(), &Options{
 				DryRun:    tc.dryRun,
 				RepoOwner: tc.owner,
@@ -730,23 +789,41 @@ func Test_ReopenAll(t *testing.T) {
 					mock.WithRequestMatchHandler(
 						mock.PatchReposIssuesByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							if tc.reopenErr {
+								http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+								return
+							}
+
 							issue := parseAndGetIssue(tc.owner, tc.repo, tc.issues, r)
 							if issue == nil {
 								http.NotFound(w, r)
 								return
 							}
-							reopenedIDs = append(reopenedIDs, *issue.Number)
+
+							if reopenedIDs == nil {
+								reopenedIDs = make(map[int]bool)
+							}
+							reopenedIDs[*issue.Number] = true
 						}),
 					),
 					mock.WithRequestMatchHandler(
 						mock.PostReposIssuesCommentsByOwnerByRepoByIssueNumber,
 						http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+							if tc.commentErr {
+								http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+								return
+							}
+
 							issue := parseAndGetIssue(tc.owner, tc.repo, tc.issues, r)
 							if issue == nil {
 								http.NotFound(w, r)
 								return
 							}
-							commentedIDs = append(commentedIDs, *issue.Number)
+
+							if reopenedIDs == nil {
+								reopenedIDs = make(map[int]bool)
+							}
+							reopenedIDs[*issue.Number] = true
 						}),
 					),
 				),
@@ -756,18 +833,9 @@ func Test_ReopenAll(t *testing.T) {
 				t.Errorf("unexpected result, got: %v, want: %v", got, want)
 			}
 
-			{
-				got, want := reopenedIDs, tc.expectedIDs
-				if diff := cmp.Diff(want, got); diff != "" {
-					t.Fatalf("unexpected reopened issues (-want +got):\n%s", diff)
-				}
-			}
-
-			{
-				got, want := commentedIDs, tc.expectedIDs
-				if diff := cmp.Diff(want, got); diff != "" {
-					t.Fatalf("unexpected commented issues (-want +got):\n%s", diff)
-				}
+			got, want := reopenedIDs, tc.expectedIDs
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Fatalf("unexpected reopened issues (-want +got):\n%s", diff)
 			}
 		})
 	}
