@@ -712,6 +712,57 @@ var testCases = []struct {
 			},
 		},
 	},
+	{
+		name: ".todosignore ignore directory",
+		files: []*testutils.File{
+			{
+				Path:     ".todosignore",
+				Contents: []byte(`ignored/`),
+				Mode:     0o600,
+			},
+			{
+				Path: "ignored/ignored.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
 }
 
 type fixture struct {
