@@ -24,6 +24,7 @@ type Config struct {
 
 var (
 	languageMap = map[string]*Config{
+		"Assembly":     &AssemblyConfig,
 		"C":            &CConfig,
 		"C++":          &CPPConfig,
 		"C#":           &CSConfig,
@@ -35,26 +36,40 @@ var (
 		"Java":         &JavaConfig,
 		"JavaScript":   &JavascriptConfig,
 		// NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
-		"JSON":        &JavascriptConfig,
-		"Lua":         &LuaConfig,
-		"Makefile":    &MakefileConfig,
-		"Objective-C": &ObjectiveCConfig,
-		"Perl":        &PerlConfig,
-		"PHP":         &PHPConfig,
-		"Python":      &PythonConfig,
-		"Ruby":        &RubyConfig,
-		"Scala":       &ScalaConfig,
-		"Shell":       &ShellConfig,
-		"Swift":       &SwiftConfig,
-		"TOML":        &TOMLConfig,
-		"TypeScript":  &TypescriptConfig,
-		"XML":         &XMLConfig,
-		"YAML":        &YAMLConfig,
+		"JSON":          &JavascriptConfig,
+		"Lua":           &LuaConfig,
+		"Makefile":      &MakefileConfig,
+		"Objective-C":   &ObjectiveCConfig,
+		"Perl":          &PerlConfig,
+		"PHP":           &PHPConfig,
+		"Python":        &PythonConfig,
+		"Ruby":          &RubyConfig,
+		"Scala":         &ScalaConfig,
+		"Shell":         &ShellConfig,
+		"Swift":         &SwiftConfig,
+		"TOML":          &TOMLConfig,
+		"TypeScript":    &TypescriptConfig,
+		"Unix Assembly": &UnixAssemblyConfig,
+		"XML":           &XMLConfig,
+		"YAML":          &YAMLConfig,
+	}
+
+	// AssemblyConfig is a config for Assembly.
+	AssemblyConfig = Config{
+		LineCommentStart: []string{";"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		MultilineCommentStart: "/*",
+		MultilineCommentEnd:   "*/",
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"},
+		},
 	}
 
 	// CConfig is a config for C.
 	CConfig = Config{
-		LineCommentStart:      []string{"//"},
+		LineCommentStart: []string{"//"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -75,7 +90,8 @@ var (
 
 	// GoConfig is a config for Go.
 	GoConfig = Config{
-		LineCommentStart:      []string{"//"},
+		LineCommentStart: []string{"//"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -89,28 +105,11 @@ var (
 	HTMLConfig = XMLConfig
 
 	// JavaConfig is a config for Java.
-	JavaConfig = Config{
-		LineCommentStart:      []string{"//"},
-		MultilineCommentStart: "/*",
-		MultilineCommentEnd:   "*/",
-		Strings: [][2]string{
-			{"\"", "\""},
-			{"'", "'"}, // character
-			// NOTE: All strings are treated as multi-line.
-			// {"\"\"\"", "\"\"\""},
-		},
-	}
+	// NOTE: All strings are treated as multi-line.
+	JavaConfig = CConfig
 
 	// JavascriptConfig is a config for Javascript.
-	JavascriptConfig = Config{
-		LineCommentStart:      []string{"//"},
-		MultilineCommentStart: "/*",
-		MultilineCommentEnd:   "*/",
-		Strings: [][2]string{
-			{"\"", "\""},
-			{"'", "'"}, // character
-		},
-	}
+	JavascriptConfig = CConfig
 
 	// LuaConfig is a config for Lua.
 	LuaConfig = Config{
@@ -127,15 +126,7 @@ var (
 	MakefileConfig = ShellConfig
 
 	// ObjectiveCConfig is a config for Objective-C.
-	ObjectiveCConfig = Config{
-		LineCommentStart:      []string{"//"},
-		MultilineCommentStart: "/*",
-		MultilineCommentEnd:   "*/",
-		Strings: [][2]string{
-			{"\"", "\""}, // NSString or char*
-			{"'", "'"},   // character
-		},
-	}
+	ObjectiveCConfig = CConfig
 
 	// PerlConfig is a config for Perl.
 	PerlConfig = Config{
@@ -151,7 +142,8 @@ var (
 
 	// PHPConfig is a config for PHP.
 	PHPConfig = Config{
-		LineCommentStart:      []string{"#", "//"},
+		LineCommentStart: []string{"#", "//"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -161,6 +153,7 @@ var (
 	}
 
 	// PythonConfig is a config for Python.
+	// TODO(#1): Python parsing should also include python docstrings.
 	PythonConfig = Config{
 		LineCommentStart:      []string{"#"},
 		MultilineCommentStart: "\"\"\"",
@@ -200,7 +193,8 @@ var (
 
 	// SwiftConfig is a config for Swift.
 	SwiftConfig = Config{
-		LineCommentStart:      []string{"//"},
+		LineCommentStart: []string{"//"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -213,6 +207,9 @@ var (
 
 	// TypescriptConfig is a config for Typescript.
 	TypescriptConfig = JavascriptConfig
+
+	// UnixAssemblyConfig is a config for Unix Assembly.
+	UnixAssemblyConfig = AssemblyConfig
 
 	// XMLConfig is a config for XML.
 	XMLConfig = Config{
