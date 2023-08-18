@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for [Rust](https://www.rust-lang.org/) was added.
 - Support for Unix assembly language was added.
 - Support for [Lua](https://www.lua.org/) was added.
+- A new `github-issue-reopener` binary was added. This tool will scan a
+  directory for TODOs referencing a GitHub issue and reopen issues that have
+  been prematurely closed.
 
 ## [0.2.0] - 2023-06-30
 
