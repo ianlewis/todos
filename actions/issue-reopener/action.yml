@@ -16,8 +16,12 @@ name: "TODO Issue Reopener"
 description: "Reopen issues that are referenced by TODOs"
 inputs:
   path:
-    description: "Base base to search."
+    description: "Base path to search."
     required: true
+  token:
+    description: "The GitHub token to use for API requests."
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: node16
