@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new `github-issue-reopener` binary was added. This tool will scan a
   directory for TODOs referencing a GitHub issue and reopen issues that have
   been prematurely closed.
+- Support for a `.todosignore` file was added. It functions the same as a
+  `.gitignore` file and uses the same format. Files matching the `.todosignore`
+  file are ignored when searching for TODOs.
 
 ## [0.2.0] - 2023-06-30
 
