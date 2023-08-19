@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as crypto from "crypto";
 import * as fs from "fs/promises";
 import * as os from "os";
+import * as path from "path";
 
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
@@ -127,10 +129,10 @@ async function cleanup(path: string): Promise<void> {
   await io.rmRF(`${path}`);
 }
 
-function run(): void {
-  const path = core.getInput("path", { required: true });
+async function run(): Promise<void> {
+  const wd = core.getInput("path", { required: true });
   const token = core.getInput("token", { required: true });
-  const tmpDir = fs.mkdtempSync(
+  const tmpDir = await fs.mkdtemp(
     path.join(os.tmpdir(), "github-issue-reopener_"),
   );
 
@@ -155,7 +157,7 @@ function run(): void {
     [
       `--repo=${process.env.GITHUB_REPOSITORY}`,
       `--sha=${process.env.GITHUB_SHA}`,
-      `${path}`,
+      `${wd}`,
     ],
     {
       env: {
