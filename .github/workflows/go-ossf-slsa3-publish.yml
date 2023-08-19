@@ -48,8 +48,8 @@ jobs:
         run: |
           echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
 
-  build:
-    name: builder-${{matrix.os}}-${{matrix.arch}}
+  build-todos:
+    name: todos-${{matrix.os}}-${{matrix.arch}}
     needs: [args]
     strategy:
       matrix:
@@ -66,6 +66,32 @@ jobs:
       actions: read # To read workflow path.
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
     with:
+      # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
+      # go-version-file: "go.mod"
       go-version: "1.20"
-      config-file: ".slsa-goreleaser/${{matrix.os}}-${{matrix.arch}}.yml"
+      config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
+      evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
+
+  build-github-issue-reopener:
+    name: github-issue-reopener-${{matrix.os}}-${{matrix.arch}}
+    needs: [args]
+    strategy:
+      matrix:
+        os:
+          - linux
+          - windows
+          - darwin
+        arch:
+          - amd64
+          - arm64
+    permissions:
+      id-token: write # To sign.
+      contents: write # To upload release assets.
+      actions: read # To read workflow path.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
+    with:
+      # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
+      # go-version-file: "go.mod"
+      go-version: "1.20"
+      config-file: ".slsa-goreleaser/github-issue-reopener-${{matrix.os}}-${{matrix.arch}}.yml"
       evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
