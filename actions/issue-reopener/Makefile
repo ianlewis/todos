@@ -14,6 +14,9 @@
 
 SHELL := /bin/bash
 ACTION_NAME = $(shell basename "$$(pwd)")
+OUTPUT_FORMAT ?= $(shell if [ "${GITHUB_ACTIONS}" == "true" ]; then echo "github"; else echo ""; fi)
+
+REPO_ROOT := $(shell git rev-parse --show-toplevel)
 
 .PHONY: help
 help: ## Shows all targets and help from the Makefile (this message).
@@ -59,4 +62,30 @@ format: node_modules/.installed ## Formats code.
 
 .PHONY: lint
 lint: node_modules/.installed ## Runs eslint.
-	npm run lint
+	@set -e;\
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			exit_code=0; \
+			while IFS="" read -r p && [ -n "$$p" ]; do \
+				file=$$(echo "$$p" | jq -c '.filePath // empty' | tr -d '"'); \
+				file=$$(realpath --relative-to "$(REPO_ROOT)" "$$file"); \
+				while IFS="" read -r m && [ -n "$$m" ]; do \
+					severity=$$(echo "$$m" | jq -c '.severity // empty' | tr -d '"'); \
+					line=$$(echo "$$m" | jq -c '.line // empty' | tr -d '"'); \
+					endline=$$(echo "$$m" | jq -c '.endLine // empty' | tr -d '"'); \
+					col=$$(echo "$$m" | jq -c '.column // empty' | tr -d '"'); \
+					endcol=$$(echo "$$m" | jq -c '.endColumn // empty' | tr -d '"'); \
+					message=$$(echo "$$m" | jq -c '.message // empty' | tr -d '"'); \
+					exit_code=1; \
+					case $$severity in \
+					"1") \
+						echo "::warning file=$${file},line=$${line},endLine=$${endline},col=$${col},endColumn=$${endcol}::$${message}"; \
+						;; \
+					"2") \
+						echo "::error file=$${file},line=$${line},endLine=$${endline},col=$${col},endColumn=$${endcol}::$${message}"; \
+						;; \
+					esac; \
+				done <<<$$(echo "$$p" | jq -c '.messages[]'); \
+			done <<<$$(./node_modules/.bin/eslint --max-warnings 0 -f json src/**/*.ts | jq -c '.[]'); \
+		else \
+			./node_modules/.bin/eslint --max-warnings 0 src/**/*.ts; \
+		fi

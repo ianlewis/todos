@@ -99,7 +99,7 @@ autogen: ## Runs autogen on code files.
 #####################################################################
 
 .PHONY: lint
-lint: markdownlint golangci-lint yamllint actionlint ## Run all linters.
+lint: golangci-lint eslint yamllint actionlint markdownlint ## Run all linters.
 
 .PHONY: actionlint
 actionlint: ## Runs the actionlint linter.
@@ -117,6 +117,14 @@ actionlint: ## Runs the actionlint linter.
 		else \
 			actionlint $${files}; \
 		fi
+
+.PHONY: eslint
+eslint: ## Runs the eslint linter.
+	@set -e;\
+		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name package.json -type f | xargs dirname); \
+		for path in $$PATHS; do \
+			make -C $$path lint; \
+		done
 
 .PHONY: markdownlint
 markdownlint: node_modules/.installed ## Runs the markdownlint linter.
