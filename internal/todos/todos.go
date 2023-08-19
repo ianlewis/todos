@@ -24,9 +24,17 @@ import (
 // DefaultTypes is the default set of TODO types.
 var DefaultTypes = []string{
 	"TODO",
+	"Todo",
+	"todo",
 	"FIXME",
+	"Fixme",
+	"fixme",
 	"BUG",
+	"Bug",
+	"bug",
 	"HACK",
+	"Hack",
+	"hack",
 	"XXX",
 	"COMBAK",
 }

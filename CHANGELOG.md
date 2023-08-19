@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   directory for TODOs referencing a GitHub issue and reopen issues that have
   been prematurely closed.
 
+### Changed
+
+- Lowercase "Todo", "todo", "Fixme", "fixme", "Hack", "hack" were added as
+  default TODO types.
+
 ## [0.2.0] - 2023-06-30
 
 ### Changed in 0.2.0
