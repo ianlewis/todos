@@ -19,8 +19,9 @@ import * as reopener from "./reopener";
 async function run(): Promise<void> {
   const wd = core.getInput("path", { required: true });
   const token = core.getInput("token", { required: true });
+  const dryRun = core.getInput("dry-run") === "true";
 
-  await reopener.runIssueReopener(wd, token);
+  await reopener.runIssueReopener(wd, token, dryRun);
 }
 
 run();
