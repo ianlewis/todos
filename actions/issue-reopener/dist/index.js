@@ -152,7 +152,7 @@ function run() {
         const tmpDir = yield fs.mkdtemp(path.join(os.tmpdir(), "github-issue-reopener_"));
         let reopenerPath;
         try {
-            reopenerPath = downloadAndVerify(tmpDir, REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
+            reopenerPath = yield downloadAndVerify(tmpDir, REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
         }
         catch (error) {
             const errMsg = error instanceof Error ? error.message : String(error);
