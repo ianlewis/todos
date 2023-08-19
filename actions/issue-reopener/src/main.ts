@@ -169,7 +169,7 @@ async function run(): Promise<void> {
 
   let reopenerPath;
   try {
-    reopenerPath = downloadAndVerify(
+    reopenerPath = await downloadAndVerify(
       tmpDir,
       REOPENER_VERSION,
       SLSA_VERIFIER_VERSION,
