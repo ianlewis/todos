@@ -103,6 +103,8 @@ function downloadSLSAVerifier(path, version, digest) {
         // Validate the checksum.
         yield validateFileDigest(verifierPath, digest);
         core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
+        core.debug(`Setting ${verifierPath} as executable`);
+        yield fs.chmod(verifierPath, 0o700);
         return verifierPath;
     });
 }
@@ -116,6 +118,8 @@ function downloadAndVerify(path, version, slsaVerifierVersion, slsaVerifierDiges
         // Download the github-issue-reopener binary.
         const reopenerPath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64`, `${path}/github-issue-reopener`);
         core.debug(`Downloaded github-issue-reopener to ${reopenerPath}`);
+        core.debug(`Setting ${reopenerPath} as executable`);
+        yield fs.chmod(reopenerPath, 0o700);
         core.debug(`Downloading github-issue-reopener ${version} provenance to ${path}/github-issue-reopener.intoto.jsonl`);
         const provenancePath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64.intoto.jsonl`, `${path}/github-issue-reopener.intoto.jsonl`);
         core.debug(`Downloaded github-issue-reopener provenance to ${provenancePath}`);
