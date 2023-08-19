@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
+import * as os from "os";
 
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
@@ -42,16 +43,16 @@ export async function validateFileDigest(
   filePath: string,
   expectedDigest: string,
 ): Promise<void> {
-  if (!(await fs.exists(filePath))) {
-    throw new Error(`file not found: ${filePath}`);
-  }
+  // Verify that the file exists.
+  await fs.access(filePath);
+
   const untrustedContents = await fs.readFile(filePath);
   const computedDigest = crypto
     .createHash("sha256")
-    .update(untrustedFile)
+    .update(untrustedContents)
     .digest("hex");
   if (computedDigest !== expectedDigest) {
-    throw new ValidationError(filePath, expectedSha256Hash, computedDigest);
+    throw new ValidationError(filePath, expectedDigest, computedDigest);
   }
 }
 
@@ -133,8 +134,9 @@ function run(): void {
     path.join(os.tmpdir(), "github-issue-reopener_"),
   );
 
+  let reopenerPath;
   try {
-    const reopenerPath = downloadAndVerify(
+    reopenerPath = downloadAndVerify(
       tmpDir,
       REOPENER_VERSION,
       SLSA_VERIFIER_VERSION,
@@ -155,6 +157,11 @@ function run(): void {
       `--sha=${process.env.GITHUB_SHA}`,
       `${path}`,
     ],
+    {
+      env: {
+        GH_TOKEN: token,
+      },
+    },
   );
   if (exitCode !== 0) {
     core.setFailed(
