@@ -52,25 +52,173 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.downloadAndVerify = exports.downloadSLSAVerifier = exports.validateFileDigest = void 0;
-const crypto = __importStar(__nccwpck_require__(6113));
+const core = __importStar(__nccwpck_require__(2186));
+const reopener = __importStar(__nccwpck_require__(4659));
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const wd = core.getInput("path", { required: true });
+        const token = core.getInput("token", { required: true });
+        yield reopener.runIssueReopener(wd, token);
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 4659:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.runIssueReopener = void 0;
 const fs = __importStar(__nccwpck_require__(3292));
-const os = __importStar(__nccwpck_require__(2037));
-const path = __importStar(__nccwpck_require__(1017));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
-const io = __importStar(__nccwpck_require__(7436));
-const tc = __importStar(__nccwpck_require__(7784));
+const verifier = __importStar(__nccwpck_require__(5854));
 const REOPENER_VERSION = "v0.3.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM = "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
+// runIssueReopener downloads and runs github-issue-reopener.
+function runIssueReopener(wd, token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const reopenerPath = yield verifier.downloadAndVerifySLSA(`https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64`, `https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64.intoto.jsonl`, "github.com/ianlewis/todos", REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
+        core.debug(`Setting ${reopenerPath} as executable`);
+        yield fs.chmod(reopenerPath, 0o700);
+        // Run the github-issue-reopener.
+        core.debug(`Running github-issue-reopener (${reopenerPath})`);
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, [
+            `--repo=${process.env.GITHUB_REPOSITORY}`,
+            `--sha=${process.env.GITHUB_SHA}`,
+            `${wd}`,
+        ], {
+            env: {
+                GH_TOKEN: token,
+            },
+        });
+        if (exitCode !== 0) {
+            core.setFailed(`failed executing github-issue-reopener: exit code ${exitCode}\nstdout: ${stdout}; stderr: ${stderr}`);
+            return;
+        }
+        core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
+    });
+}
+exports.runIssueReopener = runIssueReopener;
+
+
+/***/ }),
+
+/***/ 5854:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.downloadAndVerifySLSA = exports.downloadSLSAVerifier = exports.validateFileDigest = exports.ValidationError = void 0;
+const crypto = __importStar(__nccwpck_require__(6113));
+const fs = __importStar(__nccwpck_require__(3292));
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const tc = __importStar(__nccwpck_require__(7784));
 class ValidationError extends Error {
-    constructor(path, wantDigest, gotDigest) {
-        super(`validation error for file ${path}: expected "${wantDigest}", got "${gotDigest}"`);
+    constructor(filePath, wantDigest, gotDigest) {
+        super(`validation error for file ${filePath}: expected "${wantDigest}", got "${gotDigest}"`);
         // Set the prototype explicitly.
         Object.setPrototypeOf(this, ValidationError.prototype);
     }
 }
+exports.ValidationError = ValidationError;
 // validateFileDigest validates a sha256 hex digest of the given file's contents
 // against the expected digest. If a validation error occurs a ValidationError
 // is thrown.
@@ -95,96 +243,50 @@ function validateFileDigest(filePath, expectedDigest) {
 exports.validateFileDigest = validateFileDigest;
 // downloadSLSAVerifier downloads the slsa-verifier binary, verifies it against
 // the expected sha256 hex digest, and returns the path to the binary.
-function downloadSLSAVerifier(path, version, digest) {
+function downloadSLSAVerifier(version, digest) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`Downloading slsa-verifier ${version} to ${path}/slsa-verifier`);
+        core.debug(`Downloading slsa-verifier ${version}`);
         // Download the slsa-verifier binary.
-        const verifierPath = yield tc.downloadTool(`https://github.com/slsa-framework/slsa-verifier/releases/download/${version}/slsa-verifier-linux-amd64`, `${path}/slsa-verifier`);
+        const verifierPath = yield tc.downloadTool(`https://github.com/slsa-framework/slsa-verifier/releases/download/${version}/slsa-verifier-linux-amd64`);
+        core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
         // Validate the checksum.
         yield validateFileDigest(verifierPath, digest);
-        core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
         core.debug(`Setting ${verifierPath} as executable`);
         yield fs.chmod(verifierPath, 0o700);
         return verifierPath;
     });
 }
 exports.downloadSLSAVerifier = downloadSLSAVerifier;
-// downloadAndVerify downloads the `github-issue-reopener` binary and verifies
-// the associated SLSA provenance.
-function downloadAndVerify(path, version, slsaVerifierVersion, slsaVerifierDigest) {
+// downloadAndVerifySLSA downloads a file and verifies the associated SLSA
+// provenance.
+function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVerifierVersion, slsaVerifierDigest) {
     return __awaiter(this, void 0, void 0, function* () {
-        const verifierPath = yield downloadSLSAVerifier(path, slsaVerifierVersion, slsaVerifierDigest);
-        core.debug(`Downloading github-issue-reopener ${version} to ${path}/github-issue-reopener`);
-        // Download the github-issue-reopener binary.
-        const reopenerPath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64`, `${path}/github-issue-reopener`);
-        core.debug(`Downloaded github-issue-reopener to ${reopenerPath}`);
-        core.debug(`Setting ${reopenerPath} as executable`);
-        yield fs.chmod(reopenerPath, 0o700);
-        core.debug(`Downloading github-issue-reopener ${version} provenance to ${path}/github-issue-reopener.intoto.jsonl`);
-        const provenancePath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64.intoto.jsonl`, `${path}/github-issue-reopener.intoto.jsonl`);
-        core.debug(`Downloaded github-issue-reopener provenance to ${provenancePath}`);
+        const verifierPath = yield downloadSLSAVerifier(slsaVerifierVersion, slsaVerifierDigest);
+        core.debug(`Downloading ${url}`);
+        const artifactPath = yield tc.downloadTool(url);
+        core.debug(`Downloaded ${url} to ${artifactPath}`);
+        core.debug(`Downloading ${provenanceURL}`);
+        const provenancePath = yield tc.downloadTool(provenanceURL);
+        core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
         core.debug(`Running slsa-verifier (${verifierPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${verifierPath}`, [
             "verify-artifact",
-            reopenerPath,
+            artifactPath,
             "--provenance-path",
             provenancePath,
             "--source-uri",
-            "github.com/ianlewis/todos",
+            sourceURI,
             "--source-tag",
-            version,
+            sourceTag,
         ]);
         if (exitCode !== 0) {
             throw new Error(`unable to verify binary provenance.\nstdout: ${stdout}; stderr: ${stderr}`);
         }
         core.debug(`slsa-verifier (${verifierPath}) exited successfully`);
-        return reopenerPath;
+        return artifactPath;
     });
 }
-exports.downloadAndVerify = downloadAndVerify;
-// cleanup deletes the temporary files.
-function cleanup(path) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`Deleting ${path}`);
-        yield io.rmRF(`${path}`);
-    });
-}
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const wd = core.getInput("path", { required: true });
-        const token = core.getInput("token", { required: true });
-        const tmpDir = yield fs.mkdtemp(path.join(os.tmpdir(), "github-issue-reopener_"));
-        let reopenerPath;
-        try {
-            reopenerPath = yield downloadAndVerify(tmpDir, REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
-        }
-        catch (error) {
-            const errMsg = error instanceof Error ? error.message : String(error);
-            core.setFailed(`failed to download github-issue-reopener: ${errMsg}`);
-            yield cleanup(tmpDir);
-            return;
-        }
-        // Run the github-issue-reopener.
-        core.debug(`Running github-issue-reopener (${reopenerPath})`);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, [
-            `--repo=${process.env.GITHUB_REPOSITORY}`,
-            `--sha=${process.env.GITHUB_SHA}`,
-            `${wd}`,
-        ], {
-            env: {
-                GH_TOKEN: token,
-            },
-        });
-        if (exitCode !== 0) {
-            core.setFailed(`failed executing github-issue-reopener: exit code ${exitCode}\nstdout: ${stdout}; stderr: ${stderr}`);
-            yield cleanup(tmpDir);
-            return;
-        }
-        core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
-        yield cleanup(tmpDir);
-    });
-}
-run();
+exports.downloadAndVerifySLSA = downloadAndVerifySLSA;
 
 
 /***/ }),
