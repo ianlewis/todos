@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.3.0] - 2023-08-19
 
-### Added
+### Added in 0.3.0
 
 - Support for [Rust](https://www.rust-lang.org/) was added.
 - Support for Unix assembly language was added.
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   directory for TODOs referencing a GitHub issue and reopen issues that have
   been prematurely closed.
 
-### Changed
+### Changed in 0.3.0
 
 - Lowercase "Todo", "todo", "Fixme", "fixme", "Hack", "hack" were added as
   default TODO types.
