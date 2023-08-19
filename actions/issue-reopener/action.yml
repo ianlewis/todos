@@ -18,7 +18,7 @@ inputs:
   path:
     description: "Base path to search."
     required: false
-    default: "."
+    default: ${{ github.workspace }}
   token:
     description: "The GitHub token to use for API requests."
     required: false
