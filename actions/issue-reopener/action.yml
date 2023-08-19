@@ -17,7 +17,8 @@ description: "Reopen issues that are referenced by TODOs"
 inputs:
   path:
     description: "Base path to search."
-    required: true
+    required: false
+    default: "."
   token:
     description: "The GitHub token to use for API requests."
     required: false
