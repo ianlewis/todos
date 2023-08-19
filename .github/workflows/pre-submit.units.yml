@@ -164,3 +164,51 @@ jobs:
 
           # Run yamllint
           make yamllint
+
+  check-dist-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        action:
+          - ./actions/issue-reopener
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+
+      - name: Set Node.js 18
+        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+        with:
+          node-version: 18
+
+      - name: Rebuild the dist/ directory
+        working-directory: ${{ matrix.action }}
+        run: make clean package
+
+      - name: Compare the expected and actual dist/ directories
+        working-directory: ${{ matrix.action }}
+        id: diff
+        run: |
+          set -euo pipefail
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi
+
+      # If dist/ was different from expected, upload the expected version as an artifact
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+        with:
+          name: dist
+          path: ${{ matrix.action }}/dist/
+
+  # NOTE: needed for protected branch checks.
+  check-dist:
+    runs-on: ubuntu-latest
+    needs: check-dist-matrix
+    if: ${{ always() }}
+    env:
+      CHECK_DIST_RESULT: ${{ needs.check-dist-matrix.result }}
+    steps:
+      # exit 0 if checks were successful.
+      - run: |
+          [ "${CHECK_DIST_RESULT}" == "success" ]
