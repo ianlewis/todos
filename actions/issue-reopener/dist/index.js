@@ -76,6 +76,8 @@ class ValidationError extends Error {
 // is thrown.
 function validateFileDigest(filePath, expectedDigest) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Validating file digest: ${filePath}`);
+        core.debug(`Expected digest for ${filePath}: ${expectedDigest}`);
         // Verify that the file exists.
         yield fs.access(filePath);
         const untrustedContents = yield fs.readFile(filePath);
@@ -83,9 +85,11 @@ function validateFileDigest(filePath, expectedDigest) {
             .createHash("sha256")
             .update(untrustedContents)
             .digest("hex");
+        core.debug(`Computed digest for ${filePath}: ${computedDigest}`);
         if (computedDigest !== expectedDigest) {
             throw new ValidationError(filePath, expectedDigest, computedDigest);
         }
+        core.debug(`Digest for ${filePath} validated`);
     });
 }
 exports.validateFileDigest = validateFileDigest;
@@ -93,10 +97,12 @@ exports.validateFileDigest = validateFileDigest;
 // the expected sha256 hex digest, and returns the path to the binary.
 function downloadSLSAVerifier(path, version, digest) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Downloading slsa-verifier ${version} to ${path}/slsa-verifier`);
         // Download the slsa-verifier binary.
         const verifierPath = yield tc.downloadTool(`https://github.com/slsa-framework/slsa-verifier/releases/download/${version}/slsa-verifier-linux-amd64`, `${path}/slsa-verifier`);
         // Validate the checksum.
         yield validateFileDigest(verifierPath, digest);
+        core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
         return verifierPath;
     });
 }
@@ -106,9 +112,14 @@ exports.downloadSLSAVerifier = downloadSLSAVerifier;
 function downloadAndVerify(path, version, slsaVerifierVersion, slsaVerifierDigest) {
     return __awaiter(this, void 0, void 0, function* () {
         const verifierPath = yield downloadSLSAVerifier(path, slsaVerifierVersion, slsaVerifierDigest);
+        core.debug(`Downloading github-issue-reopener ${version} to ${path}/github-issue-reopener`);
         // Download the github-issue-reopener binary.
         const reopenerPath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64`, `${path}/github-issue-reopener`);
+        core.debug(`Downloaded github-issue-reopener to ${reopenerPath}`);
+        core.debug(`Downloading github-issue-reopener ${version} provenance to ${path}/github-issue-reopener.intoto.jsonl`);
         const provenancePath = yield tc.downloadTool(`https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64.intoto.jsonl`, `${path}/github-issue-reopener.intoto.jsonl`);
+        core.debug(`Downloaded github-issue-reopener provenance to ${provenancePath}`);
+        core.debug(`Running slsa-verifier (${verifierPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${verifierPath}`, [
             "verify-artifact",
             reopenerPath,
@@ -122,6 +133,7 @@ function downloadAndVerify(path, version, slsaVerifierVersion, slsaVerifierDiges
         if (exitCode !== 0) {
             throw new Error(`unable to verify binary provenance.\nstdout: ${stdout}; stderr: ${stderr}`);
         }
+        core.debug(`slsa-verifier (${verifierPath}) exited successfully`);
         return reopenerPath;
     });
 }
@@ -129,6 +141,7 @@ exports.downloadAndVerify = downloadAndVerify;
 // cleanup deletes the temporary files.
 function cleanup(path) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Deleting ${path}`);
         yield io.rmRF(`${path}`);
     });
 }
@@ -148,6 +161,7 @@ function run() {
             return;
         }
         // Run the github-issue-reopener.
+        core.debug(`Running github-issue-reopener (${reopenerPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, [
             `--repo=${process.env.GITHUB_REPOSITORY}`,
             `--sha=${process.env.GITHUB_SHA}`,
@@ -162,6 +176,7 @@ function run() {
             yield cleanup(tmpDir);
             return;
         }
+        core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
         yield cleanup(tmpDir);
     });
 }

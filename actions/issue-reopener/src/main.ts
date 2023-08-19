@@ -45,6 +45,10 @@ export async function validateFileDigest(
   filePath: string,
   expectedDigest: string,
 ): Promise<void> {
+  core.debug(`Validating file digest: ${filePath}`);
+
+  core.debug(`Expected digest for ${filePath}: ${expectedDigest}`);
+
   // Verify that the file exists.
   await fs.access(filePath);
 
@@ -53,9 +57,14 @@ export async function validateFileDigest(
     .createHash("sha256")
     .update(untrustedContents)
     .digest("hex");
+
+  core.debug(`Computed digest for ${filePath}: ${computedDigest}`);
+
   if (computedDigest !== expectedDigest) {
     throw new ValidationError(filePath, expectedDigest, computedDigest);
   }
+
+  core.debug(`Digest for ${filePath} validated`);
 }
 
 // downloadSLSAVerifier downloads the slsa-verifier binary, verifies it against
@@ -65,6 +74,8 @@ export async function downloadSLSAVerifier(
   version: string,
   digest: string,
 ): Promise<string> {
+  core.debug(`Downloading slsa-verifier ${version} to ${path}/slsa-verifier`);
+
   // Download the slsa-verifier binary.
   const verifierPath = await tc.downloadTool(
     `https://github.com/slsa-framework/slsa-verifier/releases/download/${version}/slsa-verifier-linux-amd64`,
@@ -74,6 +85,7 @@ export async function downloadSLSAVerifier(
   // Validate the checksum.
   await validateFileDigest(verifierPath, digest);
 
+  core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
   return verifierPath;
 }
 
@@ -91,16 +103,32 @@ export async function downloadAndVerify(
     slsaVerifierDigest,
   );
 
+  core.debug(
+    `Downloading github-issue-reopener ${version} to ${path}/github-issue-reopener`,
+  );
+
   // Download the github-issue-reopener binary.
   const reopenerPath = await tc.downloadTool(
     `https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64`,
     `${path}/github-issue-reopener`,
   );
 
+  core.debug(`Downloaded github-issue-reopener to ${reopenerPath}`);
+
+  core.debug(
+    `Downloading github-issue-reopener ${version} provenance to ${path}/github-issue-reopener.intoto.jsonl`,
+  );
+
   const provenancePath = await tc.downloadTool(
     `https://github.com/ianlewis/todos/releases/download/${version}/github-issue-reopener-linux-amd64.intoto.jsonl`,
     `${path}/github-issue-reopener.intoto.jsonl`,
   );
+
+  core.debug(
+    `Downloaded github-issue-reopener provenance to ${provenancePath}`,
+  );
+
+  core.debug(`Running slsa-verifier (${verifierPath})`);
 
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
     `${verifierPath}`,
@@ -121,11 +149,14 @@ export async function downloadAndVerify(
     );
   }
 
+  core.debug(`slsa-verifier (${verifierPath}) exited successfully`);
+
   return reopenerPath;
 }
 
 // cleanup deletes the temporary files.
 async function cleanup(path: string): Promise<void> {
+  core.debug(`Deleting ${path}`);
   await io.rmRF(`${path}`);
 }
 
@@ -152,6 +183,8 @@ async function run(): Promise<void> {
   }
 
   // Run the github-issue-reopener.
+  core.debug(`Running github-issue-reopener (${reopenerPath})`);
+
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
     `${reopenerPath}`,
     [
@@ -172,6 +205,8 @@ async function run(): Promise<void> {
     await cleanup(tmpDir);
     return;
   }
+
+  core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
 
   await cleanup(tmpDir);
 }
