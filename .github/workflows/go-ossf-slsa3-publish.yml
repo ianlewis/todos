@@ -66,7 +66,9 @@ jobs:
       actions: read # To read workflow path.
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
     with:
-      go-version-file: "go.mod"
+      # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
+      # go-version-file: "go.mod"
+      go-version: "1.20"
       config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
       evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
 
@@ -88,6 +90,8 @@ jobs:
       actions: read # To read workflow path.
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
     with:
-      go-version-file: "go.mod"
+      # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
+      # go-version-file: "go.mod"
+      go-version: "1.20"
       config-file: ".slsa-goreleaser/github-issue-reopener-${{matrix.os}}-${{matrix.arch}}.yml"
       evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
