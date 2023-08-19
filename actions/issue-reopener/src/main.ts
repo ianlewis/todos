@@ -86,6 +86,11 @@ export async function downloadSLSAVerifier(
   await validateFileDigest(verifierPath, digest);
 
   core.debug(`Downloaded slsa-verifier to ${verifierPath}`);
+
+  core.debug(`Setting ${verifierPath} as executable`);
+
+  await fs.chmod(verifierPath, 0o700);
+
   return verifierPath;
 }
 
@@ -114,6 +119,10 @@ export async function downloadAndVerify(
   );
 
   core.debug(`Downloaded github-issue-reopener to ${reopenerPath}`);
+
+  core.debug(`Setting ${reopenerPath} as executable`);
+
+  await fs.chmod(reopenerPath, 0o700);
 
   core.debug(
     `Downloading github-issue-reopener ${version} provenance to ${path}/github-issue-reopener.intoto.jsonl`,
