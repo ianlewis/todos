@@ -2,16 +2,10 @@
 
 The `ianlewis/todos/actions/issue-reopener` GitHub Action searches your checked
 out code for TODO comments that reference issues and reopens issues that have
-been closed prematurely.
+been closed prematurely. `issue-reopener` will also add a comment on the issue
+with a link to the source code where the TODO can be found.
 
-`issue-reopener` will also add a comment on the issue with a link to the source
-code where the TODO can be found.
-
-## Getting Started
-
-First use the `actions/checkout` action to check out your repository. After that
-you can call `ianlewis/todos/actions/issue-reopener` to scan your codebase for
-TODO comments. TODO comments can take the following forms:
+TODO comments can take the following forms:
 
 ```golang
 // TODO(#123): Referencing the issue number with a pound sign.
@@ -19,6 +13,12 @@ TODO comments. TODO comments can take the following forms:
 // TODO(github.com/owner/repo/issues/123): Referencing the issue url without scheme.
 // TODO(https://github.com/owner/repo/issues/123): Referencing the issue url with scheme.
 ```
+
+## Getting Started
+
+First use the `actions/checkout` action to check out your repository. After that
+you can call `ianlewis/todos/actions/issue-reopener` to scan your codebase for
+TODO comments.
 
 Note that you must set the `issues: write` permission on the job.
 
