@@ -28,6 +28,7 @@ import (
 	"github.com/google/go-github/v52/github"
 
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
+	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/walker"
 )
 
@@ -57,6 +58,18 @@ type IssueRef struct {
 type Options struct {
 	// DryRun indicates that changes will only be printed and not actually executed.
 	DryRun bool
+
+	// IncludeHidden indicates that hidden files should be processed.
+	IncludeHidden bool
+
+	// IncludeVCS indicates that VCS files (.git, .hg, etc.) should be processed.
+	IncludeVCS bool
+
+	// IncludeVendored indicates that vendored files should be processed.
+	IncludeVendored bool
+
+	// TODOTypes is the TODO label types to match.
+	TODOTypes []string
 
 	// Paths are the paths to walk to look for TODOs to reopen.
 	Paths []string
@@ -119,11 +132,14 @@ func (r *IssueReopener) ReopenAll(ctx context.Context) bool {
 		TODOFunc:  r.handleTODO,
 		ErrorFunc: r.handleErr,
 		// TODO(#101): Support TODO config.
-		Config: nil,
+		Config: &todos.Config{
+			Types: r.options.TODOTypes,
+		},
 
 		// TODO(#102): Support walker config.
-		IncludeHidden:   false,
-		IncludeVendored: false,
+		IncludeHidden:   r.options.IncludeHidden,
+		IncludeVCS:      r.options.IncludeVCS,
+		IncludeVendored: r.options.IncludeVendored,
 		Paths:           r.options.Paths,
 	})
 

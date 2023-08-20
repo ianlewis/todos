@@ -16,12 +16,16 @@ package main
 
 import (
 	"os"
+
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	// NOTE: Errors are handled in the app itself so Run should never return an
-	// error.
-	if err := newTODOsApp().Run(os.Args); err != nil {
-		panic(err)
+	// NOTE: Errors are generally handled in the app itself but Run could
+	// return errors if command line flags are incorrect etc. In this case neither
+	// Action nor ExitErrHandler are called.
+	app := newTODOsApp()
+	if err := app.Run(os.Args); err != nil {
+		cli.OsExiter(ExitCodeUnknownError)
 	}
 }
