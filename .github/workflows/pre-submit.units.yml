@@ -244,8 +244,9 @@ jobs:
       - id: create-issue
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.url }}
         run: |
-          url=$(gh issue create --title "Test issue" --body "Test issue")
+          url=$(gh issue create --title "Test issue" --body "Test issue for PR ${PR_URL}")
           echo "${url}"
           gh issue close "${url}"
           echo "// TODO(${url}): still open" > test.go
@@ -263,9 +264,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: issue-reopener-basic
     if: ${{ always() }}
-    env:
-      ISSUE_URL: ${{ needs.issue-reopener-basic.outputs.issue-url }}
+    permissions:
+      issues: write
     steps:
-      - run: |
+      - env:
+          ISSUE_URL: ${{ needs.issue-reopener-basic.outputs.issue-url }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
           # Close the test issue.
           gh issue close "${ISSUE_URL}" || true
