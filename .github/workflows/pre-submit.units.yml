@@ -271,5 +271,5 @@ jobs:
           ISSUE_URL: ${{ needs.issue-reopener-basic.outputs.issue-url }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Close the test issue.
-          gh issue close "${ISSUE_URL}" || true
+          # Delete the test issue.
+          gh issue delete --yes "${ISSUE_URL}" || true
