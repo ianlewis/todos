@@ -50,7 +50,7 @@ jobs:
     name: TypeScript unit tests
     strategy:
       matrix:
-        path:
+        action:
           - actions/issue-reopener
     runs-on: ubuntu-latest
     if: ${{ always() }}
