@@ -766,6 +766,7 @@ func Test_ReopenAll(t *testing.T) {
 				DryRun:    tc.dryRun,
 				RepoOwner: tc.owner,
 				RepoName:  tc.repo,
+				TODOTypes: todos.DefaultTypes,
 				Paths:     []string{"."},
 				client: mock.NewMockedHTTPClient(
 					mock.WithRequestMatchHandler(

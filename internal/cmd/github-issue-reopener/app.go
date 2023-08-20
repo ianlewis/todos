@@ -28,6 +28,7 @@ import (
 
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/reopener"
 	"github.com/ianlewis/todos/internal/cmd/github-issue-reopener/util"
+	"github.com/ianlewis/todos/internal/todos"
 )
 
 const (
@@ -46,7 +47,7 @@ const (
 
 var (
 	// ErrReopen is an error encountered when reopening issues.
-	ErrReopen = errors.New("reopening issues")
+	ErrReopen = errors.New("failed reopening issues")
 
 	// ErrFlagParse is a flag parsing error.
 	ErrFlagParse = errors.New("parsing flags")
@@ -62,6 +63,26 @@ func newGitHubIssueReopenerApp() *cli.App {
 				Usage:              "Perform a dry-run. Don't take any action.",
 				Value:              false,
 				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
+				Name:               "exclude-hidden",
+				Usage:              "Exclude hidden files and directories",
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
+				Name:               "include-vcs",
+				Usage:              "Include version control directories (.git, .hg, .svn)",
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
+				Name:               "include-vendored",
+				Usage:              "Include vendored directories",
+				DisableDefaultText: true,
+			},
+			&cli.StringFlag{
+				Name:  "todo-types",
+				Usage: "Comma separated list of TODO types",
+				Value: strings.Join(todos.DefaultTypes, ","),
 			},
 			&cli.StringFlag{
 				Name:      "token-file",
@@ -122,6 +143,25 @@ Copyright (c) Google LLC
 			return nil
 		},
 		ExitErrHandler: func(c *cli.Context, err error) {
+			if err == nil {
+				return
+			}
+
+			// NOTE: Reopen errors return an exit code but do not print the error as it
+			// has presumably already been handled.
+			if errors.Is(err, ErrReopen) {
+				cli.OsExiter(ExitCodeReopenError)
+				return
+			}
+
+			// ExitCode return an exit code for the given error.
+			fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", filepath.Base(os.Args[0]), err)
+			if errors.Is(err, ErrFlagParse) {
+				cli.OsExiter(ExitCodeFlagParseError)
+				return
+			}
+
+			cli.OsExiter(ExitCodeUnknownError)
 		},
 	}
 }
@@ -131,8 +171,19 @@ var gitShaMatch = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 func reopenerOptionsFromContext(c *cli.Context) (*reopener.Options, error) {
 	o := reopener.Options{}
 
+	o.IncludeHidden = !c.Bool("exclude-hidden")
+	o.IncludeVCS = c.Bool("include-vcs")
+	o.IncludeVendored = c.Bool("include-vendored")
+
 	// Set DryRun.
 	o.DryRun = c.Bool("dry-run")
+
+	todoTypesStr := c.String("todo-types")
+	if todoTypesStr != "" {
+		for _, todoType := range strings.Split(todoTypesStr, ",") {
+			o.TODOTypes = append(o.TODOTypes, strings.TrimSpace(todoType))
+		}
+	}
 
 	// Set Paths.
 	o.Paths = c.Args().Slice()

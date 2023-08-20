@@ -128,7 +128,7 @@ Copyright (c) Google LLC
 			}
 
 			// ExitCode return an exit code for the given error.
-			fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", filepath.Base(os.Args[0]), err)
+			fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err)
 			if errors.Is(err, ErrFlagParse) {
 				cli.OsExiter(ExitCodeFlagParseError)
 				return
