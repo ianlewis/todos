@@ -244,7 +244,7 @@ jobs:
       - id: create-issue
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ github.event.pull_request.url }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           url=$(gh issue create --title "Test issue" --body "Test issue for PR ${PR_URL}")
           echo "${url}"
