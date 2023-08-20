@@ -26,6 +26,9 @@ permissions:
   contents: read # Needed to check out the repo.
 
 jobs:
+  # Unit tests for Go code
+  ###############################
+
   unit-tests:
     name: unit tests
     strategy:
@@ -35,10 +38,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: ${{ always() }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-      - name: setup-go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: unit tests
@@ -49,8 +50,7 @@ jobs:
   codecov:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: "go.mod"
@@ -62,6 +62,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out
           fail_ci_if_error: true
+
+  # autogen for license headers
+  ###############################
 
   autogen:
     runs-on: ubuntu-latest
@@ -83,6 +86,9 @@ jobs:
               GIT_PAGER="cat" git diff
               exit 1
           fi
+
+  # linters
+  ###############################
 
   actionlint:
     runs-on: ubuntu-latest
@@ -174,6 +180,9 @@ jobs:
           # Run yamllint
           make yamllint
 
+  # check-dist for actions
+  ###############################
+
   check-dist-matrix:
     runs-on: ubuntu-latest
     strategy:
@@ -220,3 +229,41 @@ jobs:
       # exit 0 if checks were successful.
       - run: |
           [ "${CHECK_DIST_RESULT}" == "success" ]
+
+  # issue-reopener e2e tests.
+  ###############################
+
+  issue-reopener-basic:
+    runs-on: ubuntu-latest
+    outputs:
+      issue-url: ${{ steps.create-issue.outputs.url }}
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - id: create-issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          url=$(gh issue create --title "Test issue" --body "Test issue")
+          echo "${url}"
+          gh issue close "${url}"
+          echo "// TODO(${url}): still open" > test.go
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/issue-reopener/
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ steps.create-issue.outputs.url }}
+        run: |
+          # Ensure the issue was reopened.
+          state=$(gh issue view "${ISSUE_URL}" --json state | jq -r '.state')
+          [ "${state}" == "OPEN" ]
+
+  issue-reopener-basic-cleanup:
+    runs-on: ubuntu-latest
+    needs: issue-reopener-basic
+    if: ${{ always() }}
+    env:
+      ISSUE_URL: ${{ needs.issue-reopener-basic.outputs.issue-url }}
+    steps:
+      - run: |
+          # Close the test issue.
+          gh issue close "${ISSUE_URL}" || true
