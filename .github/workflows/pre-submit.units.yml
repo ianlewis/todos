@@ -46,7 +46,7 @@ jobs:
         run: |
           make unit-test
 
-  ts-tests:
+  ts-tests-matrix:
     name: TypeScript unit tests
     strategy:
       matrix:
@@ -63,6 +63,18 @@ jobs:
         working-directory: ${{ matrix.action }}
         run: |
           make unit-test
+
+  # NOTE: needed for protected branch checks.
+  ts-tests:
+    runs-on: ubuntu-latest
+    needs: ts-tests-matrix
+    if: ${{ always() }}
+    env:
+      TS_TESTS_RESULT: ${{ needs.ts-tests-matrix.result }}
+    steps:
+      # exit 0 if checks were successful.
+      - run: |
+          [ "${TS_TESTS_RESULT}" == "success" ]
 
   codecov:
     runs-on: ubuntu-latest
