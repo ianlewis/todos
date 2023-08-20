@@ -10,7 +10,7 @@
     "format-check": "prettier --check '**/*.ts'",
     "package": "ncc build --external encoding --source-map",
     "lint": "eslint --max-warnings 0 src/**/*.ts",
-    "all": "npm run format && npm run lint && npm run build && npm run package"
+    "test": "jest"
   },
   "keywords": [
     "actions",
@@ -23,6 +23,7 @@
     "@actions/tool-cache": "^2.0.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.3",
     "@types/node": "18.16.18",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
@@ -31,6 +32,7 @@
     "eslint-plugin-github": "4.9.1",
     "eslint-plugin-prettier": "5.0.0",
     "prettier": "3.0.1",
+    "ts-jest": "^29.1.1",
     "typescript": "5.1.6"
   }
 }

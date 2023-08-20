@@ -53,7 +53,7 @@ node_modules/.installed: package.json package-lock.json
 #####################################################################
 
 .PHONY: unit-test
-unit-test: ## Runs all unit tests.
+unit-test: ## Runs all Go unit tests.
 	@set -e;\
 		go mod vendor; \
 		extraargs=""; \
