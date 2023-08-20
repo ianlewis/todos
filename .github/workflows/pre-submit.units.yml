@@ -248,7 +248,7 @@ jobs:
           gh issue close "${url}"
           echo "// TODO(${url}): still open" > test.go
           echo "url=${url}" >> "${GITHUB_OUTPUT}"
-      - uses: actions/issue-reopener/
+      - uses: ./actions/issue-reopener/
       - env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_URL: ${{ steps.create-issue.outputs.url }}
