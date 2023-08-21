@@ -16,6 +16,8 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 
+import * as tc from "@actions/tool-cache";
+
 import * as verifier from "../src/verifier";
 
 describe("validateFileDigest", () => {
@@ -101,7 +103,7 @@ describe("downloadSLSAVerifier", () => {
         "v2.3.99",
         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
       ),
-    ).rejects.toThrow(verifier.DownloadError);
+    ).rejects.toThrow(tc.HTTPError);
   });
 });
 
@@ -168,7 +170,7 @@ describe("downloadAndVerifySLSA", () => {
         "v2.3.0",
         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
       ),
-    ).rejects.toThrow(verifier.DownloadError);
+    ).rejects.toThrow(tc.HTTPError);
   }, 30000);
 
   it("fails provenance download", async () => {
@@ -181,6 +183,19 @@ describe("downloadAndVerifySLSA", () => {
         "v2.3.0",
         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
       ),
-    ).rejects.toThrow(verifier.DownloadError);
+    ).rejects.toThrow(tc.HTTPError);
+  }, 30000);
+
+  it("fails verifier download", async () => {
+    await expect(
+      verifier.downloadAndVerifySLSA(
+        "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64",
+        "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64.intoto.jsonl",
+        "github.com/slsa-framework/slsa-github-generator",
+        "v1.8.0",
+        "v2.3.99",
+        "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
+      ),
+    ).rejects.toThrow(tc.HTTPError);
   }, 30000);
 });

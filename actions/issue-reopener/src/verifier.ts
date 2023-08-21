@@ -83,7 +83,7 @@ export async function downloadSLSAVerifier(
   core.debug(`Downloading slsa-verifier ${version}`);
 
   // Download the slsa-verifier binary.
-  const verifierPath = await download(
+  const verifierPath = await tc.downloadTool(
     `https://github.com/slsa-framework/slsa-verifier/releases/download/${version}/slsa-verifier-linux-amd64`,
   );
 
@@ -99,15 +99,6 @@ export async function downloadSLSAVerifier(
   return verifierPath;
 }
 
-export class DownloadError extends Error {
-  constructor(url: string, message: string) {
-    super(`unable to download ${url}: ${message}`);
-
-    // Set the prototype explicitly.
-    Object.setPrototypeOf(this, DownloadError.prototype);
-  }
-}
-
 export class VerificationError extends Error {
   constructor(message: string) {
     super(`unable to verify binary provenance: ${message}`);
@@ -115,13 +106,6 @@ export class VerificationError extends Error {
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, VerificationError.prototype);
   }
-}
-
-async function download(url: string): Promise<string> {
-  return tc.downloadTool(url).catch((err) => {
-    const message = err instanceof Error ? err.message : `${err}`;
-    throw new DownloadError(url, message);
-  });
 }
 
 // downloadAndVerifySLSA downloads a file and verifies the associated SLSA
@@ -134,18 +118,21 @@ export async function downloadAndVerifySLSA(
   slsaVerifierVersion: string,
   slsaVerifierDigest: string,
 ): Promise<string> {
-  const verifierPath = await downloadSLSAVerifier(
+  const verifierPromise = await downloadSLSAVerifier(
     slsaVerifierVersion,
     slsaVerifierDigest,
   );
 
   core.debug(`Downloading ${url}`);
-  const artifactPath = await download(url);
-  core.debug(`Downloaded ${url} to ${artifactPath}`);
+  const artifactPromise = await tc.downloadTool(url);
 
   core.debug(`Downloading ${provenanceURL}`);
-  const provenancePath = await download(provenanceURL);
+  const provenancePath = await tc.downloadTool(provenanceURL);
   core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
+
+  const verifierPath = await verifierPromise;
+  const artifactPath = await artifactPromise;
+  core.debug(`Downloaded ${url} to ${artifactPath}`);
 
   core.debug(`Running slsa-verifier (${verifierPath})`);
 
