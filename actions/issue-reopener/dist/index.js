@@ -58,7 +58,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const wd = core.getInput("path", { required: true });
         const token = core.getInput("token", { required: true });
-        yield reopener.runIssueReopener(wd, token);
+        const dryRun = core.getInput("dry-run") === "true";
+        yield reopener.runIssueReopener(wd, token, dryRun);
     });
 }
 run();
@@ -126,18 +127,22 @@ const REOPENER_VERSION = "v0.3.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM = "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
 // runIssueReopener downloads and runs github-issue-reopener.
-function runIssueReopener(wd, token) {
+function runIssueReopener(wd, token, dryRun) {
     return __awaiter(this, void 0, void 0, function* () {
         const reopenerPath = yield verifier.downloadAndVerifySLSA(`https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64`, `https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64.intoto.jsonl`, "github.com/ianlewis/todos", REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
         core.debug(`Setting ${reopenerPath} as executable`);
         yield fs.chmod(reopenerPath, 0o700);
         // Run the github-issue-reopener.
         core.debug(`Running github-issue-reopener (${reopenerPath})`);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, [
+        let args = [
             `--repo=${process.env.GITHUB_REPOSITORY}`,
             `--sha=${process.env.GITHUB_SHA}`,
-            `${wd}`,
-        ], {
+        ];
+        if (dryRun) {
+            args.push("--dry-run");
+        }
+        args.push(wd);
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, args, {
             env: {
                 GH_TOKEN: token,
             },
@@ -205,37 +210,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.downloadAndVerifySLSA = exports.downloadSLSAVerifier = exports.validateFileDigest = exports.ValidationError = void 0;
+exports.downloadAndVerifySLSA = exports.VerificationError = exports.downloadSLSAVerifier = exports.validateFileDigest = exports.DigestValidationError = exports.FileError = void 0;
 const crypto = __importStar(__nccwpck_require__(6113));
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const tc = __importStar(__nccwpck_require__(7784));
-class ValidationError extends Error {
+class FileError extends Error {
+    constructor(filePath, message) {
+        super(`${filePath}: ${message}`);
+        // Set the prototype explicitly.
+        Object.setPrototypeOf(this, FileError.prototype);
+    }
+}
+exports.FileError = FileError;
+class DigestValidationError extends Error {
     constructor(filePath, wantDigest, gotDigest) {
         super(`validation error for file ${filePath}: expected "${wantDigest}", got "${gotDigest}"`);
         // Set the prototype explicitly.
-        Object.setPrototypeOf(this, ValidationError.prototype);
+        Object.setPrototypeOf(this, DigestValidationError.prototype);
     }
 }
-exports.ValidationError = ValidationError;
+exports.DigestValidationError = DigestValidationError;
 // validateFileDigest validates a sha256 hex digest of the given file's contents
-// against the expected digest. If a validation error occurs a ValidationError
+// against the expected digest. If a validation error occurs a DigestValidationError
 // is thrown.
 function validateFileDigest(filePath, expectedDigest) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug(`Validating file digest: ${filePath}`);
         core.debug(`Expected digest for ${filePath}: ${expectedDigest}`);
-        // Verify that the file exists.
-        yield fs.access(filePath);
-        const untrustedContents = yield fs.readFile(filePath);
-        const computedDigest = crypto
-            .createHash("sha256")
-            .update(untrustedContents)
-            .digest("hex");
+        let computedDigest;
+        try {
+            // Verify that the file exists.
+            yield fs.access(filePath);
+            const untrustedContents = yield fs.readFile(filePath);
+            computedDigest = crypto
+                .createHash("sha256")
+                .update(untrustedContents)
+                .digest("hex");
+        }
+        catch (err) {
+            const message = err instanceof Error ? err.message : `${err}`;
+            throw new FileError(filePath, message);
+        }
         core.debug(`Computed digest for ${filePath}: ${computedDigest}`);
         if (computedDigest !== expectedDigest) {
-            throw new ValidationError(filePath, expectedDigest, computedDigest);
+            throw new DigestValidationError(filePath, expectedDigest, computedDigest);
         }
         core.debug(`Digest for ${filePath} validated`);
     });
@@ -257,17 +277,27 @@ function downloadSLSAVerifier(version, digest) {
     });
 }
 exports.downloadSLSAVerifier = downloadSLSAVerifier;
+class VerificationError extends Error {
+    constructor(message) {
+        super(`unable to verify binary provenance: ${message}`);
+        // Set the prototype explicitly.
+        Object.setPrototypeOf(this, VerificationError.prototype);
+    }
+}
+exports.VerificationError = VerificationError;
 // downloadAndVerifySLSA downloads a file and verifies the associated SLSA
 // provenance.
 function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVerifierVersion, slsaVerifierDigest) {
     return __awaiter(this, void 0, void 0, function* () {
-        const verifierPath = yield downloadSLSAVerifier(slsaVerifierVersion, slsaVerifierDigest);
+        const verifierPromise = yield downloadSLSAVerifier(slsaVerifierVersion, slsaVerifierDigest);
         core.debug(`Downloading ${url}`);
-        const artifactPath = yield tc.downloadTool(url);
-        core.debug(`Downloaded ${url} to ${artifactPath}`);
+        const artifactPromise = yield tc.downloadTool(url);
         core.debug(`Downloading ${provenanceURL}`);
         const provenancePath = yield tc.downloadTool(provenanceURL);
         core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
+        const verifierPath = yield verifierPromise;
+        const artifactPath = yield artifactPromise;
+        core.debug(`Downloaded ${url} to ${artifactPath}`);
         core.debug(`Running slsa-verifier (${verifierPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${verifierPath}`, [
             "verify-artifact",
@@ -278,11 +308,11 @@ function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVer
             sourceURI,
             "--source-tag",
             sourceTag,
-        ]);
+        ], { ignoreReturnCode: true });
+        core.debug(`Ran slsa-verifier (${verifierPath}): ${stdout}`);
         if (exitCode !== 0) {
-            throw new Error(`unable to verify binary provenance.\nstdout: ${stdout}; stderr: ${stderr}`);
+            throw new VerificationError(stderr);
         }
-        core.debug(`slsa-verifier (${verifierPath}) exited successfully`);
         return artifactPath;
     });
 }
