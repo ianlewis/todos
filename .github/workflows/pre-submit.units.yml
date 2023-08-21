@@ -269,15 +269,14 @@ jobs:
     permissions:
       issues: write
     steps:
-      # - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - id: create-issue
         env:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          url=$(gh issue create --title "issue-reopener-basic pre-submit test issue" --body "Test issue for PR ${PR_URL}")
+          url=$(gh issue create -R "${GITHUB_REPOSITORY}" --title "issue-reopener-basic pre-submit test issue" --body "Test issue for PR ${PR_URL}")
           echo "${url}"
-          gh issue close "${url}"
+          gh issue close -R "${GITHUB_REPOSITORY}" "${url}"
           echo "// TODO(${url}): still open" > test.go
           echo "url=${url}" >> "${GITHUB_OUTPUT}"
       - uses: ./actions/issue-reopener/
@@ -286,7 +285,7 @@ jobs:
           ISSUE_URL: ${{ steps.create-issue.outputs.url }}
         run: |
           # Ensure the issue was reopened.
-          state=$(gh issue view "${ISSUE_URL}" --json state | jq -r '.state')
+          state=$(gh issue view "${ISSUE_URL}" -R "${GITHUB_REPOSITORY}" --json state | jq -r '.state')
           [ "${state}" == "OPEN" ]
 
   issue-reopener-basic-cleanup:
@@ -301,4 +300,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # Close the test issue.
-          gh issue close "${ISSUE_URL}" || true
+          gh issue close -R "${GITHUB_REPOSITORY}" "${ISSUE_URL}" || true
