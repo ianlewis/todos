@@ -63,6 +63,12 @@ jobs:
         working-directory: ${{ matrix.action }}
         run: |
           make unit-test
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: "${{ matrix.action }}/coverage/cobertura-coverage.xml"
+          fail_ci_if_error: true
 
   # NOTE: needed for protected branch checks.
   ts-tests:
