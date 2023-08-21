@@ -28,6 +28,7 @@ const SLSA_VERIFIER_SHA256SUM =
 export async function runIssueReopener(
   wd: string,
   token: string,
+  dryRun: boolean,
 ): Promise<void> {
   const reopenerPath = await verifier.downloadAndVerifySLSA(
     `https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64`,
@@ -45,13 +46,18 @@ export async function runIssueReopener(
   // Run the github-issue-reopener.
   core.debug(`Running github-issue-reopener (${reopenerPath})`);
 
+  let args = [
+    `--repo=${process.env.GITHUB_REPOSITORY}`,
+    `--sha=${process.env.GITHUB_SHA}`,
+  ];
+  if (dryRun) {
+    args.push("--dry-run");
+  }
+  args.push(wd);
+
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
     `${reopenerPath}`,
-    [
-      `--repo=${process.env.GITHUB_REPOSITORY}`,
-      `--sha=${process.env.GITHUB_SHA}`,
-      `${wd}`,
-    ],
+    args,
     {
       env: {
         GH_TOKEN: token,
