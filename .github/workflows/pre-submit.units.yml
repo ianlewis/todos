@@ -278,9 +278,12 @@ jobs:
           url=$(gh issue create --title "issue-reopener-basic pre-submit test issue" --body "Test issue for PR ${PR_URL}")
           echo "${url}"
           gh issue close "${url}"
-          echo "// TODO(${url}): still open" > test.go
+          mkdir test
+          echo "// TODO(${url}): still open" > test/test.go
           echo "url=${url}" >> "${GITHUB_OUTPUT}"
       - uses: ./actions/issue-reopener/
+        with:
+          path: "test/"
       - env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_URL: ${{ steps.create-issue.outputs.url }}
