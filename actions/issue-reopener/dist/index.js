@@ -197,7 +197,7 @@ function runIssueReopener(wd, token, dryRun) {
         yield fs.chmod(reopenerPath, 0o700);
         // Run the github-issue-reopener.
         core.debug(`Running github-issue-reopener (${reopenerPath})`);
-        let args = [
+        const args = [
             `--repo=${process.env.GITHUB_REPOSITORY}`,
             `--sha=${process.env.GITHUB_SHA}`,
         ];
@@ -352,15 +352,16 @@ exports.VerificationError = VerificationError;
 // provenance.
 function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVerifierVersion, slsaVerifierDigest) {
     return __awaiter(this, void 0, void 0, function* () {
-        const verifierPromise = yield downloadSLSAVerifier(slsaVerifierVersion, slsaVerifierDigest);
+        const verifierPromise = downloadSLSAVerifier(slsaVerifierVersion, slsaVerifierDigest);
         core.debug(`Downloading ${url}`);
-        const artifactPromise = yield tc.downloadTool(url);
+        const artifactPromise = tc.downloadTool(url);
         core.debug(`Downloading ${provenanceURL}`);
-        const provenancePath = yield tc.downloadTool(provenanceURL);
-        core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
+        const provenancePromise = tc.downloadTool(provenanceURL);
         const verifierPath = yield verifierPromise;
         const artifactPath = yield artifactPromise;
         core.debug(`Downloaded ${url} to ${artifactPath}`);
+        const provenancePath = yield provenancePromise;
+        core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
         core.debug(`Running slsa-verifier (${verifierPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(verifierPath, [
             "verify-artifact",
