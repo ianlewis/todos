@@ -22,7 +22,8 @@ export async function runAction(): Promise<void> {
   const dryRun = core.getInput("dry-run") === "true";
 
   try {
-    await reopener.runIssueReopener(wd, token, dryRun);
+    const issues = await reopener.getTODOIssues(wd);
+    await reopener.reopenIssues(issues, token, dryRun);
   } catch (err) {
     const message = err instanceof Error ? err.message : `${err}`;
     core.setFailed(message);
