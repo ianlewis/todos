@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as action from "./action";
+import * as core from "@actions/core";
 
-action.runAction();
+import * as reopener from "./reopener";
+
+export async function runAction(): Promise<void> {
+  const wd = core.getInput("path", { required: true });
+  const token = core.getInput("token", { required: true });
+  const dryRun = core.getInput("dry-run") === "true";
+
+  try {
+    await reopener.runIssueReopener(wd, token, dryRun);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : `${err}`;
+    core.setFailed(message);
+  }
+}

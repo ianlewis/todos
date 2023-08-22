@@ -24,10 +24,20 @@ const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM =
   "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
 
+export class ReopenError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, ReopenError.prototype);
+  }
+}
+
 // runIssueReopener downloads and runs github-issue-reopener.
 export async function runIssueReopener(
   wd: string,
   token: string,
+  dryRun: boolean,
 ): Promise<void> {
   const reopenerPath = await verifier.downloadAndVerifySLSA(
     `https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64`,
@@ -45,25 +55,29 @@ export async function runIssueReopener(
   // Run the github-issue-reopener.
   core.debug(`Running github-issue-reopener (${reopenerPath})`);
 
+  let args = [
+    `--repo=${process.env.GITHUB_REPOSITORY}`,
+    `--sha=${process.env.GITHUB_SHA}`,
+  ];
+  if (dryRun) {
+    args.push("--dry-run");
+  }
+  args.push(wd);
+
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
-    `${reopenerPath}`,
-    [
-      `--repo=${process.env.GITHUB_REPOSITORY}`,
-      `--sha=${process.env.GITHUB_SHA}`,
-      `${wd}`,
-    ],
+    reopenerPath,
+    args,
     {
       env: {
         GH_TOKEN: token,
       },
+      ignoreReturnCode: true,
     },
   );
+  core.debug(`Ran github-issue-reopener (${reopenerPath}): ${stdout}`);
   if (exitCode !== 0) {
-    core.setFailed(
-      `failed executing github-issue-reopener: exit code ${exitCode}\nstdout: ${stdout}; stderr: ${stderr}`,
+    throw new ReopenError(
+      `github-issue-reopener exited ${exitCode}: ${stderr}`,
     );
-    return;
   }
-
-  core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
 }

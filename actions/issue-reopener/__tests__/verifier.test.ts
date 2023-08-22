@@ -16,7 +16,14 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 
+// NOTE: must use require for mock to work.
+const exec = require("@actions/exec");
+const tc = require("@actions/tool-cache");
+
 import * as verifier from "../src/verifier";
+
+jest.mock("@actions/exec");
+jest.mock("@actions/tool-cache");
 
 describe("validateFileDigest", () => {
   it("validates a file digest", async () => {
@@ -24,14 +31,14 @@ describe("validateFileDigest", () => {
       path.join(os.tmpdir(), "validateFileDigest_"),
     );
     const tmpFilePath = path.join(tmpDir, "test.txt");
-    fs.writeFileSync(tmpFilePath, "some data");
+    fs.writeFileSync(tmpFilePath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
 
     await expect(
       verifier.validateFileDigest(
         tmpFilePath,
         "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee",
       ),
-    ).resolves.not.toThrowError();
+    ).resolves.toBeUndefined();
   });
 
   it("fails validation", async () => {
@@ -39,14 +46,14 @@ describe("validateFileDigest", () => {
       path.join(os.tmpdir(), "validateFileDigest_"),
     );
     const tmpFilePath = path.join(tmpDir, "test.txt");
-    fs.writeFileSync(tmpFilePath, "some data");
+    fs.writeFileSync(tmpFilePath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
 
     await expect(
       verifier.validateFileDigest(
         tmpFilePath,
         "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
       ),
-    ).rejects.toThrow(verifier.ValidationError);
+    ).rejects.toBeInstanceOf(verifier.DigestValidationError);
   });
 
   it("fails to open non-existant file", async () => {
@@ -57,6 +64,257 @@ describe("validateFileDigest", () => {
         tmpFilePath,
         "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
       ),
-    ).rejects.toThrowError();
+    ).rejects.toBeInstanceOf(verifier.FileError);
+  });
+});
+
+describe("downloadSLSAVerifier", () => {
+  const env = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...env };
+    process.env.RUNNER_TEMP = os.tmpdir();
+  });
+
+  afterEach(() => {
+    process.env = env;
+  });
+
+  it("downloads the verifier", async () => {
+    tc.downloadTool.mockClear();
+
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadSLSAVerifier_"),
+    );
+    const tmpFilePath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(tmpFilePath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+
+    tc.downloadTool.mockResolvedValueOnce(tmpFilePath);
+
+    const verifierPath = await verifier.downloadSLSAVerifier(
+      "v2.3.0",
+      "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee",
+    );
+
+    // Check that the file exists and is executable.
+    expect(() => fs.accessSync(verifierPath, fs.constants.X_OK)).not.toThrow(
+      Error,
+    );
+  });
+
+  it("fails validation", async () => {
+    tc.downloadTool.mockClear();
+
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadSLSAVerifier_"),
+    );
+    const tmpFilePath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(tmpFilePath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+
+    tc.downloadTool.mockResolvedValueOnce(tmpFilePath);
+
+    await expect(
+      verifier.downloadSLSAVerifier(
+        "v2.3.0",
+        "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
+      ),
+    ).rejects.toThrow(verifier.DigestValidationError);
+  });
+
+  it("fails with http error", async () => {
+    tc.downloadTool.mockClear();
+    tc.downloadTool.mockRejectedValueOnce(new tc.HTTPError("foo"));
+
+    await expect(
+      verifier.downloadSLSAVerifier(
+        "v2.3.0",
+        "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
+      ),
+    ).rejects.toBeInstanceOf(tc.HTTPError);
+  });
+});
+
+describe("downloadAndVerifySLSA", () => {
+  const env = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...env };
+    process.env.RUNNER_TEMP = os.tmpdir();
+  });
+
+  afterEach(() => {
+    process.env = env;
+  });
+
+  it("succeeds download", async () => {
+    tc.downloadTool.mockClear();
+    exec.getExecOutput.mockClear();
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
+    );
+
+    // slsa-verifier
+    const verifierPath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(verifierPath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+    tc.downloadTool.mockResolvedValueOnce(verifierPath);
+
+    // artifact
+    const artifactPath = path.join(tmpDir, "artifact");
+    fs.writeFileSync(artifactPath, "artifact data"); // sha256:18eec0cf867e893de3351c2efc679c3b79ceed8a9037eec96db06a50bfd718d3
+    tc.downloadTool.mockResolvedValueOnce(artifactPath);
+
+    // provenance
+    const provenancePath = path.join(tmpDir, "provenance");
+    fs.writeFileSync(provenancePath, "provenance data"); // sha256:48792d9931fd23e6094bdd7c1265710a03c8b9a80800acbd71c9d623140dcf95
+    tc.downloadTool.mockResolvedValueOnce(provenancePath);
+
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: "PASSED",
+      stderr: "",
+    });
+
+    const artifactURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
+    const provenanceURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
+    const verifierVersion = "v2.3.0";
+    const verifierDigest =
+      "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee";
+
+    const returnPath = await verifier.downloadAndVerifySLSA(
+      artifactURL,
+      provenanceURL,
+      sourceURI,
+      sourceTag,
+      verifierVersion,
+      verifierDigest,
+    );
+
+    expect(returnPath).toBe(artifactPath);
+    expect(fs.readFileSync(returnPath, { encoding: "utf-8" })).toBe(
+      "artifact data",
+    );
+
+    expect(exec.getExecOutput).toBeCalledWith(
+      verifierPath,
+      [
+        "verify-artifact",
+        artifactPath,
+        "--provenance-path",
+        provenancePath,
+        "--source-uri",
+        sourceURI,
+        "--source-tag",
+        sourceTag,
+      ],
+      { ignoreReturnCode: true },
+    );
+  });
+
+  it("fails SLSA verification", async () => {
+    tc.downloadTool.mockClear();
+    exec.getExecOutput.mockClear();
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
+    );
+
+    // slsa-verifier
+    const verifierPath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(verifierPath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+    tc.downloadTool.mockResolvedValueOnce(verifierPath);
+
+    // artifact
+    const artifactPath = path.join(tmpDir, "artifact");
+    fs.writeFileSync(artifactPath, "artifact data"); // sha256:18eec0cf867e893de3351c2efc679c3b79ceed8a9037eec96db06a50bfd718d3
+    tc.downloadTool.mockResolvedValueOnce(artifactPath);
+
+    // provenance
+    const provenancePath = path.join(tmpDir, "provenance");
+    fs.writeFileSync(provenancePath, "provenance data"); // sha256:48792d9931fd23e6094bdd7c1265710a03c8b9a80800acbd71c9d623140dcf95
+    tc.downloadTool.mockResolvedValueOnce(provenancePath);
+
+    // NOTE: slsa-verifier exec returns exit code.
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 1,
+      stdout: "",
+      stderr: "FAILED",
+    });
+
+    const artifactURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
+    const provenanceURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
+    const verifierVersion = "v2.3.0";
+    const verifierDigest =
+      "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee";
+
+    await expect(
+      verifier.downloadAndVerifySLSA(
+        artifactURL,
+        provenanceURL,
+        sourceURI,
+        sourceTag,
+        verifierVersion,
+        verifierDigest,
+      ),
+    ).rejects.toThrow(verifier.VerificationError);
+  });
+
+  it("fails digest validation", async () => {
+    tc.downloadTool.mockClear();
+    exec.getExecOutput.mockClear();
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
+    );
+
+    // slsa-verifier
+    const verifierPath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(verifierPath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+    tc.downloadTool.mockResolvedValueOnce(verifierPath);
+
+    // artifact
+    const artifactPath = path.join(tmpDir, "artifact");
+    fs.writeFileSync(artifactPath, "artifact data"); // sha256:18eec0cf867e893de3351c2efc679c3b79ceed8a9037eec96db06a50bfd718d3
+    tc.downloadTool.mockResolvedValueOnce(artifactPath);
+
+    // provenance
+    const provenancePath = path.join(tmpDir, "provenance");
+    fs.writeFileSync(provenancePath, "provenance data"); // sha256:48792d9931fd23e6094bdd7c1265710a03c8b9a80800acbd71c9d623140dcf95
+    tc.downloadTool.mockResolvedValueOnce(provenancePath);
+
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: "PASSED",
+      stderr: "",
+    });
+
+    const artifactURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
+    const provenanceURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
+    const verifierVersion = "v2.3.0";
+    // NOTE: verifier digest doesn't match.
+    const verifierDigest =
+      "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f";
+
+    await expect(
+      verifier.downloadAndVerifySLSA(
+        artifactURL,
+        provenanceURL,
+        sourceURI,
+        sourceTag,
+        verifierVersion,
+        verifierDigest,
+      ),
+    ).rejects.toThrow(verifier.DigestValidationError);
   });
 });
