@@ -1,7 +1,7 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 3109:
+/***/ 9139:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -52,17 +52,72 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.runAction = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const reopener = __importStar(__nccwpck_require__(4659));
-function run() {
+function runAction() {
     return __awaiter(this, void 0, void 0, function* () {
         const wd = core.getInput("path", { required: true });
         const token = core.getInput("token", { required: true });
         const dryRun = core.getInput("dry-run") === "true";
-        yield reopener.runIssueReopener(wd, token, dryRun);
+        try {
+            yield reopener.runIssueReopener(wd, token, dryRun);
+        }
+        catch (err) {
+            const message = err instanceof Error ? err.message : `${err}`;
+            core.setFailed(message);
+        }
     });
 }
-run();
+exports.runAction = runAction;
+
+
+/***/ }),
+
+/***/ 3109:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const action = __importStar(__nccwpck_require__(9139));
+action.runAction();
 
 
 /***/ }),
@@ -118,7 +173,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.runIssueReopener = void 0;
+exports.runIssueReopener = exports.ReopenError = void 0;
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
@@ -126,6 +181,14 @@ const verifier = __importStar(__nccwpck_require__(5854));
 const REOPENER_VERSION = "v0.3.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM = "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
+class ReopenError extends Error {
+    constructor(message) {
+        super(message);
+        // Set the prototype explicitly.
+        Object.setPrototypeOf(this, ReopenError.prototype);
+    }
+}
+exports.ReopenError = ReopenError;
 // runIssueReopener downloads and runs github-issue-reopener.
 function runIssueReopener(wd, token, dryRun) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -142,16 +205,16 @@ function runIssueReopener(wd, token, dryRun) {
             args.push("--dry-run");
         }
         args.push(wd);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${reopenerPath}`, args, {
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(reopenerPath, args, {
             env: {
                 GH_TOKEN: token,
             },
+            ignoreReturnCode: true,
         });
+        core.debug(`Ran github-issue-reopener (${reopenerPath}): ${stdout}`);
         if (exitCode !== 0) {
-            core.setFailed(`failed executing github-issue-reopener: exit code ${exitCode}\nstdout: ${stdout}; stderr: ${stderr}`);
-            return;
+            throw new ReopenError(`github-issue-reopener exited ${exitCode}: ${stderr}`);
         }
-        core.debug(`github-issue-reopener (${reopenerPath}) exited successfully`);
     });
 }
 exports.runIssueReopener = runIssueReopener;
@@ -279,7 +342,7 @@ function downloadSLSAVerifier(version, digest) {
 exports.downloadSLSAVerifier = downloadSLSAVerifier;
 class VerificationError extends Error {
     constructor(message) {
-        super(`unable to verify binary provenance: ${message}`);
+        super(`failed to verify binary provenance: ${message}`);
         // Set the prototype explicitly.
         Object.setPrototypeOf(this, VerificationError.prototype);
     }
@@ -299,7 +362,7 @@ function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVer
         const artifactPath = yield artifactPromise;
         core.debug(`Downloaded ${url} to ${artifactPath}`);
         core.debug(`Running slsa-verifier (${verifierPath})`);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(`${verifierPath}`, [
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(verifierPath, [
             "verify-artifact",
             artifactPath,
             "--provenance-path",
@@ -311,7 +374,7 @@ function downloadAndVerifySLSA(url, provenanceURL, sourceURI, sourceTag, slsaVer
         ], { ignoreReturnCode: true });
         core.debug(`Ran slsa-verifier (${verifierPath}): ${stdout}`);
         if (exitCode !== 0) {
-            throw new VerificationError(stderr);
+            throw new VerificationError(`slsa-verifier exited ${exitCode}: ${stderr}`);
         }
         return artifactPath;
     });
