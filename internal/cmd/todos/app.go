@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -80,7 +81,7 @@ func newTODOsApp() *cli.App {
 			},
 			&cli.StringFlag{
 				Name:    "output",
-				Usage:   "Output type (default, github)",
+				Usage:   "Output type (default, github, json)",
 				Value:   "default",
 				Aliases: []string{"o"},
 			},
@@ -172,11 +173,59 @@ func outGithub(w io.Writer) walker.TODOHandler {
 	}
 }
 
+type outTODO struct {
+	// Path is the path to the file where the TODO was found.
+	Path string `json:"path"`
+
+	// Type is the todo type, such as "FIXME", "BUG", etc.
+	Type string `json:"type"`
+
+	// Text is the full comment text.
+	Text string `json:"text"`
+
+	// Label is the label part (the part in parenthesis)
+	Label string `json:"label"`
+
+	// Message is the comment message (the part after the parenthesis).
+	Message string `json:"message"`
+
+	// Line is the line number where todo was found..
+	Line int `json:"line"`
+
+	// CommentLine is the line where the comment starts.
+	CommentLine int `json:"comment_line"`
+}
+
+func outJSON(w io.Writer) walker.TODOHandler {
+	return func(o *walker.TODORef) error {
+		if o == nil {
+			return nil
+		}
+
+		b, err := json.Marshal(outTODO{
+			Path:        o.FileName,
+			Type:        o.TODO.Type,
+			Text:        o.TODO.Text,
+			Label:       o.TODO.Label,
+			Message:     o.TODO.Message,
+			Line:        o.TODO.Line,
+			CommentLine: o.TODO.CommentLine,
+		})
+		if err != nil {
+			return err
+		}
+		w.Write(b)
+		w.Write([]byte("\n"))
+		return nil
+	}
+}
+
 var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 	// NOTE: An empty value is treated as the default value.
 	"":        outCLI,
 	"default": outCLI,
 	"github":  outGithub,
+	"json":    outJSON,
 }
 
 func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
