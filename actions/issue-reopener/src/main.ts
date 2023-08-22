@@ -21,7 +21,12 @@ async function run(): Promise<void> {
   const token = core.getInput("token", { required: true });
   const dryRun = core.getInput("dry-run") === "true";
 
-  await reopener.runIssueReopener(wd, token, dryRun);
+  try {
+    await reopener.runIssueReopener(wd, token, dryRun);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : `${err}`;
+    core.setFailed(message);
+  }
 }
 
 run();

@@ -101,7 +101,7 @@ export async function downloadSLSAVerifier(
 
 export class VerificationError extends Error {
   constructor(message: string) {
-    super(`unable to verify binary provenance: ${message}`);
+    super(`failed to verify binary provenance: ${message}`);
 
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, VerificationError.prototype);
@@ -153,7 +153,7 @@ export async function downloadAndVerifySLSA(
 
   core.debug(`Ran slsa-verifier (${verifierPath}): ${stdout}`);
   if (exitCode !== 0) {
-    throw new VerificationError(stderr);
+    throw new VerificationError(`slsa-verifier exited ${exitCode}: ${stderr}`);
   }
 
   return artifactPath;

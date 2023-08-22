@@ -38,7 +38,7 @@ describe("validateFileDigest", () => {
         tmpFilePath,
         "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee",
       ),
-    ).resolves.not.toThrow();
+    ).resolves.toBeUndefined();
   });
 
   it("fails validation", async () => {
@@ -53,7 +53,7 @@ describe("validateFileDigest", () => {
         tmpFilePath,
         "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
       ),
-    ).rejects.toThrow(verifier.DigestValidationError);
+    ).rejects.toBeInstanceOf(verifier.DigestValidationError);
   });
 
   it("fails to open non-existant file", async () => {
@@ -64,7 +64,7 @@ describe("validateFileDigest", () => {
         tmpFilePath,
         "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
       ),
-    ).rejects.toThrow(verifier.FileError);
+    ).rejects.toBeInstanceOf(verifier.FileError);
   });
 });
 
