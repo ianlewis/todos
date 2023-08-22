@@ -92,6 +92,7 @@ lint: node_modules/.installed ## Runs eslint.
 					esac; \
 				done <<<$$(echo "$$p" | jq -c '.messages[]'); \
 			done <<<$$(./node_modules/.bin/eslint --max-warnings 0 -f json src/**/*.ts | jq -c '.[]'); \
+			exit "$${exit_code}"; \
 		else \
 			./node_modules/.bin/eslint --max-warnings 0 src/**/*.ts; \
 		fi
