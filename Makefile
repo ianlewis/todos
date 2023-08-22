@@ -53,20 +53,26 @@ node_modules/.installed: package.json package-lock.json
 #####################################################################
 
 .PHONY: unit-test
-unit-test: ## Runs all Go unit tests.
+unit-test: go-test ts-test ## Runs all unit tests.
+
+.PHONY: go-test
+go-test: ## Runs Go unit tests.
 	@set -e;\
 		go mod vendor; \
 		extraargs=""; \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
 			extraargs="-v"; \
 		fi; \
-		go test -mod=vendor $$extraeargs ./...
+		go test $$extraargs -mod=vendor -race -coverprofile=coverage.out -covermode=atomic ./...
 
-.PHONY: coverage
-coverage: ## Generate coverage report.
+.PHONY: ts-test
+ts-test: ## Run TypeScript unit tests.
+	@# Run unit tests for all TS actions where tests are found.
 	@set -e;\
-		go mod vendor; \
-		go test -mod=vendor -race -coverprofile=coverage.out -covermode=atomic ./...
+		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name __tests__ -type d | xargs dirname); \
+		for path in $$PATHS; do \
+			make -C $$path unit-test; \
+		done
 
 ## Tools
 #####################################################################
