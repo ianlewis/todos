@@ -137,7 +137,7 @@ export async function downloadAndVerifySLSA(
   core.debug(`Running slsa-verifier (${verifierPath})`);
 
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
-    `${verifierPath}`,
+    verifierPath,
     [
       "verify-artifact",
       artifactPath,

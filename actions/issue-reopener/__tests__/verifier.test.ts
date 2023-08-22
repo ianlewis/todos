@@ -180,8 +180,8 @@ describe("downloadAndVerifySLSA", () => {
       "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
     const provenanceURL =
       "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
-    const artifactRepo = "github.com/owner/repo";
-    const artifactTag = "v1.0.0";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
     const verifierVersion = "v2.3.0";
     const verifierDigest =
       "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee";
@@ -189,82 +189,132 @@ describe("downloadAndVerifySLSA", () => {
     const returnPath = await verifier.downloadAndVerifySLSA(
       artifactURL,
       provenanceURL,
-      artifactRepo,
-      artifactTag,
+      sourceURI,
+      sourceTag,
       verifierVersion,
       verifierDigest,
     );
 
     expect(returnPath).toBe(artifactPath);
-
-    // Check that the file exists.
-    expect(() => fs.readFileSync(returnPath, { encoding: "utf-8" })).toBe(
+    expect(fs.readFileSync(returnPath, { encoding: "utf-8" })).toBe(
       "artifact data",
+    );
+
+    expect(exec.getExecOutput).toBeCalledWith(
+      verifierPath,
+      [
+        "verify-artifact",
+        artifactPath,
+        "--provenance-path",
+        provenancePath,
+        "--source-uri",
+        sourceURI,
+        "--source-tag",
+        sourceTag,
+      ],
+      { ignoreReturnCode: true },
     );
   });
 
-  //   it("fails SLSA verification", async () => {
-  //     await expect(
-  //       verifier.downloadAndVerifySLSA(
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64",
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.7.0/slsa-generator-generic-linux-amd64.intoto.jsonl",
-  //         "github.com/slsa-framework/slsa-github-generator",
-  //         "v1.8.0",
-  //         "v2.3.0",
-  //         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
-  //       ),
-  //     ).rejects.toThrow(verifier.VerificationError);
-  //   }, 30000);
+  it("fails SLSA verification", async () => {
+    tc.downloadTool.mockClear();
+    exec.getExecOutput.mockClear();
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
+    );
 
-  //   it("fails digest validation", async () => {
-  //     await expect(
-  //       verifier.downloadAndVerifySLSA(
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64",
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64.intoto.jsonl",
-  //         "github.com/slsa-framework/slsa-github-generator",
-  //         "v1.8.0",
-  //         "v2.3.0",
-  //         "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f",
-  //       ),
-  //     ).rejects.toThrow(verifier.DigestValidationError);
-  //   }, 30000);
+    // slsa-verifier
+    const verifierPath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(verifierPath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+    tc.downloadTool.mockResolvedValueOnce(verifierPath);
 
-  //   it("fails artifact download", async () => {
-  //     await expect(
-  //       verifier.downloadAndVerifySLSA(
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/bad-artifact",
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64.intoto.jsonl",
-  //         "github.com/slsa-framework/slsa-github-generator",
-  //         "v1.8.0",
-  //         "v2.3.0",
-  //         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
-  //       ),
-  //     ).rejects.toThrow(tc.HTTPError);
-  //   }, 30000);
+    // artifact
+    const artifactPath = path.join(tmpDir, "artifact");
+    fs.writeFileSync(artifactPath, "artifact data"); // sha256:18eec0cf867e893de3351c2efc679c3b79ceed8a9037eec96db06a50bfd718d3
+    tc.downloadTool.mockResolvedValueOnce(artifactPath);
 
-  //   it("fails provenance download", async () => {
-  //     await expect(
-  //       verifier.downloadAndVerifySLSA(
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64",
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/bad-provenance.intoto.jsonl",
-  //         "github.com/slsa-framework/slsa-github-generator",
-  //         "v1.8.0",
-  //         "v2.3.0",
-  //         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
-  //       ),
-  //     ).rejects.toThrow(tc.HTTPError);
-  //   }, 30000);
+    // provenance
+    const provenancePath = path.join(tmpDir, "provenance");
+    fs.writeFileSync(provenancePath, "provenance data"); // sha256:48792d9931fd23e6094bdd7c1265710a03c8b9a80800acbd71c9d623140dcf95
+    tc.downloadTool.mockResolvedValueOnce(provenancePath);
 
-  //   it("fails verifier download", async () => {
-  //     await expect(
-  //       verifier.downloadAndVerifySLSA(
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64",
-  //         "https://github.com/slsa-framework/slsa-github-generator/releases/download/v1.8.0/slsa-generator-generic-linux-amd64.intoto.jsonl",
-  //         "github.com/slsa-framework/slsa-github-generator",
-  //         "v1.8.0",
-  //         "v2.3.99",
-  //         "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d",
-  //       ),
-  //     ).rejects.toThrow(tc.HTTPError);
-  //   }, 30000);
+    // NOTE: slsa-verifier exec returns exit code.
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 1,
+      stdout: "",
+      stderr: "FAILED",
+    });
+
+    const artifactURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
+    const provenanceURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
+    const verifierVersion = "v2.3.0";
+    const verifierDigest =
+      "1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee";
+
+    await expect(
+      verifier.downloadAndVerifySLSA(
+        artifactURL,
+        provenanceURL,
+        sourceURI,
+        sourceTag,
+        verifierVersion,
+        verifierDigest,
+      ),
+    ).rejects.toThrow(verifier.VerificationError);
+  });
+
+  it("fails digest validation", async () => {
+    tc.downloadTool.mockClear();
+    exec.getExecOutput.mockClear();
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
+    );
+
+    // slsa-verifier
+    const verifierPath = path.join(tmpDir, "slsa-verifier");
+    fs.writeFileSync(verifierPath, "some data"); // sha256:1307990e6ba5ca145eb35e99182a9bec46531bc54ddf656a602c780fa0240dee
+    tc.downloadTool.mockResolvedValueOnce(verifierPath);
+
+    // artifact
+    const artifactPath = path.join(tmpDir, "artifact");
+    fs.writeFileSync(artifactPath, "artifact data"); // sha256:18eec0cf867e893de3351c2efc679c3b79ceed8a9037eec96db06a50bfd718d3
+    tc.downloadTool.mockResolvedValueOnce(artifactPath);
+
+    // provenance
+    const provenancePath = path.join(tmpDir, "provenance");
+    fs.writeFileSync(provenancePath, "provenance data"); // sha256:48792d9931fd23e6094bdd7c1265710a03c8b9a80800acbd71c9d623140dcf95
+    tc.downloadTool.mockResolvedValueOnce(provenancePath);
+
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: "PASSED",
+      stderr: "",
+    });
+
+    const artifactURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact";
+    const provenanceURL =
+      "https://github.com/owner/repo/releases/download/v1.0.0/artifact.intoto.jsonl";
+    const sourceURI = "github.com/owner/repo";
+    const sourceTag = "v1.0.0";
+    const verifierVersion = "v2.3.0";
+    // NOTE: verifier digest doesn't match.
+    const verifierDigest =
+      "5aa03f96c77536579166fba147929626cc3a97960e994057a9d80271a736d10f";
+
+    await expect(
+      verifier.downloadAndVerifySLSA(
+        artifactURL,
+        provenanceURL,
+        sourceURI,
+        sourceTag,
+        verifierVersion,
+        verifierDigest,
+      ),
+    ).rejects.toThrow(verifier.DigestValidationError);
+  });
 });
