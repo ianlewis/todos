@@ -118,21 +118,22 @@ export async function downloadAndVerifySLSA(
   slsaVerifierVersion: string,
   slsaVerifierDigest: string,
 ): Promise<string> {
-  const verifierPromise = await downloadSLSAVerifier(
+  const verifierPromise = downloadSLSAVerifier(
     slsaVerifierVersion,
     slsaVerifierDigest,
   );
 
   core.debug(`Downloading ${url}`);
-  const artifactPromise = await tc.downloadTool(url);
+  const artifactPromise = tc.downloadTool(url);
 
   core.debug(`Downloading ${provenanceURL}`);
-  const provenancePath = await tc.downloadTool(provenanceURL);
-  core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
+  const provenancePromise = tc.downloadTool(provenanceURL);
 
   const verifierPath = await verifierPromise;
   const artifactPath = await artifactPromise;
   core.debug(`Downloaded ${url} to ${artifactPath}`);
+  const provenancePath = await provenancePromise;
+  core.debug(`Downloaded ${provenanceURL} to ${provenancePath}`);
 
   core.debug(`Running slsa-verifier (${verifierPath})`);
 

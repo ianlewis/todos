@@ -55,7 +55,7 @@ export async function runIssueReopener(
   // Run the github-issue-reopener.
   core.debug(`Running github-issue-reopener (${reopenerPath})`);
 
-  let args = [
+  const args = [
     `--repo=${process.env.GITHUB_REPOSITORY}`,
     `--sha=${process.env.GITHUB_SHA}`,
   ];
