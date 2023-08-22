@@ -212,14 +212,13 @@ func outJSON(w io.Writer) walker.TODOHandler {
 			CommentLine: o.TODO.CommentLine,
 		})
 		if err != nil {
-			return err
+			// This shoudn't ever happen.
+			panic(fmt.Sprintf("marshaling json: %v", err))
 		}
-		if _, err := w.Write(b); err != nil {
-			return err
-		}
-		if _, err := w.Write([]byte("\n")); err != nil {
-			return err
-		}
+
+		// NOTE: Ignore errors writing to console.
+		_, _ = w.Write(b)
+		_, _ = w.Write([]byte("\n"))
 
 		return nil
 	}
