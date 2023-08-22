@@ -216,8 +216,9 @@ func outJSON(w io.Writer) walker.TODOHandler {
 			panic(fmt.Sprintf("marshaling json: %v", err))
 		}
 
-		// NOTE: Ignore errors writing to console.
+		//nolint:errcheck // NOTE: Ignore errors writing to console. This is essentially the same as fmt.Fprintf
 		_, _ = w.Write(b)
+		//nolint:errcheck // NOTE: Ignore errors writing to console. This is essentially the same as fmt.Fprintf
 		_, _ = w.Write([]byte("\n"))
 
 		return nil
