@@ -15,6 +15,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"strings"
 	"testing"
@@ -232,6 +234,96 @@ func Test_outGithub(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(tc.expected, w.String()); diff != "" {
+				t.Errorf("unexpected output (-want, +got): \n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_outJSON(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		ref      *walker.TODORef
+		expected *outTODO
+	}{
+		"nil": {
+			ref:      nil,
+			expected: nil,
+		},
+		"notice": {
+			ref: &walker.TODORef{
+				FileName: "foo.go",
+				TODO: &todos.TODO{
+					Type: "NOTE",
+					Line: 16,
+					Text: "// NOTE: this is a message",
+				},
+			},
+			expected: &outTODO{
+				Path: "foo.go",
+				Type: "NOTE",
+				Line: 16,
+				Text: "// NOTE: this is a message",
+			},
+		},
+		"TODO warning": {
+			ref: &walker.TODORef{
+				FileName: "foo.go",
+				TODO: &todos.TODO{
+					Type: "TODO",
+					Line: 16,
+					Text: "// TODO: this is a message",
+				},
+			},
+			expected: &outTODO{
+				Path: "foo.go",
+				Type: "TODO",
+				Line: 16,
+				Text: "// TODO: this is a message",
+			},
+		},
+		"FIXME error": {
+			ref: &walker.TODORef{
+				FileName: "foo.go",
+				TODO: &todos.TODO{
+					Type: "FIXME",
+					Line: 16,
+					Text: "// FIXME: this is a message",
+				},
+			},
+			expected: &outTODO{
+				Path: "foo.go",
+				Type: "FIXME",
+				Line: 16,
+				Text: "// FIXME: this is a message",
+			},
+		},
+	}
+
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var w bytes.Buffer
+			h := outJSON(&w)
+			err := h(tc.ref)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expected == nil {
+				if diff := cmp.Diff("", w.String()); diff != "" {
+					t.Errorf("unexpected output (-want, +got): \n%s", diff)
+				}
+				return
+			}
+
+			out := &outTODO{}
+			if err := json.Unmarshal(w.Bytes(), &out); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if diff := cmp.Diff(tc.expected, out); diff != "" {
 				t.Errorf("unexpected output (-want, +got): \n%s", diff)
 			}
 		})

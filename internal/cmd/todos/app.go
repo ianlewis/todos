@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ import (
 	"sigs.k8s.io/release-utils/version"
 
 	"github.com/ianlewis/todos/internal/todos"
+	"github.com/ianlewis/todos/internal/utils"
 	"github.com/ianlewis/todos/internal/walker"
 )
 
@@ -80,7 +82,7 @@ func newTODOsApp() *cli.App {
 			},
 			&cli.StringFlag{
 				Name:    "output",
-				Usage:   "Output type (default, github)",
+				Usage:   "Output type (default, github, json)",
 				Value:   "default",
 				Aliases: []string{"o"},
 			},
@@ -97,10 +99,10 @@ func newTODOsApp() *cli.App {
 		Action: func(c *cli.Context) error {
 			if c.Bool("version") {
 				versionInfo := version.GetVersionInfo()
-				fmt.Fprintf(c.App.Writer, `%s %s
+				_ = utils.Must(fmt.Fprintf(c.App.Writer, `%s %s
 Copyright (c) Google LLC
 
-%s`, c.App.Name, versionInfo.GitVersion, versionInfo.String())
+%s`, c.App.Name, versionInfo.GitVersion, versionInfo.String()))
 				return nil
 			}
 
@@ -128,7 +130,7 @@ Copyright (c) Google LLC
 			}
 
 			// ExitCode return an exit code for the given error.
-			fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err)
+			_ = utils.Must(fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err))
 			if errors.Is(err, ErrFlagParse) {
 				cli.OsExiter(ExitCodeFlagParseError)
 				return
@@ -144,13 +146,13 @@ func outCLI(w io.Writer) walker.TODOHandler {
 		if o == nil {
 			return nil
 		}
-		fmt.Fprintf(w, "%s%s%s%s%s\n",
+		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
 			color.GreenString(fmt.Sprintf("%d", o.TODO.Line)),
 			color.CyanString(":"),
 			o.TODO.Text,
-		)
+		))
 		return nil
 	}
 }
@@ -167,7 +169,53 @@ func outGithub(w io.Writer) walker.TODOHandler {
 		case "FIXME", "XXX", "BUG":
 			typ = "error"
 		}
-		fmt.Fprintf(w, "::%s file=%s,line=%d::%s\n", typ, o.FileName, o.TODO.Line, o.TODO.Text)
+		_ = utils.Must(fmt.Fprintf(w, "::%s file=%s,line=%d::%s\n", typ, o.FileName, o.TODO.Line, o.TODO.Text))
+		return nil
+	}
+}
+
+type outTODO struct {
+	// Path is the path to the file where the TODO was found.
+	Path string `json:"path"`
+
+	// Type is the todo type, such as "FIXME", "BUG", etc.
+	Type string `json:"type"`
+
+	// Text is the full comment text.
+	Text string `json:"text"`
+
+	// Label is the label part (the part in parenthesis)
+	Label string `json:"label"`
+
+	// Message is the comment message (the part after the parenthesis).
+	Message string `json:"message"`
+
+	// Line is the line number where todo was found..
+	Line int `json:"line"`
+
+	// CommentLine is the line where the comment starts.
+	CommentLine int `json:"comment_line"`
+}
+
+func outJSON(w io.Writer) walker.TODOHandler {
+	return func(o *walker.TODORef) error {
+		if o == nil {
+			return nil
+		}
+
+		b := utils.Must(json.Marshal(outTODO{
+			Path:        o.FileName,
+			Type:        o.TODO.Type,
+			Text:        o.TODO.Text,
+			Label:       o.TODO.Label,
+			Message:     o.TODO.Message,
+			Line:        o.TODO.Line,
+			CommentLine: o.TODO.CommentLine,
+		}))
+
+		_ = utils.Must(w.Write(b))
+		_ = utils.Must(w.Write([]byte("\n")))
+
 		return nil
 	}
 }
@@ -177,6 +225,7 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 	"":        outCLI,
 	"default": outCLI,
 	"github":  outGithub,
+	"json":    outJSON,
 }
 
 func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
@@ -194,7 +243,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 
 	o.TODOFunc = outFunc(c.App.Writer)
 	o.ErrorFunc = func(err error) error {
-		fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err)
+		_ = utils.Must(fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err))
 		return nil
 	}
 
