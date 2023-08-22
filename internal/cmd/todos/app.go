@@ -214,8 +214,13 @@ func outJSON(w io.Writer) walker.TODOHandler {
 		if err != nil {
 			return err
 		}
-		w.Write(b)
-		w.Write([]byte("\n"))
+		if _, err := w.Write(b); err != nil {
+			return err
+		}
+		if _, err := w.Write([]byte("\n")); err != nil {
+			return err
+		}
+
 		return nil
 	}
 }
