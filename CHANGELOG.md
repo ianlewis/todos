@@ -5,16 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0-rc.2] - 2023-08-23
+## [0.4.0] - 2023-08-23
 
-### Added in 0.4.0-rc.2
+### Added in 0.4.0
 
 - The `todos` CLI now supports a new JSON output format.
-- A new `issue-reopener` GitHub action was added that uses the `todos` CLI to
-  scan a repository checkout for TODOs referencing a GitHub issue and reopen
-  issues that have been prematurely closed.
+- A new [`issue-reopener`](actions/issue-reopener/README.md) GitHub action was
+  added that uses the `todos` CLI to scan a repository checkout for TODOs
+  referencing a GitHub issue and reopen issues that have been prematurely
+  closed.
 
-### Removed in 0.4.0-rc.2
+### Removed in 0.4.0
 
 - The `github-issue-reopener` binary was removed in favor of the
   `issue-reopener` action.
@@ -85,4 +86,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0
 [0.2.0]: https://github.com/ianlewis/todos/releases/tag/v0.2.0
 [0.3.0]: https://github.com/ianlewis/todos/releases/tag/v0.3.0
-[0.4.0-rc.2]: https://github.com/ianlewis/todos/releases/tag/v0.4.0-rc.2
+[0.4.0]: https://github.com/ianlewis/todos/releases/tag/v0.4.0
