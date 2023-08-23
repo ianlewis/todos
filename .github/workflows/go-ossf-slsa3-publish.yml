@@ -32,27 +32,25 @@ jobs:
           fetch-depth: 0
       - id: ldflags
         run: |
-          echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
-      - env:
-          VERSION: ${{ steps.ldflags.outputs.version }}
-        run: |
           set -euo pipefail
 
+          version=$(git describe --tags --always --dirty)
           exit_code=0
           PATHS=$(find actions/ -not -path '*/node_modules/*' -name package.json -type f -print0 | xargs -0 dirname)
           for path in $PATHS; do
             if grep -r "TODOS_VERSION" "${path}" >/dev/null; then
-              if ! grep -r "TODOS_VERSION *= * \"${VERSION}\"" "${path}" >/dev/null; then
-                echo >&2 "TODOS_VERSION must be set to ${VERSION} in action ${path}"
+              if ! grep -r "TODOS_VERSION *= * \"${version}\"" "${path}" >/dev/null; then
+                echo >&2 "TODOS_VERSION must be set to ${version} in action ${path}"
                 exit_code=1
               fi
             fi
           done
-          if ! grep "${VERSION}" CHANGELOG.md >/dev/null; then
-            echo >&2 "${VERSION} must be included in the CHANGELOG.md"
+          if ! grep "${version}" CHANGELOG.md >/dev/null; then
+            echo >&2 "${version} must be included in the CHANGELOG.md"
             exit_code=1
           fi
 
+          echo "version=$(echo "$version" | cut -c2-)" >> "$GITHUB_OUTPUT"
           exit "${exit_code}"
 
   build-todos:
