@@ -69,8 +69,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
@@ -92,8 +91,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
@@ -115,8 +113,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
@@ -138,8 +135,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
@@ -161,8 +157,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -188,8 +183,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -215,8 +209,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -242,8 +235,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = "/home/user";
-
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(2);
     let issues = await p;
@@ -282,6 +274,14 @@ describe("getTODOIssues", () => {
 });
 
 describe("reopenIssues", () => {
+  const env = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...env };
+    process.env.GITHUB_WORKSPACE = "/home/user";
+  });
+
   it("handles empty list", async () => {
     const issues = {
       get: jest.fn(),
