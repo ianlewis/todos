@@ -31,15 +31,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Issue Reopener
-        uses: ianlewis/todos/actions/issue-reopener@v1.4.0
+        uses: ianlewis/todos/actions/issue-reopener@v0.4.0
 ```
 
 ## Inputs
 
-| Name  | Required | Default            | Description                                                                |
-| ----- | -------- | ------------------ | -------------------------------------------------------------------------- |
-| path  | No       | `github.workspace` | The root path of the source code to search.                                |
-| token | No       | `github.token`     | The GitHub token to use. This token must have `issues: write` permissions. |
+| Name    | Required | Default            | Description                                                                |
+| ------- | -------- | ------------------ | -------------------------------------------------------------------------- |
+| path    | No       | `github.workspace` | The root path of the source code to search.                                |
+| token   | No       | `github.token`     | The GitHub token to use. This token must have `issues: write` permissions. |
+| dry-run | No       | false              | If true, issues are only output to logs and not actually reopened.         |
 
 ## Outputs
 
