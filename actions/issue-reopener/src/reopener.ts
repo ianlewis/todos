@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as fs from "fs/promises";
+import * as path from "path";
 
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
@@ -173,11 +174,14 @@ export async function reopenIssues(
 
     let body = "There are TODOs referencing this issue:\n";
     for (const [i, todo] of issueRef.todos.entries()) {
-      body += `${i + 1}. [${todo.path}:${todo.line}](https://github.com/${
+      // NOTE: Path must be relative to the github.workspace since we want to
+      // get the path from the root of the repository.
+      // TODO(#262): Calculate relative path from repository root
+      const workspacePath = process.env.GITHUB_WORKSPACE as string;
+      const todoPath = path.relative(workspacePath, todo.path);
+      body += `${i + 1}. [${todoPath}:${todo.line}](https://github.com/${
         repo.owner
-      }/${repo.repo}/blob/${sha}/${todo.path}#L${todo.line}): ${
-        todo.message
-      }\n`;
+      }/${repo.repo}/blob/${sha}/${todoPath}#L${todo.line}): ${todo.message}\n`;
     }
 
     // Post the comment.
