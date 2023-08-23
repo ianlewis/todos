@@ -61,7 +61,8 @@ function runAction() {
         const token = core.getInput("token", { required: true });
         const dryRun = core.getInput("dry-run") === "true";
         try {
-            yield reopener.runIssueReopener(wd, token, dryRun);
+            const issues = yield reopener.getTODOIssues(wd);
+            yield reopener.reopenIssues(issues, token, dryRun);
         }
         catch (err) {
             const message = err instanceof Error ? err.message : `${err}`;
@@ -173,12 +174,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.runIssueReopener = exports.ReopenError = void 0;
+exports.reopenIssues = exports.getTODOIssues = exports.TODOIssue = exports.TODORef = exports.ReopenError = void 0;
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const verifier = __importStar(__nccwpck_require__(5854));
-const REOPENER_VERSION = "v0.3.0";
+const TODOS_VERSION = "v0.3.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM = "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
 class ReopenError extends Error {
@@ -189,35 +190,67 @@ class ReopenError extends Error {
     }
 }
 exports.ReopenError = ReopenError;
-// runIssueReopener downloads and runs github-issue-reopener.
-function runIssueReopener(wd, token, dryRun) {
+// TODORef is a reference to a TODO comment.
+class TODORef {
+    constructor() {
+        this.path = "";
+        this.type = "";
+        this.text = "";
+        this.label = "";
+        this.message = "";
+        this.line = "";
+        this.comment_line = "";
+    }
+}
+exports.TODORef = TODORef;
+// TODOIssue is a GitHub issue referenced by one or more TODOs.
+class TODOIssue {
+    constructor(issueID) {
+        this.todos = [];
+        this.issueID = issueID;
+    }
+}
+exports.TODOIssue = TODOIssue;
+const labelMatch = new RegExp("^s*((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)s*$");
+// reopenIssues downloads the todos CLI, runs it, and returns issues linked to TODOs.
+function getTODOIssues(wd) {
     return __awaiter(this, void 0, void 0, function* () {
-        const reopenerPath = yield verifier.downloadAndVerifySLSA(`https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64`, `https://github.com/ianlewis/todos/releases/download/${REOPENER_VERSION}/github-issue-reopener-linux-amd64.intoto.jsonl`, "github.com/ianlewis/todos", REOPENER_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
-        core.debug(`Setting ${reopenerPath} as executable`);
-        yield fs.chmod(reopenerPath, 0o700);
-        // Run the github-issue-reopener.
-        core.debug(`Running github-issue-reopener (${reopenerPath})`);
-        const args = [
-            `--repo=${process.env.GITHUB_REPOSITORY}`,
-            `--sha=${process.env.GITHUB_SHA}`,
-        ];
-        if (dryRun) {
-            args.push("--dry-run");
-        }
-        args.push(wd);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(reopenerPath, args, {
-            env: {
-                GH_TOKEN: token,
-            },
-            ignoreReturnCode: true,
-        });
-        core.debug(`Ran github-issue-reopener (${reopenerPath}): ${stdout}`);
+        const todosPath = yield verifier.downloadAndVerifySLSA(`https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64`, `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64.intoto.jsonl`, "github.com/ianlewis/todos", TODOS_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
+        core.debug(`Setting ${todosPath} as executable`);
+        yield fs.chmod(todosPath, 0o700);
+        core.debug(`Running todos (${todosPath})`);
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(todosPath, ["--output=json", wd], { ignoreReturnCode: true });
+        core.debug(`Ran todos (${todosPath})`);
         if (exitCode !== 0) {
-            throw new ReopenError(`github-issue-reopener exited ${exitCode}: ${stderr}`);
+            throw new ReopenError(`todos exited ${exitCode}: ${stderr}`);
         }
+        // Parse stdout into list of TODORef grouped by issue.
+        let issueMap = new Map();
+        for (var line of stdout.split("\n")) {
+            let ref = JSON.parse(line);
+            let match = ref.label.match(labelMatch);
+            if (match && match[5]) {
+                let issueID = Number(match[5]);
+                let issue = issueMap.get(issueID);
+                if (!issue) {
+                    issue = new TODOIssue(issueID);
+                }
+                issue.todos.push(ref);
+                issueMap.set(issueID, issue);
+            }
+        }
+        return Array.from(issueMap.values());
     });
 }
-exports.runIssueReopener = runIssueReopener;
+exports.getTODOIssues = getTODOIssues;
+// reopenIssues reopens issues linked to TODOs.
+function reopenIssues(issues, token, dryRun) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // TODO: Create a GitHub API client.
+        // TODO: loop over issues and reopen them.
+    });
+}
+exports.reopenIssues = reopenIssues;
 
 
 /***/ }),

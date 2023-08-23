@@ -16,6 +16,7 @@ import * as fs from "fs/promises";
 
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import * as github from "@actions/github";
 
 import * as verifier from "./verifier";
 
@@ -35,19 +36,33 @@ export class ReopenError extends Error {
 
 // TODORef is a reference to a TODO comment.
 export class TODORef {
-  filePath: string;
-  line: number;
-  message: string;
+  path: string = "";
+  type: string = "";
+  text: string = "";
+  label: string = "";
+  message: string = "";
+  line: number = 0;
+  comment_line: number = 0;
 }
 
 // TODOIssue is a GitHub issue referenced by one or more TODOs.
 export class TODOIssue {
-  issueRef string;
-  todos Array<TODORef>;
+  issueID: number;
+  todos: Array<TODORef> = [];
+
+  constructor(issueID: number) {
+    this.issueID = issueID;
+  }
 }
+
+const labelMatch = new RegExp(
+  "^s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)s*$",
+);
 
 // reopenIssues downloads the todos CLI, runs it, and returns issues linked to TODOs.
 export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
+  const repo = github.context.repo;
+
   const todosPath = await verifier.downloadAndVerifySLSA(
     `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64`,
     `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64.intoto.jsonl`,
@@ -65,7 +80,7 @@ export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
 
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
     todosPath,
-    [wd],
+    ["--output=json", wd],
     { ignoreReturnCode: true },
   );
   core.debug(`Ran todos (${todosPath})`);
@@ -73,12 +88,40 @@ export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
     throw new ReopenError(`todos exited ${exitCode}: ${stderr}`);
   }
 
-  // TODO: Parse stdout into lint of issues.
-  const labelMatch = /^\s*((https?://)?github.com/(.*)/(.*)/issues/|#?)([0-9]+)\s*$/
-
+  // Parse stdout into list of TODORef grouped by issue.
+  let issueMap = new Map<number, TODOIssue>();
   for (var line of stdout.split("\n")) {
-    core.debug(line);
+    line = line.trim();
+    if (line == "") {
+      continue;
+    }
+    let ref: TODORef = JSON.parse(line);
+    let match = ref.label.match(labelMatch);
+
+    if (!match) {
+      continue;
+    }
+
+    // NOTE: Skip the issue if it links to another repository.
+    if (
+      (match[3] || match[4]) &&
+      (match[3] !== repo.owner || match[4] !== repo.repo)
+    ) {
+      continue;
+    }
+
+    if (match[5]) {
+      let issueID = Number(match[5]);
+      let issue = issueMap.get(issueID);
+      if (!issue) {
+        issue = new TODOIssue(issueID);
+      }
+      issue.todos.push(ref);
+      issueMap.set(issueID, issue);
+    }
   }
+
+  return Array.from(issueMap.values());
 }
 
 // reopenIssues reopens issues linked to TODOs.
@@ -87,6 +130,62 @@ export async function reopenIssues(
   token: string,
   dryRun: boolean,
 ): Promise<void> {
-  // TODO: Create a GitHub API client.
-  // TODO: loop over issues and reopen them.
+  const octokit = github.getOctokit(token);
+  const repo = github.context.repo;
+  const sha = github.context.sha;
+
+  for (var issueRef of issues) {
+    if (issueRef.todos.length === 0) {
+      continue;
+    }
+
+    const resp = await octokit.rest.issues.get({
+      owner: repo.owner,
+      repo: repo.repo,
+      issue_number: issueRef.issueID,
+    });
+    const issue = resp.data;
+
+    if (issue.state === "open") {
+      continue;
+    }
+
+    let msgPrefix = "";
+    if (dryRun) {
+      msgPrefix = "[dry-run] ";
+    }
+
+    core.info(
+      `${msgPrefix}Reopening https://github.com/${repo.owner}/${repo.repo}/issues/${issueRef.issueID} : ${issue.title}`,
+    );
+
+    if (dryRun) {
+      continue;
+    }
+
+    // Reopen the issue.
+    await octokit.rest.issues.update({
+      owner: repo.owner,
+      repo: repo.repo,
+      issue_number: issueRef.issueID,
+      state: "open",
+    });
+
+    let body = "There are TODOs referencing this issue:\n";
+    for (const [i, todo] of issueRef.todos.entries()) {
+      body += `${i + 1}. [${todo.path}:${todo.line}](https://github.com/${
+        repo.owner
+      }/${repo.repo}/blob/${sha}/${todo.path}#L${todo.line}): ${
+        todo.message
+      }\n`;
+    }
+
+    // Post the comment.
+    await octokit.rest.issues.createComment({
+      owner: repo.owner,
+      repo: repo.repo,
+      issue_number: issueRef.issueID,
+      body: body,
+    });
+  }
 }
