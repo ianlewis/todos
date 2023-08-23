@@ -14,15 +14,14 @@
 
 name: SLSA Go releaser
 on:
-  workflow_dispatch:
   release:
     types: [created]
 
 permissions: read-all
 
 jobs:
-  # Generate ldflags dynamically.
-  args:
+  # Validate the release and generate ldflags dynamically.
+  validate:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.ldflags.outputs.version }}
@@ -34,10 +33,31 @@ jobs:
       - id: ldflags
         run: |
           echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
+      - env:
+          VERSION: ${{ steps.ldflags.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          exit_code=0
+          PATHS=$(find actions/ -not -path '*/node_modules/*' -name package.json -type f -print0 | xargs -0 dirname)
+          for path in $PATHS; do
+            if grep -r "TODOS_VERSION" "${path}" >/dev/null; then
+              if ! grep -r "TODOS_VERSION *= * \"${VERSION}\"" "${path}" >/dev/null; then
+                echo >&2 "TODOS_VERSION must be set to ${VERSION} in action ${path}"
+                exit_code=1
+              fi
+            fi
+          done
+          if ! grep "${VERSION}" CHANGELOG.md >/dev/null; then
+            echo >&2 "${VERSION} must be included in the CHANGELOG.md"
+            exit_code=1
+          fi
+
+          exit "${exit_code}"
 
   build-todos:
     name: todos-${{matrix.os}}-${{matrix.arch}}
-    needs: [args]
+    needs: [validate]
     strategy:
       matrix:
         os:
@@ -57,4 +77,4 @@ jobs:
       # go-version-file: "go.mod"
       go-version: "1.20"
       config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
-      evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
+      evaluated-envs: "VERSION:${{needs.validate.outputs.version}}"
