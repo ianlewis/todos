@@ -176,6 +176,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.reopenIssues = exports.getTODOIssues = exports.TODOIssue = exports.TODORef = exports.ReopenError = void 0;
 const fs = __importStar(__nccwpck_require__(3292));
+const path = __importStar(__nccwpck_require__(1017));
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
@@ -293,7 +294,12 @@ function reopenIssues(issues, token, dryRun) {
             });
             let body = "There are TODOs referencing this issue:\n";
             for (const [i, todo] of issueRef.todos.entries()) {
-                body += `${i + 1}. [${todo.path}:${todo.line}](https://github.com/${repo.owner}/${repo.repo}/blob/${sha}/${todo.path}#L${todo.line}): ${todo.message}\n`;
+                // NOTE: Path must be relative to the github.workspace since we want to
+                // get the path from the root of the repository.
+                // TODO(#262): Calculate relative path from repository root
+                const workspacePath = process.env.GITHUB_WORKSPACE;
+                const todoPath = path.relative(workspacePath, todo.path);
+                body += `${i + 1}. [${todoPath}:${todo.line}](https://github.com/${repo.owner}/${repo.repo}/blob/${sha}/${todoPath}#L${todo.line}): ${todo.message}\n`;
             }
             // Post the comment.
             yield octokit.rest.issues.createComment({
