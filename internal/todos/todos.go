@@ -44,7 +44,9 @@ type TODO struct {
 	// Type is the todo type, such as "FIXME", "BUG", etc.
 	Type string
 
-	// Text is the full comment text.
+	// Text is the full text of the TODO. For single line comments this is the
+	// whole comment. For multi-line comments this is the line where the TODO
+	// appears.
 	Text string
 
 	// Label is the label part (the part in parenthesis)

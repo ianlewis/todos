@@ -12,20 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package utils
 
-import (
-	"os"
-
-	"github.com/urfave/cli/v2"
-)
-
-func main() {
-	// NOTE: Errors are generally handled in the app itself but Run could
-	// return errors if command line flags are incorrect etc. In this case neither
-	// Action nor ExitErrHandler are called.
-	app := newGitHubIssueReopenerApp()
-	if err := app.Run(os.Args); err != nil {
-		cli.OsExiter(ExitCodeUnknownError)
+// Must checks the error and panics if not nil.
+func Must[T any](val T, err error) T {
+	if err != nil {
+		panic(err)
 	}
+	return val
 }

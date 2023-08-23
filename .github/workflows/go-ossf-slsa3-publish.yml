@@ -12,30 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow lets you compile your Go project using a SLSA3 compliant builder.
-# This workflow will generate a so-called "provenance" file describing the steps
-# that were performed to generate the final binary.
-# The project is an initiative of the OpenSSF (openssf.org) and is developed at
-# https://github.com/slsa-framework/slsa-github-generator.
-# The provenance file can be verified using https://github.com/slsa-framework/slsa-verifier.
-# For more information about SLSA and how it improves the supply-chain, visit slsa.dev.
-
 name: SLSA Go releaser
 on:
-  workflow_dispatch:
   release:
     types: [created]
 
 permissions: read-all
 
 jobs:
-  # Generate ldflags dynamically.
-  args:
+  # Validate the release and generate ldflags dynamically.
+  validate:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.ldflags.outputs.version }}
@@ -47,10 +33,31 @@ jobs:
       - id: ldflags
         run: |
           echo "version=$(git describe --tags --always --dirty | cut -c2-)" >> "$GITHUB_OUTPUT"
+      - env:
+          VERSION: ${{ steps.ldflags.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          exit_code=0
+          PATHS=$(find actions/ -not -path '*/node_modules/*' -name package.json -type f -print0 | xargs -0 dirname)
+          for path in $PATHS; do
+            if grep -r "TODOS_VERSION" "${path}" >/dev/null; then
+              if ! grep -r "TODOS_VERSION *= * \"${VERSION}\"" "${path}" >/dev/null; then
+                echo >&2 "TODOS_VERSION must be set to ${VERSION} in action ${path}"
+                exit_code=1
+              fi
+            fi
+          done
+          if ! grep "${VERSION}" CHANGELOG.md >/dev/null; then
+            echo >&2 "${VERSION} must be included in the CHANGELOG.md"
+            exit_code=1
+          fi
+
+          exit "${exit_code}"
 
   build-todos:
     name: todos-${{matrix.os}}-${{matrix.arch}}
-    needs: [args]
+    needs: [validate]
     strategy:
       matrix:
         os:
@@ -70,28 +77,4 @@ jobs:
       # go-version-file: "go.mod"
       go-version: "1.20"
       config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
-      evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
-
-  build-github-issue-reopener:
-    name: github-issue-reopener-${{matrix.os}}-${{matrix.arch}}
-    needs: [args]
-    strategy:
-      matrix:
-        os:
-          - linux
-          - windows
-          - darwin
-        arch:
-          - amd64
-          - arm64
-    permissions:
-      id-token: write # To sign.
-      contents: write # To upload release assets.
-      actions: read # To read workflow path.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
-    with:
-      # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
-      # go-version-file: "go.mod"
-      go-version: "1.20"
-      config-file: ".slsa-goreleaser/github-issue-reopener-${{matrix.os}}-${{matrix.arch}}.yml"
-      evaluated-envs: "VERSION:${{needs.args.outputs.version}}"
+      evaluated-envs: "VERSION:${{needs.validate.outputs.version}}"
