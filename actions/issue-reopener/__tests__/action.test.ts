@@ -34,9 +34,11 @@ describe("runAction", () => {
     process.env = env;
   });
 
-  it("calls runIssueReopener", async () => {
-    reopener.runIssueReopener.mockClear();
-    reopener.runIssueReopener.mockResolvedValueOnce(undefined);
+  it("runs reopener", async () => {
+    reopener.getTODOIssues.mockClear();
+    reopener.getTODOIssues.mockResolvedValueOnce([]);
+    reopener.reopenIssues.mockClear();
+    reopener.reopenIssues.mockResolvedValueOnce(undefined);
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
@@ -48,18 +50,15 @@ describe("runAction", () => {
 
     await action.runAction();
 
-    expect(reopener.runIssueReopener).toBeCalledWith(
-      workspacePath,
-      githubToken,
-      dryRun,
-    );
-
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
+    expect(reopener.reopenIssues).toBeCalledWith([], githubToken, dryRun);
     expect(process.exitCode).toBeUndefined();
   });
 
-  it("handles reopener failure", async () => {
-    reopener.runIssueReopener.mockClear();
-    reopener.runIssueReopener.mockRejectedValueOnce(new Error("foo"));
+  it("handles getTODOIssues failure", async () => {
+    reopener.getTODOIssues.mockClear();
+    reopener.getTODOIssues.mockRejectedValueOnce(new Error("test error"));
+    reopener.reopenIssues.mockClear();
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
@@ -71,12 +70,29 @@ describe("runAction", () => {
 
     await action.runAction();
 
-    expect(reopener.runIssueReopener).toBeCalledWith(
-      workspacePath,
-      githubToken,
-      dryRun,
-    );
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
 
+    expect(process.exitCode).not.toBe(0);
+  });
+
+  it("handles reopenIssues failure", async () => {
+    reopener.getTODOIssues.mockClear();
+    reopener.getTODOIssues.mockResolvedValueOnce([]);
+    reopener.reopenIssues.mockClear();
+    reopener.reopenIssues.mockRejectedValueOnce(new Error("test error"));
+
+    const workspacePath = "/home/user";
+    const githubToken = "deadbeef";
+    const dryRun = false;
+
+    process.env.INPUT_PATH = workspacePath;
+    process.env.INPUT_TOKEN = githubToken;
+    process.env["INPUT_DRY-RUN"] = String(dryRun);
+
+    await action.runAction();
+
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
+    expect(reopener.reopenIssues).toBeCalledWith([], githubToken, dryRun);
     expect(process.exitCode).not.toBe(0);
   });
 });
