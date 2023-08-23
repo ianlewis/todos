@@ -227,14 +227,14 @@ function getTODOIssues(wd) {
             throw new ReopenError(`todos exited ${exitCode}: ${stderr}`);
         }
         // Parse stdout into list of TODORef grouped by issue.
-        let issueMap = new Map();
-        for (var line of stdout.split("\n")) {
+        const issueMap = new Map();
+        for (let line of stdout.split("\n")) {
             line = line.trim();
-            if (line == "") {
+            if (line === "") {
                 continue;
             }
-            let ref = JSON.parse(line);
-            let match = ref.label.match(labelMatch);
+            const ref = JSON.parse(line);
+            const match = ref.label.match(labelMatch);
             if (!match) {
                 continue;
             }
@@ -244,7 +244,7 @@ function getTODOIssues(wd) {
                 continue;
             }
             if (match[5]) {
-                let issueID = Number(match[5]);
+                const issueID = Number(match[5]);
                 let issue = issueMap.get(issueID);
                 if (!issue) {
                     issue = new TODOIssue(issueID);
@@ -263,7 +263,7 @@ function reopenIssues(issues, token, dryRun) {
         const octokit = github.getOctokit(token);
         const repo = github.context.repo;
         const sha = github.context.sha;
-        for (var issueRef of issues) {
+        for (const issueRef of issues) {
             if (issueRef.todos.length === 0) {
                 continue;
             }
@@ -300,7 +300,7 @@ function reopenIssues(issues, token, dryRun) {
                 owner: repo.owner,
                 repo: repo.repo,
                 issue_number: issueRef.issueID,
-                body: body,
+                body,
             });
         }
     });
