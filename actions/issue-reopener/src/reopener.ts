@@ -36,19 +36,19 @@ export class ReopenError extends Error {
 
 // TODORef is a reference to a TODO comment.
 export class TODORef {
-  path: string = "";
-  type: string = "";
-  text: string = "";
-  label: string = "";
-  message: string = "";
-  line: number = 0;
-  comment_line: number = 0;
+  path = "";
+  type = "";
+  text = "";
+  label = "";
+  message = "";
+  line = 0;
+  comment_line = 0;
 }
 
 // TODOIssue is a GitHub issue referenced by one or more TODOs.
 export class TODOIssue {
   issueID: number;
-  todos: Array<TODORef> = [];
+  todos: TODORef[] = [];
 
   constructor(issueID: number) {
     this.issueID = issueID;
@@ -60,7 +60,7 @@ const labelMatch = new RegExp(
 );
 
 // reopenIssues downloads the todos CLI, runs it, and returns issues linked to TODOs.
-export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
+export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
   const repo = github.context.repo;
 
   const todosPath = await verifier.downloadAndVerifySLSA(
@@ -89,14 +89,14 @@ export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
   }
 
   // Parse stdout into list of TODORef grouped by issue.
-  let issueMap = new Map<number, TODOIssue>();
-  for (var line of stdout.split("\n")) {
+  const issueMap = new Map<number, TODOIssue>();
+  for (let line of stdout.split("\n")) {
     line = line.trim();
-    if (line == "") {
+    if (line === "") {
       continue;
     }
-    let ref: TODORef = JSON.parse(line);
-    let match = ref.label.match(labelMatch);
+    const ref: TODORef = JSON.parse(line);
+    const match = ref.label.match(labelMatch);
 
     if (!match) {
       continue;
@@ -111,7 +111,7 @@ export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
     }
 
     if (match[5]) {
-      let issueID = Number(match[5]);
+      const issueID = Number(match[5]);
       let issue = issueMap.get(issueID);
       if (!issue) {
         issue = new TODOIssue(issueID);
@@ -126,7 +126,7 @@ export async function getTODOIssues(wd: string): Promise<Array<TODOIssue>> {
 
 // reopenIssues reopens issues linked to TODOs.
 export async function reopenIssues(
-  issues: Array<TODOIssue>,
+  issues: TODOIssue[],
   token: string,
   dryRun: boolean,
 ): Promise<void> {
@@ -134,7 +134,7 @@ export async function reopenIssues(
   const repo = github.context.repo;
   const sha = github.context.sha;
 
-  for (var issueRef of issues) {
+  for (const issueRef of issues) {
     if (issueRef.todos.length === 0) {
       continue;
     }
@@ -185,7 +185,7 @@ export async function reopenIssues(
       owner: repo.owner,
       repo: repo.repo,
       issue_number: issueRef.issueID,
-      body: body,
+      body,
     });
   }
 }
