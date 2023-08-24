@@ -49,6 +49,7 @@ var (
 		"Go":           &GoConfig,
 		"Go Module":    &GoConfig,
 		"Go Checksums": &GoConfig,
+		"Haskell":      &HaskellConfig,
 		"HTML":         &HTMLConfig,
 		"Java":         &JavaConfig,
 		"JavaScript":   &JavascriptConfig,
@@ -118,6 +119,18 @@ var (
 			{"\"", "\""},
 			{"'", "'"}, // Rune.
 			{"`", "`"},
+		},
+		escapeFunc: backslashEscape,
+	}
+
+	// HaskellConfig is a config for Haskell.
+	HaskellConfig = Config{
+		LineCommentStart:      []string{"--"},
+		MultilineCommentStart: "{-",
+		MultilineCommentEnd:   "-}",
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"}, // Character
 		},
 		escapeFunc: backslashEscape,
 	}
