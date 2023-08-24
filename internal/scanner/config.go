@@ -20,9 +20,23 @@ type Config struct {
 	MultilineCommentStart string
 	MultilineCommentEnd   string
 	Strings               [][2]string
-	// NoEscape if true specifies that this language does not support escaping
-	// quotes for strings.
-	NoEscape bool
+
+	// escapeFunc returns if the scanner is currently at a escaped string.
+	escapeFunc func(s *CommentScanner, st *stateString) (bool, error)
+}
+
+func noEscape(s *CommentScanner, st *stateString) (bool, error) {
+	return false, nil
+}
+
+func backslashEscape(s *CommentScanner, st *stateString) (bool, error) {
+	return s.peekEqual(append([]rune{'\\'}, s.config.Strings[st.index][1]...))
+}
+
+func doubleEscape(s *CommentScanner, st *stateString) (bool, error) {
+	b := append([]rune{}, s.config.Strings[st.index][1]...)
+	b = append(b, s.config.Strings[st.index][1]...)
+	return s.peekEqual(b)
 }
 
 var (
@@ -68,7 +82,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
-		NoEscape: true,
+		escapeFunc: noEscape,
 	}
 
 	// CConfig is a config for C.
@@ -81,6 +95,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"}, // character
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// CPPConfig is a config for C++.
@@ -104,6 +119,7 @@ var (
 			{"'", "'"}, // Rune.
 			{"`", "`"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// HTMLConfig is a config for HTML.
@@ -125,6 +141,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"}, // character
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// MakefileConfig is a config for Makefiles.
@@ -143,6 +160,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// PHPConfig is a config for PHP.
@@ -155,6 +173,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"}, // character
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// PythonConfig is a config for Python.
@@ -167,6 +186,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// RubyConfig is a config for Ruby.
@@ -179,6 +199,7 @@ var (
 			{"'", "'"},
 			{"%{", "}"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// RustConfig is a config for Rust.
@@ -194,6 +215,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// SwiftConfig is a config for Swift.
@@ -205,6 +227,7 @@ var (
 		Strings: [][2]string{
 			{"\"", "\""},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// SQLConfig is a config for SQL.
@@ -217,8 +240,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
-		// TODO(#1): Support escaping quotes by doubling them (e.g. '')
-		NoEscape: true,
+		escapeFunc: doubleEscape,
 	}
 
 	// TOMLConfig is a config for TOML.
@@ -239,6 +261,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		escapeFunc: backslashEscape,
 	}
 
 	// YAMLConfig is a config for YAML.

@@ -794,36 +794,35 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
-	// TODO(#1): Support escaping quotes by doubling them (e.g. '')
-	// {
-	// 	name: "escaped_string.rs",
-	// 	src: `-- file comment
+	{
+		name: "escaped_string.rs",
+		src: `-- file comment
 
-	// 		-- TODO is a table.
-	// 		SELECT * from TODO
-	// 		WHERE
-	// 			x = "foo -- Random comment" AND
-	// 			y = "foo \"-- Random comment"
-	// 		LIMIT 1;`,
-	// 	config: RustConfig,
-	// 	comments: []struct {
-	// 		text string
-	// 		line int
-	// 	}{
-	// 		{
-	// 			text: "-- file comment",
-	// 			line: 1,
-	// 		},
-	// 		{
-	// 			text: "-- TODO is a function.",
-	// 			line: 3,
-	// 		},
-	// 		{
-	// 			text: "-- Random comment",
-	// 			line: 7,
-	// 		},
-	// 	},
-	// },
+			-- TODO is a table.
+			SELECT * from TODO
+			WHERE
+				x = 'foo '' -- Random comment' AND
+				y = "foo \"-- Random comment"
+			LIMIT 1;`,
+		config: SQLConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a table.",
+				line: 3,
+			},
+			{
+				text: "-- Random comment\"",
+				line: 7,
+			},
+		},
+	},
 	{
 		name: "multi_line_string.rs",
 		src: `-- file comment
