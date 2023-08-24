@@ -74,6 +74,19 @@ ts-test: ## Run TypeScript unit tests.
 			make -C $$path unit-test; \
 		done
 
+## Benchmarking
+#####################################################################
+
+.PHONY: go-benchmark
+go-benchmark: ## Runs Go benchmarks.
+	@set -e;\
+		go mod vendor; \
+		extraargs=""; \
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			extraargs="-v"; \
+		fi; \
+		go test $$extraargs -bench=. -run=^# ./...
+
 ## Tools
 #####################################################################
 
