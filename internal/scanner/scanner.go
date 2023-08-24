@@ -46,6 +46,7 @@ type config struct {
 	MultilineCommentStart []rune
 	MultilineCommentEnd   []rune
 	Strings               [][2][]rune
+	NoEscape              bool
 }
 
 func convertConfig(c *Config) *config {
@@ -59,6 +60,7 @@ func convertConfig(c *Config) *config {
 			[]rune(c.Strings[i][1]),
 		})
 	}
+	c2.NoEscape = c.NoEscape
 	return &c2
 }
 
@@ -292,9 +294,13 @@ func (s *CommentScanner) multiLineMatch() ([]rune, error) {
 func (s *CommentScanner) processString(st *stateString) (state, error) {
 	for {
 		// Handle escaped characters.
-		escaped, err := s.peekEqual([]rune{'\\'})
-		if err != nil {
-			return st, err
+		escaped := false
+		if !s.config.NoEscape {
+			var err error
+			escaped, err = s.peekEqual([]rune{'\\'})
+			if err != nil {
+				return st, err
+			}
 		}
 		if escaped {
 			// Skip the backslash character.
