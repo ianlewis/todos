@@ -20,6 +20,9 @@ type Config struct {
 	MultilineCommentStart string
 	MultilineCommentEnd   string
 	Strings               [][2]string
+	// NoEscape if true specifies that this language does not support escaping
+	// quotes for strings.
+	NoEscape bool
 }
 
 var (
@@ -64,6 +67,7 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		NoEscape: true,
 	}
 
 	// CConfig is a config for C.
