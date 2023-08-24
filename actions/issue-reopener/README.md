@@ -20,9 +20,17 @@ First use the `actions/checkout` action to check out your repository. After that
 you can call `ianlewis/todos/actions/issue-reopener` to scan your codebase for
 TODO comments.
 
-Note that you must set the `issues: write` permission on the job.
+Note that you must set the `issues: write` permission on the job if using the
+default `GITHUB_TOKEN`.
 
 ```yaml
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions: {}
+
 jobs:
   issue-reopener:
     runs-on: ubuntu-latest
