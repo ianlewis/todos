@@ -217,6 +217,8 @@ var (
 			{"\"", "\""},
 			{"'", "'"},
 		},
+		// TODO(#1): Support escaping quotes by doubling them (e.g. '')
+		NoEscape: true,
 	}
 
 	// TOMLConfig is a config for TOML.
