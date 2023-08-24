@@ -109,15 +109,15 @@ var scannerTestCases = []*struct {
 				text: "; TODO is a function.",
 				line: 3,
 			},
-			// TODO(#1): Assembly doesn't seems to support escaped double or single quotes.
-			// {
-			// 	text: "; Random comment',0",
-			// 	line: 5,
-			// },
-			// {
-			// 	text: "; Random comment',0",
-			// 	line: 6,
-			// },
+			// NOTE: Assembly doesn't seem to support escaped double or single quotes.
+			{
+				text: "; Random comment\",0",
+				line: 5,
+			},
+			{
+				text: "; Random comment',0",
+				line: 6,
+			},
 		},
 	},
 	{

@@ -273,7 +273,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          url=$(gh issue create --title "issue-reopener-basic pre-submit test issue" --body "Test issue for PR ${PR_URL}")
+          body=""
+          if [ "${PR_URL}" != "" ]; then
+            body="Test issue for commit $PR ${PR_URL}"
+          else
+            body="Test issue for commit ${GITHUB_SHA}"
+          fi
+          body="${body}
+          - [Workflow run](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT})"
+
+          url=$(gh issue create --title "issue-reopener-basic pre-submit test issue" --body "${body}")
           echo "${url}"
           gh issue close "${url}"
           mkdir test
@@ -319,7 +328,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          url=$(gh issue create --title "issue-reopener-dry-run pre-submit test issue" --body "Test issue for PR ${PR_URL}")
+          body=""
+          if [ "${PR_URL}" != "" ]; then
+            body="Test issue for commit $PR ${PR_URL}"
+          else
+            body="Test issue for commit ${GITHUB_SHA}"
+          fi
+          body="${body}
+          - [Workflow run](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT})"
+
+          url=$(gh issue create --title "issue-reopener-dry-run pre-submit test issue" --body "${body}")
           echo "${url}"
           gh issue close "${url}"
           mkdir test
