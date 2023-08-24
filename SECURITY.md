@@ -14,7 +14,7 @@ The following chart outlines which versions will receive security updates.
 Vulnerabilities can be reported privately via GitHub's
 [Security Advisories](https://docs.github.com/en/code-security/security-advisories)
 feature. Please use the following link to submit your vulnerability:
-[Report a vulnerability](https://github.com/slsa-framework/slsa-github-generator/security/advisories/new)
+[Report a vulnerability](https://github.com/ianlewis/todos/security/advisories/new)
 
 Please see
 [Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability#privately-reporting-a-security-vulnerability)
