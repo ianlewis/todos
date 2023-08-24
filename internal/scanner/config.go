@@ -25,7 +25,7 @@ type Config struct {
 	escapeFunc func(s *CommentScanner, st *stateString) (bool, error)
 }
 
-func noEscape(s *CommentScanner, st *stateString) (bool, error) {
+func noEscape(_ *CommentScanner, _ *stateString) (bool, error) {
 	return false, nil
 }
 
