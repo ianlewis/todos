@@ -330,6 +330,144 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Haskell
+	{
+		name: "line_comments.hs",
+		src: `-- file comment
+
+			-- TODO is a function.
+			TODO = do
+				putStrLn "fizzbuzz" -- Random comment
+			`,
+		config: HaskellConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "-- Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.hs",
+		src: `-- file comment
+
+			-- TODO is a function.
+			TODO = do
+				x = "-- Random comment";
+				y = '-- Random comment';
+			`,
+		config: HaskellConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.hs",
+		src: `-- file comment
+
+			-- TODO is a function.
+			TODO = do
+				x = "\"-- Random comment";
+				y = '\'-- Random comment';
+				x + y
+			}`,
+		config: HaskellConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "multi_line_string.hs",
+		src: `-- file comment
+
+			z = = " \
+			-- TODO is a function. \
+			";
+
+			TODO = do
+				-- Random comment
+			`,
+		config: HaskellConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- Random comment",
+				line: 8,
+			},
+		},
+	},
+	{
+		name: "multi_line.hs",
+		src: `-- file comment
+
+			{-
+			TODO is a function.
+			-}
+			TODO = do
+				putStrLn "fizzbuzz" -- Random comment
+			}
+			{- extra comment -}`,
+		config: HaskellConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "{-\n\t\t\tTODO is a function.\n\t\t\t-}",
+				line: 3,
+			},
+			{
+				text: "-- Random comment",
+				line: 7,
+			},
+			{
+				text: "{- extra comment -}",
+				line: 9,
+			},
+		},
+	},
+
 	// Lua
 	{
 		name: "line_comments.lua",
