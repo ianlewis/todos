@@ -47,6 +47,7 @@ var (
 		"Scala":         &ScalaConfig,
 		"Shell":         &ShellConfig,
 		"Swift":         &SwiftConfig,
+		"SQL":           &SQLConfig,
 		"TOML":          &TOMLConfig,
 		"TypeScript":    &TypescriptConfig,
 		"Unix Assembly": &UnixAssemblyConfig,
@@ -199,6 +200,18 @@ var (
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
 			{"\"", "\""},
+		},
+	}
+
+	// SQLConfig is a config for SQL.
+	SQLConfig = Config{
+		LineCommentStart: []string{"--"},
+		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		MultilineCommentStart: "/*",
+		MultilineCommentEnd:   "*/",
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"},
 		},
 	}
 

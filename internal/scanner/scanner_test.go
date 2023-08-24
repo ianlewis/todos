@@ -739,6 +739,142 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+
+	// SQL
+	{
+		name: "line_comments.sql",
+		src: `-- file comment
+
+			-- TODO is a table.
+			SELECT * from TODO
+			WHERE
+				x = "TODO" -- Random comment
+			LIMIT 1;`,
+		config: SQLConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a table.",
+				line: 3,
+			},
+			{
+				text: "-- Random comment",
+				line: 6,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.sql",
+		src: `-- file comment
+
+			-- TODO is a table.
+			SELECT * from TODO
+			WHERE
+				x = "-- Random comment" AND
+				y = "-- Random comment"
+			LIMIT 1;`,
+		config: SQLConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a table.",
+				line: 3,
+			},
+		},
+	},
+	// TODO(#1): Support escaping quotes by doubling them (e.g. '')
+	// {
+	// 	name: "escaped_string.rs",
+	// 	src: `-- file comment
+
+	// 		-- TODO is a table.
+	// 		SELECT * from TODO
+	// 		WHERE
+	// 			x = "foo -- Random comment" AND
+	// 			y = "foo \"-- Random comment"
+	// 		LIMIT 1;`,
+	// 	config: RustConfig,
+	// 	comments: []struct {
+	// 		text string
+	// 		line int
+	// 	}{
+	// 		{
+	// 			text: "-- file comment",
+	// 			line: 1,
+	// 		},
+	// 		{
+	// 			text: "-- TODO is a function.",
+	// 			line: 3,
+	// 		},
+	// 		{
+	// 			text: "-- Random comment",
+	// 			line: 7,
+	// 		},
+	// 	},
+	// },
+	{
+		name: "multi_line_string.rs",
+		src: `-- file comment
+
+			-- TODO is a table.
+			SELECT * from TODO
+			WHERE
+				x = "
+				-- Random comment
+				" AND
+				y = "-- Random comment"
+			LIMIT 1;`,
+		config: SQLConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "-- TODO is a table.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "multi_line.sql",
+		src: `-- file comment
+
+			/*
+			TODO is a function.
+			*/
+			SELECT * from TODO
+			LIMIT 1;`,
+		config: SQLConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "-- file comment",
+				line: 1,
+			},
+			{
+				text: "/*\n\t\t\tTODO is a function.\n\t\t\t*/",
+				line: 3,
+			},
+		},
+	},
 }
 
 func TestCommentScanner(t *testing.T) {
