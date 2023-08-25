@@ -214,6 +214,17 @@ var (
 		escapeFunc: backslashEscape,
 	}
 
+	// RConfig is a config for R.
+	RConfig = Config{
+		LineCommentStart: []string{"#"},
+		// NOTE: R has no multi-line comments.
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"},
+		},
+		escapeFunc: backslashEscape,
+	}
+
 	// RubyConfig is a config for Ruby.
 	RubyConfig = Config{
 		LineCommentStart:      []string{"#"},
