@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gobwas/glob"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/ianlewis/todos/internal/testutils"
@@ -657,6 +658,100 @@ var testCases = []struct {
 					Message:     "some other task.",
 					Line:        7,
 					CommentLine: 7,
+				},
+			},
+		},
+	},
+	{
+		name: "exclude file",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: "excluded.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			ExcludeGlobs: []glob.Glob{glob.MustCompile("excluded.*")},
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "exclude dir",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: filepath.Join("excluded", "more_line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?")},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("src", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
 				},
 			},
 		},

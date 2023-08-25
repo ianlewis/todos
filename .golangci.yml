@@ -95,6 +95,7 @@ linters-settings:
 
           # Dependencies.
           - "github.com/fatih/color"
+          - "github.com/gobwas/glob"
           - "github.com/google/go-github"
           - "github.com/ianlewis/linguist"
           - "github.com/saintfish/chardet"
@@ -118,6 +119,7 @@ linters-settings:
           - "github.com/ianlewis/todos"
 
           # Dependencies.
+          - "github.com/gobwas/glob"
           - "github.com/google/go-cmp/cmp"
           - "github.com/google/go-github"
           - "github.com/urfave/cli/v2"

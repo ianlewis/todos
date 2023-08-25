@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/gobwas/glob"
 	"github.com/urfave/cli/v2"
 	"sigs.k8s.io/release-utils/version"
 
@@ -65,6 +66,14 @@ func newTODOsApp() *cli.App {
 				Usage:              "Exclude hidden files and directories",
 				DisableDefaultText: true,
 			},
+			&cli.StringSliceFlag{
+				Name:  "exclude",
+				Usage: "Exclude files that match `GLOB`",
+			},
+			&cli.StringSliceFlag{
+				Name:  "exclude-dir",
+				Usage: "Exclude directories that match `GLOB`",
+			},
 			&cli.BoolFlag{
 				Name:               "include-vcs",
 				Usage:              "Include version control directories (.git, .hg, .svn)",
@@ -77,12 +86,12 @@ func newTODOsApp() *cli.App {
 			},
 			&cli.StringFlag{
 				Name:  "todo-types",
-				Usage: "Comma separated list of TODO types",
+				Usage: "Comma separated list of TODO `TYPES`",
 				Value: strings.Join(todos.DefaultTypes, ","),
 			},
 			&cli.StringFlag{
 				Name:    "output",
-				Usage:   "Output type (default, github, json)",
+				Usage:   "Output `TYPE` (default, github, json)",
 				Value:   "default",
 				Aliases: []string{"o"},
 			},
@@ -230,6 +239,22 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 
 func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	o := walker.Options{}
+
+	for _, gs := range c.StringSlice("exclude") {
+		g, err := glob.Compile(gs)
+		if err != nil {
+			return nil, fmt.Errorf("%w: exclude: %w", ErrFlagParse, err)
+		}
+		o.ExcludeGlobs = append(o.ExcludeGlobs, g)
+	}
+
+	for _, gs := range c.StringSlice("exclude-dir") {
+		g, err := glob.Compile(gs)
+		if err != nil {
+			return nil, fmt.Errorf("%w: exclude-dir: %w", ErrFlagParse, err)
+		}
+		o.ExcludeDirGlobs = append(o.ExcludeDirGlobs, g)
+	}
 
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
