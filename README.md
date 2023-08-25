@@ -238,7 +238,7 @@ kubernetes$ todos -o json
 
 ```shell
 kubernetes$ # Get all the unique files with TODOs that Tim Hockin owns.
-kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path'
+kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uniq
 ```
 
 ## Contributing
