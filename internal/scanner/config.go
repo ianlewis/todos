@@ -76,8 +76,7 @@ var (
 
 	// AssemblyConfig is a config for Assembly.
 	AssemblyConfig = Config{
-		LineCommentStart: []string{";"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{";"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -89,8 +88,7 @@ var (
 
 	// CConfig is a config for C.
 	CConfig = Config{
-		LineCommentStart: []string{"//"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{"//"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -123,8 +121,7 @@ var (
 
 	// GoConfig is a config for Go.
 	GoConfig = Config{
-		LineCommentStart: []string{"//"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{"//"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -190,8 +187,7 @@ var (
 
 	// PHPConfig is a config for PHP.
 	PHPConfig = Config{
-		LineCommentStart: []string{"#", "//"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{"#", "//"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -256,8 +252,7 @@ var (
 
 	// SwiftConfig is a config for Swift.
 	SwiftConfig = Config{
-		LineCommentStart: []string{"//"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{"//"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
@@ -268,8 +263,7 @@ var (
 
 	// SQLConfig is a config for SQL.
 	SQLConfig = Config{
-		LineCommentStart: []string{"--"},
-		// TODO(#1): Parsing should exclude the leading '*' for multi-line comments.
+		LineCommentStart:      []string{"--"},
 		MultilineCommentStart: "/*",
 		MultilineCommentEnd:   "*/",
 		Strings: [][2]string{
