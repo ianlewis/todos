@@ -447,12 +447,31 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 			},
 		},
 		"exclude-multiple": {
-			args: []string{"--exclude='exclude.*'", "--exclude='foo'"},
+			args: []string{"--exclude=exclude.*", "--exclude=foo"},
+			flags: []cli.Flag{
+				&cli.StringSliceFlag{
+					Name: "exclude",
+				},
+			},
 			expected: &walker.Options{
 				Config:        &todos.Config{},
 				IncludeHidden: true,
 				ExcludeGlobs:  []glob.Glob{glob.MustCompile("exclude.*"), glob.MustCompile("foo")},
 				Paths:         []string{"."},
+			},
+		},
+		"exclude-dir-multiple": {
+			args: []string{"--exclude-dir=exclude?", "--exclude-dir=foo"},
+			flags: []cli.Flag{
+				&cli.StringSliceFlag{
+					Name: "exclude-dir",
+				},
+			},
+			expected: &walker.Options{
+				Config:          &todos.Config{},
+				IncludeHidden:   true,
+				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?"), glob.MustCompile("foo")},
+				Paths:           []string{"."},
 			},
 		},
 	}
