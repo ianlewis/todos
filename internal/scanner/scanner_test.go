@@ -720,6 +720,83 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// R
+	{
+		name: "line_comments.r",
+		src: `# file comment
+
+			# TODO is a function
+			TODO <- function() {
+				print("Hello World") # Random comment
+			`,
+		config: RConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.r",
+		src: `# file comment
+
+			# TODO is a function
+			TODO <- function() {
+				print("# Random comment")
+				print('# Random comment')
+			`,
+		config: RConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.r",
+		src: `# file comment
+
+			# TODO is a function
+			TODO <- function() {
+				print("\"# Random comment")
+				print('\'# Random comment')
+			`,
+		config: RConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function",
+				line: 3,
+			},
+		},
+	},
+
 	// Ruby
 	{
 		name: "raw_string.rb",
