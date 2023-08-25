@@ -46,6 +46,7 @@ var (
 		"C++":          &CPPConfig,
 		"C#":           &CSConfig,
 		"Dockerfile":   &DockerfileConfig,
+		"Erlang":       &ErlangConfig,
 		"Go":           &GoConfig,
 		"Go Module":    &GoConfig,
 		"Go Checksums": &GoConfig,
@@ -108,6 +109,17 @@ var (
 
 	// DockerfileConfig is a config for Dockerfiles.
 	DockerfileConfig = ShellConfig
+
+	// ErlangConfig is a config for Erlang.
+	ErlangConfig = Config{
+		LineCommentStart: []string{"%"},
+		// NOTE: Erlang does not have multi-line comments.
+		Strings: [][2]string{
+			{"\"", "\""},
+			{"'", "'"}, // Atom
+		},
+		escapeFunc: backslashEscape,
+	}
 
 	// GoConfig is a config for Go.
 	GoConfig = Config{

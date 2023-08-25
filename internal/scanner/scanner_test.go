@@ -154,6 +154,85 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Erlang
+	{
+		name: "line_comments.erl",
+		src: `module(foo)
+			% module comment
+
+			% TODO is a function
+			TODO() ->
+				io:fwrite("Hello World\n") % Random comment
+			`,
+		config: ErlangConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% module comment",
+				line: 2,
+			},
+			{
+				text: "% TODO is a function",
+				line: 4,
+			},
+			{
+				text: "% Random comment",
+				line: 6,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.go",
+		src: `module(foo)
+			% module comment
+
+			% TODO is a function
+			TODO() ->
+				io:fwrite("% Random comment\n")
+			`,
+		config: ErlangConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% module comment",
+				line: 2,
+			},
+			{
+				text: "% TODO is a function",
+				line: 4,
+			},
+		},
+	},
+	{
+		name: "escaped_string.go",
+		src: `module(foo)
+			% module comment
+
+			% TODO is a function
+			TODO() ->
+				io:fwrite("\"% Random comment\n")
+				io:fwrite('\'% Random comment\n')
+			`,
+		config: ErlangConfig,
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% module comment",
+				line: 2,
+			},
+			{
+				text: "% TODO is a function",
+				line: 4,
+			},
+		},
+	},
+
 	// Go
 	{
 		name: "line_comments.go",
