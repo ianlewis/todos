@@ -111,7 +111,7 @@ curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.4.0/todo
 curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.4.0/todos-linux-amd64.intoto.jsonl && \
 ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.4.0 && \
 chmod +x todos && \
-cp todos /usr/local/bin
+sudo cp todos /usr/local/bin
 ```
 
 #### Install from source
