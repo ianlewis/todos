@@ -713,7 +713,7 @@ var testCases = []struct {
 		name: "exclude dir",
 		files: []*testutils.File{
 			{
-				Path: "src/line_comments.go",
+				Path: filepath.Join("src", "line_comments.go"),
 				Contents: []byte(`package foo
 				// package comment
 
@@ -725,7 +725,7 @@ var testCases = []struct {
 				Mode: 0o600,
 			},
 			{
-				Path: "excluded/more_line_comments.go",
+				Path: filepath.Join("excluded", "more_line_comments.go"),
 				Contents: []byte(`package foo
 				// package comment
 
@@ -745,7 +745,7 @@ var testCases = []struct {
 		},
 		expected: []*TODORef{
 			{
-				FileName: "src/line_comments.go",
+				FileName: filepath.Join("src", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
