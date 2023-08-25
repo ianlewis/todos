@@ -86,11 +86,7 @@ main.go:28:// TODO(ianlewis): Implement the main method.
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
 finds in various formats.
 
-```shell
-$ todos
-internal/scanner/config.go:134:// TODO: Perl supports strings with any delimiter.
-internal/walker/walker.go:213:// TODO(github.com/ianlewis/linguist/issues/1): Update when linguist supports Windows.
-```
+<p align="center"><img src="img/todos.png?raw=true"/></p>
 
 ### Install the todos CLI
 
