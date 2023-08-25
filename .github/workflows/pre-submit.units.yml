@@ -219,6 +219,7 @@ jobs:
         with:
           api-key: ${{ secrets.FOSSA_API_KEY }}
           run-tests: true
+          branch: ${{ github.ref_name }}
 
   # check-dist for actions
   ###############################
