@@ -86,7 +86,7 @@ main.go:28:// TODO(ianlewis): Implement the main method.
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
 finds in various formats.
 
-<p align="center"><img src="img/todos.gif?raw=true"/></p>
+<p align="center"><img src="/img/todos.gif?raw=true"/></p>
 
 ### Install the todos CLI
 
