@@ -96,7 +96,8 @@ internal/walker/walker.go:213:// TODO(github.com/ianlewis/linguist/issues/1): Up
 
 ### Install from a release
 
-Download the `slsa-verifier` and verify it's checksum:
+Download the [`slsa-verifier`](https://github.com/slsa-framework/slsa-verifier)
+and verify it's checksum:
 
 ```shell
 curl -sSLo slsa-verifier https://github.com/slsa-framework/slsa-verifier/releases/download/v2.3.0/slsa-verifier-linux-amd64 && \
