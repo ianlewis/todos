@@ -67,6 +67,10 @@ func newTODOsApp() *cli.App {
 				DisableDefaultText: true,
 			},
 			&cli.StringSliceFlag{
+				Name:  "exclude",
+				Usage: "Exclude files that match `GLOB`",
+			},
+			&cli.StringSliceFlag{
 				Name:  "exclude-dir",
 				Usage: "Exclude directories that match `GLOB`",
 			},
@@ -235,6 +239,14 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 
 func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	o := walker.Options{}
+
+	for _, gs := range c.StringSlice("exclude") {
+		g, err := glob.Compile(gs)
+		if err != nil {
+			return nil, fmt.Errorf("%w: exclude: %w", ErrFlagParse, err)
+		}
+		o.ExcludeGlobs = append(o.ExcludeGlobs, g)
+	}
 
 	for _, gs := range c.StringSlice("exclude-dir") {
 		g, err := glob.Compile(gs)

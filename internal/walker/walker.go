@@ -52,6 +52,9 @@ type Options struct {
 	// Config is the config for scanning todos.
 	Config *todos.Config
 
+	// ExcludeGlobs is a list of Glob that matches excluded files.
+	ExcludeGlobs []glob.Glob
+
 	// ExcludeDirGlobs is a list of Glob that matches excluded dirs.
 	ExcludeDirGlobs []glob.Glob
 
@@ -235,6 +238,14 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 }
 
 func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
+	// Exclude files that match one of the given glob patterns.
+	for _, g := range w.options.ExcludeGlobs {
+		if g.Match(filepath.Base(fullPath)) {
+			// Skip file.
+			return nil
+		}
+	}
+
 	hdn, err := isHidden(fullPath)
 	if err != nil {
 		return w.handleErr(path, err)
