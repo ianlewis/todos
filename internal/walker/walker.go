@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gobwas/glob"
 	"github.com/ianlewis/linguist"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -50,6 +51,9 @@ type Options struct {
 
 	// Config is the config for scanning todos.
 	Config *todos.Config
+
+	// ExcludeDirGlobs is a list of Glob that matches excluded dirs.
+	ExcludeDirGlobs []glob.Glob
 
 	// IncludeHidden indicates whether hidden paths should be processed. Hidden
 	// paths are always processed if there are specified explicitly in `paths`.
@@ -190,6 +194,13 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	// NOTE: If path is "." then this path was explicitly included.
 	if path == "." {
 		return nil
+	}
+
+	// Exclude directories that match one of the given glob patterns.
+	for _, g := range w.options.ExcludeDirGlobs {
+		if g.Match(filepath.Base(fullPath)) {
+			return fs.SkipDir
+		}
 	}
 
 	hdn, err := isHidden(fullPath)

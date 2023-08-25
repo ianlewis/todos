@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.15.0
+	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-github/v52 v52.0.0
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
