@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gobwas/glob"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/urfave/cli/v2"
@@ -443,6 +444,15 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config:        &todos.Config{},
 				IncludeHidden: true,
 				Paths:         []string{"/path/to/code", "/other/path"},
+			},
+		},
+		"exclude-multiple": {
+			args: []string{"--exclude='exclude.*'", "--exclude='foo'"},
+			expected: &walker.Options{
+				Config:        &todos.Config{},
+				IncludeHidden: true,
+				ExcludeGlobs:  []glob.Glob{glob.MustCompile("exclude.*"), glob.MustCompile("foo")},
+				Paths:         []string{"."},
 			},
 		},
 	}
