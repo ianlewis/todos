@@ -9,7 +9,7 @@
 
 Tools for dealing with TODOs in code.
 
-- [`todos` CLI](#todos-cli): searches for TODO comments in code and prints them in various
+- [`todos` CLI](#todos-cli-tool): searches for TODO comments in code and prints them in various
   formats.
 - [`actions/issue-reopener`](actions/issue-reopener/README.md): A GitHub Action to reopen issues that still have
   TODO comments referencing them.
@@ -81,16 +81,18 @@ main.go:27:// TODO(#123): Return a proper exit code.
 main.go:28:// TODO(ianlewis): Implement the main method.
 ```
 
-## todos CLI
+## `todos` CLI tool
 
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
 finds in various formats.
 
 <p align="center"><img src="img/todos.png?raw=true"/></p>
 
-### Install the todos CLI
+### Install `todos`
 
-### Install from a release
+There are two methods for installing `todos`.
+
+#### Install `todos` from a release
 
 Download the [`slsa-verifier`](https://github.com/slsa-framework/slsa-verifier)
 and verify it's checksum:
@@ -111,7 +113,7 @@ chmod +x todos && \
 sudo cp todos /usr/local/bin
 ```
 
-#### Install from source
+#### Install `todos` from source
 
 If you already have Go 1.20+ you can install the latest version using `go install`:
 
