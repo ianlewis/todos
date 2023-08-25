@@ -94,6 +94,7 @@ linters-settings:
           - "github.com/ianlewis/todos"
 
           # Dependencies.
+          - "github.com/denormal/go-gitignore"
           - "github.com/fatih/color"
           - "github.com/google/go-github"
           - "github.com/ianlewis/linguist"

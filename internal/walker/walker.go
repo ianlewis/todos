@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/denormal/go-gitignore"
 	"github.com/ianlewis/linguist"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -88,6 +89,9 @@ type TODOWalker struct {
 	// path is the currently walked path.
 	path string
 
+	// ignore is the ignorefile config for the currently walked path.
+	ignore gitignore.GitIgnore
+
 	// The last error encountered.
 	err error
 }
@@ -116,6 +120,14 @@ func (w *TODOWalker) Walk() bool {
 		}
 
 		if fInfo.IsDir() {
+			ignore, err := gitignore.NewRepositoryWithFile(path, ".todosignore")
+			if err != nil {
+				if herr := w.handleErr(path, err); herr != nil {
+					break
+				}
+			}
+			w.ignore = ignore
+
 			// Walk the directory
 			w.walkDir(path)
 		} else {
@@ -145,6 +157,13 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	// If the path had an error then just skip it. WalkDir has likely hit the path already.
 	if err != nil {
 		return w.handleErr(path, err)
+	}
+
+	if match := w.ignore.Relative(path, d.IsDir()); match != nil && !match.Include() {
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		return nil
 	}
 
 	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
