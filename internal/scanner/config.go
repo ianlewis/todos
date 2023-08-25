@@ -178,7 +178,7 @@ var (
 		MultilineCommentStart: "=",
 		MultilineCommentEnd:   "=cut",
 		Strings: [][2]string{
-			// TODO(#1): Perl supports strings with any delimiter.
+			// TODO(#357): Perl supports strings with any delimiter.
 			{"\"", "\""},
 			{"'", "'"},
 		},
@@ -198,7 +198,6 @@ var (
 	}
 
 	// PythonConfig is a config for Python.
-	// TODO(#1): Python parsing should also include python docstrings.
 	PythonConfig = Config{
 		LineCommentStart:      []string{"#"},
 		MultilineCommentStart: "\"\"\"",
