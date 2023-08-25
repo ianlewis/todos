@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support for SQL and Haskell programming languages has been added.
+- Support for Erlang, SQL, and Haskell programming languages has been added.
 
 ## [0.4.0] - 2023-08-23
 
