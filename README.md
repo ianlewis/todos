@@ -11,7 +11,7 @@ Tools for dealing with TODOs in code.
 
 - [`todos` CLI](#todos-cli): searches for TODO comments in code and prints them in various
   formats.
-- [`actions/issue-reopener`](actions/issue-reopener): A GitHub Action to reopen issues that still have
+- [`actions/issue-reopener`](actions/issue-reopener/README.md): A GitHub Action to reopen issues that still have
   TODO comments referencing them.
 
 ## TODO comments
