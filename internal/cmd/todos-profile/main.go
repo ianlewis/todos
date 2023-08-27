@@ -15,9 +15,25 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"runtime/pprof"
+
 	"github.com/ianlewis/todos/internal/cmd/todos/app"
+	"github.com/ianlewis/todos/internal/utils"
 )
 
 func main() {
+	f, err := os.Create("todos.prof")
+	if err != nil {
+		_ = utils.Must(fmt.Fprintf(os.Stderr, "%v", err))
+		os.Exit(1)
+	}
+	if err := pprof.StartCPUProfile(f); err != nil {
+		_ = utils.Must(fmt.Fprintf(os.Stderr, "%v", err))
+		os.Exit(1)
+	}
+	defer pprof.StopCPUProfile()
+
 	app.Main()
 }

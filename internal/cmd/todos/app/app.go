@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package app
 
 import (
 	"encoding/json"
@@ -55,8 +55,8 @@ var (
 	ErrWalk = errors.New("walking")
 )
 
-// newTODOsApp returns a new `todos` application.
-func newTODOsApp() *cli.App {
+// NewTODOsApp returns a new `todos` application.
+func NewTODOsApp() *cli.App {
 	return &cli.App{
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
@@ -287,4 +287,15 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	}
 
 	return &o, nil
+}
+
+// Main is the main function of the `todos` command.
+func Main() {
+	// NOTE: Errors are generally handled in the app itself but Run could
+	// return errors if command line flags are incorrect etc. In this case neither
+	// Action nor ExitErrHandler are called.
+	todosApp := NewTODOsApp()
+	if err := todosApp.Run(os.Args); err != nil {
+		cli.OsExiter(ExitCodeUnknownError)
+	}
 }

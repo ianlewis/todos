@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package app
 
 import (
 	"bytes"
@@ -47,7 +47,7 @@ func newContext(app *cli.App, args []string) *cli.Context {
 func Test_TODOsApp_version(t *testing.T) {
 	t.Parallel()
 
-	app := newTODOsApp()
+	app := NewTODOsApp()
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{"--version"})
@@ -80,7 +80,7 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	d := testutils.NewTempDir(files)
 	defer d.Cleanup()
 
-	app := newTODOsApp()
+	app := NewTODOsApp()
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
@@ -106,7 +106,7 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 		cli.OsExiter = oldExiter
 	}()
 
-	app := newTODOsApp()
+	app := NewTODOsApp()
 	var b strings.Builder
 	app.ErrWriter = &b
 	c := newContext(app, nil)
