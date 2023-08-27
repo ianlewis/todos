@@ -120,10 +120,10 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	typesMatch := strings.Join(quotedTypes, "|")
 
 	msgMatch := strings.Join([]string{
-		`\s*`,           // Naked
-		`:(.*)`,         // With message (match[0][4])
-		`\((.*)\)\s*`,   // Naked w/ label (match[0][5])
-		`\((.*)\):(.*)`, // With label (match[0][6]) and message (match[0][7])
+		`\s*`,                       // Naked
+		`\s*[:\-/]+\s*(.*)`,         // With message (match[0][4])
+		`\((.*)\)\s*`,               // Naked w/ label (match[0][5])
+		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][6]) and message (match[0][7])
 	}, "|")
 
 	snr.lineMatch = regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`)
