@@ -221,6 +221,167 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+
+		"line_comments_message_dash.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO - foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO - foo",
+					Message:     "foo",
+					Label:       "",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
+		"line_comments_label_message_dash.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO(github.com/foo/bar/issues/1) - foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1) - foo",
+					Message:     "foo",
+					Label:       "github.com/foo/bar/issues/1",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
+		"line_comments_label_message_slash.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO(github.com/foo/bar/issues/1) / foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1) / foo",
+					Message:     "foo",
+					Label:       "github.com/foo/bar/issues/1",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
+		"line_comments_label_message_multislash.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO(github.com/foo/bar/issues/1) // foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1) // foo",
+					Message:     "foo",
+					Label:       "github.com/foo/bar/issues/1",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
+		"line_comments_label_message_nodelim.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO(github.com/foo/bar/issues/1) foo",
+						Line: 5,
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO(github.com/foo/bar/issues/1) foo",
+					Message:     "foo",
+					Label:       "github.com/foo/bar/issues/1",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+
 		"multiline_comments_basic.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
