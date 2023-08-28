@@ -57,6 +57,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: []*TODORef{
 			{
@@ -107,6 +108,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: []*TODORef{
 			{
@@ -167,6 +169,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: []*TODORef{
 			{
@@ -220,7 +223,8 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Paths: []string{"line_comments.go"},
+			Charset: "UTF-8",
+			Paths:   []string{"line_comments.go"},
 		},
 		expected: []*TODORef{
 			{
@@ -256,6 +260,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: nil,
 	},
@@ -280,7 +285,8 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Paths: []string{".line_comments.go"},
+			Charset: "UTF-8",
+			Paths:   []string{".line_comments.go"},
 		},
 		expected: []*TODORef{
 			{
@@ -316,6 +322,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 			// NOTE: Include hidden files.
 			IncludeHidden: true,
 		},
@@ -352,6 +359,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: nil,
 	},
@@ -375,7 +383,8 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Paths: []string{filepath.Join("vendor", "line_comments.go")},
+			Charset: "UTF-8",
+			Paths:   []string{filepath.Join("vendor", "line_comments.go")},
 		},
 		expected: []*TODORef{
 			{
@@ -410,6 +419,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset:         "UTF-8",
 			IncludeVendored: true,
 			Paths:           []string{filepath.Join("vendor", "line_comments.go")},
 		},
@@ -447,6 +457,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: nil,
 	},
@@ -471,7 +482,8 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Paths: []string{filepath.Join(".somepath")},
+			Charset: "UTF-8",
+			Paths:   []string{filepath.Join(".somepath")},
 		},
 		expected: []*TODORef{
 			{
@@ -507,6 +519,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 			// NOTE: Include hidden files.
 			IncludeHidden: true,
 		},
@@ -543,6 +556,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: nil,
 	},
@@ -566,7 +580,8 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Paths: []string{filepath.Join("vendor", "pkgname")},
+			Charset: "UTF-8",
+			Paths:   []string{filepath.Join("vendor", "pkgname")},
 		},
 		expected: []*TODORef{
 			{
@@ -601,6 +616,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 			// NOTE: Include vendored files.
 			IncludeVendored: true,
 		},
@@ -638,6 +654,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset: "UTF-8",
 		},
 		expected: []*TODORef{
 			{
@@ -694,6 +711,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset:      "UTF-8",
 			ExcludeGlobs: []glob.Glob{glob.MustCompile("excluded.*")},
 		},
 		expected: []*TODORef{
@@ -741,6 +759,7 @@ var testCases = []struct {
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
+			Charset:         "UTF-8",
 			ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?")},
 		},
 		expected: []*TODORef{
@@ -822,7 +841,7 @@ func TestTODOWalker(t *testing.T) {
 			defer f.cleanup()
 
 			if got, want := w.Walk(), tc.err; got != want {
-				t.Errorf("unexpected error code, got: %v, want: %v", got, want)
+				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
 			}
 
 			got, want := f.out, tc.expected
@@ -859,14 +878,15 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		Config: &todos.Config{
 			Types: []string{"TODO"},
 		},
-		Paths: []string{"line_comments.go", notExistsPath},
+		Charset: "UTF-8",
+		Paths:   []string{"line_comments.go", notExistsPath},
 	}
 
 	f, w := newFixture(files, opts)
 	defer f.cleanup()
 
 	if got, want := w.Walk(), true; got != want {
-		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
+		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
 	}
 
 	if got, want := len(f.err), 1; got != want {
@@ -923,6 +943,7 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		Config: &todos.Config{
 			Types: []string{"TODO"},
 		},
+		Charset: "UTF-8",
 		// Override the handler to cause it to stop early.
 		TODOFunc: func(r *TODORef) error {
 			return fs.SkipAll
@@ -933,7 +954,7 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 	defer f.cleanup()
 
 	if got, want := w.Walk(), false; got != want {
-		t.Errorf("unexpected error code, got: %v, want: %v", got, want)
+		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
 	}
 
 	// NOTE: there are two TODOs in the file but we only get one because we
