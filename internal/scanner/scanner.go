@@ -74,28 +74,31 @@ func stringsToRunes(s []string) [][]rune {
 
 // FromFile returns an appropriate CommentScanner for the given file. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
-func FromFile(f *os.File) (*CommentScanner, error) {
+func FromFile(f *os.File, charset string) (*CommentScanner, error) {
 	rawContents, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", f.Name(), err)
 	}
 
-	return FromBytes(f.Name(), rawContents)
+	return FromBytes(f.Name(), rawContents, charset)
 }
 
 // FromBytes returns an appropriate CommentScanner for the given contents. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
-func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
-	// Detect the character set.
-	det := chardet.NewTextDetector()
-	result, err := det.DetectBest(rawContents)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errDetectCharset, err)
+func FromBytes(fileName string, rawContents []byte, charset string) (*CommentScanner, error) {
+	if charset == "detect" {
+		// Detect the character set.
+		det := chardet.NewTextDetector()
+		result, err := det.DetectBest(rawContents)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %w", errDetectCharset, err)
+		}
+
+		charset = result.Charset
 	}
 
-	// If we just detect it as ascii (latin1) then treat it as UTF-8 since they
+	// If given ascii (latin1) then treat it as UTF-8 since they
 	// are compatible.
-	charset := result.Charset
 	if charset == "ISO-8859-1" {
 		charset = "UTF-8"
 	}
@@ -106,8 +109,7 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
-		// The detected charset should not be unregistered.
-		panic(fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err))
+		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
 	}
 	if e == nil {
 		return nil, fmt.Errorf("%w: %s: unsupported character set", errDecodeCharset, charset)

@@ -26,6 +26,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/gobwas/glob"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/text/encoding/ianaindex"
 	"sigs.k8s.io/release-utils/version"
 
 	"github.com/ianlewis/todos/internal/todos"
@@ -47,6 +48,8 @@ const (
 	ExitCodeUnknownError
 )
 
+const defaultCharset = "UTF-8"
+
 var (
 	// ErrFlagParse is a flag parsing error.
 	ErrFlagParse = errors.New("parsing flags")
@@ -65,6 +68,12 @@ func newTODOsApp() *cli.App {
 				Name:               "exclude-hidden",
 				Usage:              "Exclude hidden files and directories",
 				DisableDefaultText: true,
+			},
+			&cli.StringFlag{
+				Name:    "charset",
+				Usage:   "The character set to use when reading files ('detect' to perform charset detection)",
+				Value:   defaultCharset,
+				Aliases: []string{"c"},
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
@@ -239,6 +248,26 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 
 func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	o := walker.Options{}
+
+	// Valdidate the character set.
+	charset := c.String("charset")
+	if charset != "detect" {
+		if charset == "ISO-8859-1" {
+			charset = "UTF-8"
+		}
+		// See: https://github.com/saintfish/chardet/issues/2
+		if charset == "GB-18030" {
+			charset = "GB18030"
+		}
+		e, err := ianaindex.IANA.Encoding(charset)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %s: unsupported character set: %w", ErrFlagParse, charset, err)
+		}
+		if e == nil {
+			return nil, fmt.Errorf("%w: %s: unsupported character set", ErrFlagParse, charset)
+		}
+	}
+	o.Charset = charset
 
 	for _, gs := range c.StringSlice("exclude") {
 		g, err := glob.Compile(gs)
