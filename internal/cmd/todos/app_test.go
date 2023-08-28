@@ -459,6 +459,32 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Paths:           []string{"."},
 			},
 		},
+		"charset": {
+			args: []string{"--charset=UTF-16"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       "UTF-16",
+				IncludeHidden: true,
+				Paths:         []string{"."},
+			},
+		},
+		"detect charset": {
+			args: []string{"--charset=detect"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       "detect",
+				IncludeHidden: true,
+				Paths:         []string{"."},
+			},
+		},
+		"invalid charset": {
+			args: []string{"--charset=invalid"},
+			err:  ErrFlagParse,
+		},
 	}
 
 	for name, tc := range testCases {
