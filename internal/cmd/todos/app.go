@@ -48,6 +48,8 @@ const (
 	ExitCodeUnknownError
 )
 
+const defaultCharset = "UTF-8"
+
 var (
 	// ErrFlagParse is a flag parsing error.
 	ErrFlagParse = errors.New("parsing flags")
@@ -70,7 +72,7 @@ func newTODOsApp() *cli.App {
 			&cli.StringFlag{
 				Name:    "charset",
 				Usage:   "The character set to use when reading files ('detect' to perform charset detection)",
-				Value:   "UTF-8",
+				Value:   defaultCharset,
 				Aliases: []string{"c"},
 			},
 			&cli.StringSliceFlag{

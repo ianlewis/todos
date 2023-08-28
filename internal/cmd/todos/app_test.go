@@ -335,82 +335,67 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		args  []string
-		flags []cli.Flag
+		args []string
 
 		expected *walker.Options
 		err      error
 	}{
-		"no flags no args": {
-			args:  nil,
-			flags: nil,
+		"no args": {
+			args: nil,
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				Paths:         []string{"."},
 			},
 		},
 		"output github": {
 			args: []string{"--output=github"},
-			flags: []cli.Flag{
-				&cli.StringFlag{
-					Name: "output",
-				},
-			},
 			// NOTE: Doesn't actually check TODOFunc.
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				Paths:         []string{"."},
 			},
 		},
 		"invalid output": {
 			args: []string{"--output=foo"},
-			flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "output",
-					Value: "default",
-				},
-			},
-			err: ErrFlagParse,
+			err:  ErrFlagParse,
 		},
 		"todo-types": {
 			args: []string{"--todo-types=TODO,FIXME"},
-			flags: []cli.Flag{
-				&cli.StringFlag{
-					Name: "todo-types",
-				},
-			},
 			expected: &walker.Options{
 				Config: &todos.Config{
 					Types: []string{"TODO", "FIXME"},
 				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				Paths:         []string{"."},
 			},
 		},
 		"exclude-hidden": {
 			args: []string{"--exclude-hidden"},
-			flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name: "exclude-hidden",
-				},
-			},
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: false,
 				Paths:         []string{"."},
 			},
 		},
 		"include-vcs": {
 			args: []string{"--include-vcs"},
-			flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name: "include-vcs",
-				},
-			},
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				IncludeVCS:    true,
 				Paths:         []string{"."},
@@ -418,13 +403,11 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		},
 		"include-vendored": {
 			args: []string{"--include-vendored"},
-			flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name: "include-vendored",
-				},
-			},
 			expected: &walker.Options{
-				Config:          &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:         defaultCharset,
 				IncludeHidden:   true,
 				IncludeVendored: true,
 				Paths:           []string{"."},
@@ -433,7 +416,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		"paths": {
 			args: []string{"/path/to/code"},
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				Paths:         []string{"/path/to/code"},
 			},
@@ -441,20 +427,21 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		"multiple-paths": {
 			args: []string{"/path/to/code", "/other/path"},
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				Paths:         []string{"/path/to/code", "/other/path"},
 			},
 		},
 		"exclude-multiple": {
 			args: []string{"--exclude=exclude.*", "--exclude=foo"},
-			flags: []cli.Flag{
-				&cli.StringSliceFlag{
-					Name: "exclude",
-				},
-			},
 			expected: &walker.Options{
-				Config:        &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:       defaultCharset,
 				IncludeHidden: true,
 				ExcludeGlobs:  []glob.Glob{glob.MustCompile("exclude.*"), glob.MustCompile("foo")},
 				Paths:         []string{"."},
@@ -462,13 +449,11 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		},
 		"exclude-dir-multiple": {
 			args: []string{"--exclude-dir=exclude?", "--exclude-dir=foo"},
-			flags: []cli.Flag{
-				&cli.StringSliceFlag{
-					Name: "exclude-dir",
-				},
-			},
 			expected: &walker.Options{
-				Config:          &todos.Config{},
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:         defaultCharset,
 				IncludeHidden:   true,
 				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?"), glob.MustCompile("foo")},
 				Paths:           []string{"."},
@@ -481,9 +466,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			app := &cli.App{
-				Flags: tc.flags,
-			}
+			// app := &cli.App{
+			//	Flags: tc.flags,
+			// }
+			app := newTODOsApp()
 			c := newContext(app, tc.args)
 
 			o, err := walkerOptionsFromContext(c)
