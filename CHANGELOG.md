@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Erlang, Haskell, R, and SQL programming languages has been added.
 - A new `exclude-dir` flag was added to `todos` that allows for excluding
   matching directories from the search.
+- TODO comments are matched more loosely with more delimeters such as '/' or '-'
+  in addition to ':' being recognized.
 
 ## [0.4.0] - 2023-08-23
 
