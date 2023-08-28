@@ -492,9 +492,6 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			// app := &cli.App{
-			//	Flags: tc.flags,
-			// }
 			app := newTODOsApp()
 			c := newContext(app, tc.args)
 
