@@ -19,6 +19,8 @@ import (
 	"os"
 	"runtime/pprof"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/ianlewis/todos/internal/cmd/todos/app"
 	"github.com/ianlewis/todos/internal/utils"
 )
@@ -34,6 +36,13 @@ func main() {
 		os.Exit(1)
 	}
 	defer pprof.StopCPUProfile()
+
+	exit := cli.OsExiter
+	cli.OsExiter = func(code int) {
+		// Make sure profile is stopped even if os.Exit is called.
+		pprof.StopCPUProfile()
+		exit(code)
+	}
 
 	app.Main()
 }
