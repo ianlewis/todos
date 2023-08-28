@@ -52,6 +52,10 @@ type Options struct {
 	// Config is the config for scanning todos.
 	Config *todos.Config
 
+	// Charset is the character set to use when reading the files or 'detect'
+	// for charset detection.
+	Charset string
+
 	// ExcludeGlobs is a list of Glob that matches excluded files.
 	ExcludeGlobs []glob.Glob
 
@@ -260,7 +264,7 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 }
 
 func (w *TODOWalker) scanFile(f *os.File) error {
-	s, err := scanner.FromFile(f)
+	s, err := scanner.FromFile(f, w.options.Charset)
 	if err != nil {
 		if herr := w.handleErr(f.Name(), err); herr != nil {
 			return herr
