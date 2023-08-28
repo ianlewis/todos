@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   matching directories from the search.
 - TODO comments are matched more loosely with more delimeters such as '/' or '-'
   in addition to ':' being recognized.
+- A new `--charset` flag was added which defaults to `UTF-8`. This is the
+  character set used to read the code files. A special name of `detect`
+  specifies that the character set of each file should be detected.
+
+### Changed
+
+- `todos` no longer detects character encodings by default and now defaults to
+  reading files as UTF-8. Character detection can be enabled by using the
+  `--charset=detect` flag.
 
 ## [0.4.0] - 2023-08-23
 
