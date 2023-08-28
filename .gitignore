@@ -14,6 +14,13 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Go pprof files
+*.prof
+
+# binary names
+todos
+todos-profile
+
 # Dependency directories (remove the comment below to include it)
 vendor/
 node_modules/

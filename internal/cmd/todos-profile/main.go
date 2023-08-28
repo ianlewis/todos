@@ -15,9 +15,34 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"runtime/pprof"
+
+	"github.com/urfave/cli/v2"
+
 	"github.com/ianlewis/todos/internal/cmd/todos/app"
+	"github.com/ianlewis/todos/internal/utils"
 )
 
 func main() {
+	f, err := os.Create("todos.prof")
+	if err != nil {
+		_ = utils.Must(fmt.Fprintf(os.Stderr, "%v", err))
+		os.Exit(1)
+	}
+	if err := pprof.StartCPUProfile(f); err != nil {
+		_ = utils.Must(fmt.Fprintf(os.Stderr, "%v", err))
+		os.Exit(1)
+	}
+	defer pprof.StopCPUProfile()
+
+	exit := cli.OsExiter
+	cli.OsExiter = func(code int) {
+		// Make sure profile is stopped even if os.Exit is called.
+		pprof.StopCPUProfile()
+		exit(code)
+	}
+
 	app.Main()
 }
