@@ -118,14 +118,19 @@ func FromBytes(fileName string, rawContents []byte) (*CommentScanner, error) {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
 	}
 
-	if linguist.ShouldIgnoreContents(decodedContents) {
-		return nil, nil
-	}
-
 	// Detect the programming language.
+	// NOTE: Linguist is not threadsafe so we protect it using a global lock.
 	linguistLock.Lock()
 	defer linguistLock.Unlock()
-	lang := linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+
+	// NOTE: LanguageHints would allow detecting the right language by file
+	// name. Calling LanguageByFilename first is a performance optimization.
+	lang := linguist.LanguageByFilename(fileName)
+	if lang == "" {
+		if !linguist.ShouldIgnoreContents(decodedContents) {
+			lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+		}
+	}
 
 	// Detect the language encoding.
 	if config, ok := languageMap[lang]; ok {

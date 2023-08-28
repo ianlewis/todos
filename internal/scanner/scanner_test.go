@@ -1272,6 +1272,22 @@ var loaderTestCases = []struct {
 		err: errDecodeCharset,
 	},
 	{
+		name:           "detect_by_filename.go",
+		src:            []byte{},
+		expectedConfig: &GoConfig,
+	},
+	{
+		name: "detect_by_contents.foo",
+		src: []byte(`package foo
+			// package comment
+
+			// TODO is a function.
+			func TODO() {
+				return // Random comment
+			}`),
+		expectedConfig: &GoConfig,
+	},
+	{
 		name: "binary.exe",
 		// NOTE: Control codes rarely seen in text. Detected by linguist.
 		src: []byte{1, 2, 3, 4, 5},
