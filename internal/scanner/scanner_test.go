@@ -1217,15 +1217,18 @@ func BenchmarkCommentScanner(b *testing.B) {
 }
 
 var loaderTestCases = []struct {
-	name           string
-	charset        string
-	src            []byte
+	name    string
+	charset string
+	src     []byte
+
+	scanCharset    string
 	expectedConfig *Config
 	err            error
 }{
 	{
-		name:    "ascii.go",
-		charset: "ISO-8859-1",
+		name:        "ascii.go",
+		charset:     "ISO-8859-1",
+		scanCharset: "ISO-8859-1",
 		src: []byte(`package foo
 			// package comment
 
@@ -1236,8 +1239,9 @@ var loaderTestCases = []struct {
 		expectedConfig: &GoConfig,
 	},
 	{
-		name:    "utf8.go",
-		charset: "UTF-8",
+		name:        "utf8.go",
+		charset:     "UTF-8",
+		scanCharset: "UTF-8",
 		src: []byte(`package foo
 			// Hello, 世界
 
@@ -1248,8 +1252,9 @@ var loaderTestCases = []struct {
 		expectedConfig: &GoConfig,
 	},
 	{
-		name:    "shift_jis.go",
-		charset: "SHIFT_JIS",
+		name:        "shift_jis.go",
+		charset:     "SHIFT_JIS",
+		scanCharset: "SHIFT_JIS",
 		src: []byte(`package foo
 			// Hello, 世界
 
@@ -1262,11 +1267,13 @@ var loaderTestCases = []struct {
 	{
 		name:           "gb18030.go",
 		src:            []byte{255, 255, 255, 255, 255, 255, 250},
+		scanCharset:    "detect",
 		expectedConfig: &GoConfig,
 	},
 	{
-		name: "zeros.go",
-		src:  []byte{0, 0, 0, 0, 0, 0},
+		name:        "zeros.go",
+		src:         []byte{0, 0, 0, 0, 0, 0},
+		scanCharset: "detect",
 		// NOTE: This just happens to detect the UTF-32BE character set which
 		// isn't supported by golang.org/x/text/encoding.
 		err: errDecodeCharset,
@@ -1274,6 +1281,7 @@ var loaderTestCases = []struct {
 	{
 		name:           "detect_by_filename.go",
 		src:            []byte{},
+		scanCharset:    "UTF-8",
 		expectedConfig: &GoConfig,
 	},
 	{
@@ -1285,16 +1293,20 @@ var loaderTestCases = []struct {
 			func TODO() {
 				return // Random comment
 			}`),
+		scanCharset:    "UTF-8",
 		expectedConfig: &GoConfig,
 	},
 	{
 		name: "binary.exe",
 		// NOTE: Control codes rarely seen in text. Detected by linguist.
-		src: []byte{1, 2, 3, 4, 5},
+		scanCharset: "UTF-8",
+		src:         []byte{1, 2, 3, 4, 5},
 	},
 	{
-		name: "unsupported_lang.coq",
-		src:  []byte{},
+		name:           "unsupported_lang.coq",
+		src:            []byte{},
+		scanCharset:    "UTF-8",
+		expectedConfig: nil,
 	},
 }
 
@@ -1320,7 +1332,7 @@ func TestFromFile(t *testing.T) {
 			_ = testutils.Must(w.Write(tc.src))
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
-			s, err := FromFile(f)
+			s, err := FromFile(f, tc.scanCharset)
 			if got, want := err, tc.err; got != nil {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
@@ -1356,7 +1368,7 @@ func TestFromBytes(t *testing.T) {
 				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
 			}
 
-			s, err := FromBytes(tc.name, text)
+			s, err := FromBytes(tc.name, text, tc.scanCharset)
 			if got, want := err, tc.err; got != nil {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
