@@ -69,7 +69,7 @@ jobs:
       id-token: write # To sign.
       contents: write # To upload release assets.
       actions: read # To read workflow path.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.8.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.9.0
     with:
       # TODO(github.com/slsa-framework/slsa-github-generator/issues/2661): Use go-version-file
       # go-version-file: "go.mod"
