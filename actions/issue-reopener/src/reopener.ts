@@ -76,13 +76,14 @@ export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
   await fs.chmod(todosPath, 0o700);
 
   core.debug(`Running git to get repository root`);
-  const { stdout: repoRoot } = await exec.getExecOutput(
+  const { stdout: gitOut } = await exec.getExecOutput(
     "git",
     ["rev-parse", "--show-toplevel"],
     {
       cwd: wd,
     },
   );
+  const repoRoot = gitOut.trim();
 
   core.debug(`Running todos (${todosPath})`);
   const { exitCode, stdout, stderr } = await exec.getExecOutput(

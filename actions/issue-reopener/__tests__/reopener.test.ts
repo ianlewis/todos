@@ -68,7 +68,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -96,7 +96,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -124,7 +124,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -152,7 +152,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -180,7 +180,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -212,7 +212,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -244,7 +244,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -276,7 +276,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -311,7 +311,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: workspacePath,
+      stdout: workspacePath + "\n",
       stderr: "",
     });
 
@@ -341,7 +341,7 @@ describe("getTODOIssues", () => {
     // git rev-parse --show-top-level
     exec.getExecOutput.mockResolvedValueOnce({
       exitCode: 0,
-      stdout: repoRoot,
+      stdout: repoRoot + "\n",
       stderr: "",
     });
 

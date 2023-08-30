@@ -222,9 +222,10 @@ function getTODOIssues(wd) {
         core.debug(`Setting ${todosPath} as executable`);
         yield fs.chmod(todosPath, 0o700);
         core.debug(`Running git to get repository root`);
-        const { stdout: repoRoot } = yield exec.getExecOutput("git", ["rev-parse", "--show-toplevel"], {
+        const { stdout: gitOut } = yield exec.getExecOutput("git", ["rev-parse", "--show-toplevel"], {
             cwd: wd,
         });
+        const repoRoot = gitOut.trim();
         core.debug(`Running todos (${todosPath})`);
         const { exitCode, stdout, stderr } = yield exec.getExecOutput(todosPath, 
         // TODO: get new relative directory to repoRoot
