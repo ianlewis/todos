@@ -9,10 +9,12 @@
 
 Tools for dealing with TODOs in code.
 
-- [`todos` CLI](#todos-cli-tool): searches for TODO comments in code and prints them in various
+- [`todos` CLI]: searches for TODO comments in code and prints them in various
   formats.
-- [`actions/issue-reopener`](actions/issue-reopener/README.md): A GitHub Action to reopen issues that still have
+- [`actions/issue-reopener`]: A GitHub Action to reopen issues that still have
   TODO comments referencing them.
+
+See the [FAQ] for more info on the philosophy behind the project.
 
 ## TODO comments
 
@@ -240,6 +242,38 @@ kubernetes$ # Get all the unique files with TODOs that Tim Hockin owns.
 kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uniq
 ```
 
+## FAQ
+
+### Why use this?
+
+Tracking TODOs in code can help you have a cleaner and heathier code base.
+
+1. It can help you realize when issues you thought were complete actually
+   require some additional work (See [`actions/issue-reopener`]).
+2. It makes it easier for contributors to find areas of the code that need work.
+3. It makes it easier for contributors to find the relevant code for an issue.
+
+### Why not just use `grep`?
+
+`grep` is an amazing and blazingly fast tool. However, there are a few reasons
+why you might use `todos`.
+
+1. `grep` doesn't have much knowledge of code and languages so it's difficult to
+   differentiate between comments and code. `todos` will ignore matches in code
+   and only prints TODOs found it comments. It also ignores matches that occur
+   in strings.
+2. `grep` doesn't know about repository structure. It doesn't have inherant
+   knowledge of VCS directories (e.g. `.git`) or vendored dependencies. It can't
+   make use of `.gitignore` or other hints.
+3. `todos` will parse TODO comments and can output in different formats such as
+   JSON. This gives users an easy way to search for TODOs with their username,
+   or with a specific issue number.
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor documentation.
+See [CONTRIBUTING.md] for contributor documentation.
+
+[`todos` CLI]: #todos-cli-tool
+[`actions/issue-reopener`]: actions/issue-reopener/README.md
+[FAQ]: #faq
+[CONTRIBUTING.md]: CONTRIBUTING.md
