@@ -387,7 +387,8 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
-        path: "repo"
+        with:
+          path: "repo"
 
       - id: create-issue
         env:
