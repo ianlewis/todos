@@ -65,5 +65,7 @@ MD048:
   style: "backtick"
 
 # Disable checks that currently have bugs:
-MD051: false # https://github.com/DavidAnson/markdownlint/issues/538
-MD053: false # https://github.com/DavidAnson/markdownlint/issues/537
+# TODO(github.com/DavidAnson/markdownlint/issues/538): Re-enable when fixed.
+MD051: false
+# TODO(github.com/DavidAnson/markdownlint/issues/537): Re-enable when fixed.
+MD053: false
