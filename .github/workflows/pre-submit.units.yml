@@ -410,7 +410,7 @@ jobs:
           mkdir -p repo/test
           echo "// TODO(${url}): still open" > repo/test/test.go
           echo "url=${url}" >> "${GITHUB_OUTPUT}"
-      - uses: ./actions/issue-reopener/
+      - uses: ./repo/actions/issue-reopener/
         with:
           path: "repo/test"
       - env:
