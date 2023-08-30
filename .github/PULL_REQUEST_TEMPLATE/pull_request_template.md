@@ -24,7 +24,7 @@
       [Developer Certificate of Origin](https://developercertificate.org/)
       signoff.
 
-  ```
+  ```text
   This is my commit message
   Signed-off-by: Random J Developer <random@developer.example.org>
   ```
