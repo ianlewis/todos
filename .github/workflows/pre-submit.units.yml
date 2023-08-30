@@ -303,8 +303,9 @@ jobs:
           [ "${state}" == "OPEN" ]
 
           # Check that the body contains the right path
-          body=$(gh issue view "${ISSUE_URL}" --json body | jq -r '.body')
-          [[ "${body}" == *"test/test.go"* ]]
+          # NOTE: Need to get text output in order to get issue comments.
+          body=$(gh issue view "${ISSUE_URL}")
+          [[ "${body}" == *"1. test/test.go:1"* ]]
 
   issue-reopener-basic-cleanup:
     runs-on: ubuntu-latest
@@ -420,8 +421,9 @@ jobs:
           [ "${state}" == "OPEN" ]
 
           # Check that the body contains the right path
-          body=$(gh issue view "${ISSUE_URL}" --json body | jq -r '.body')
-          [[ "${body}" == *"test/test.go"* ]]
+          # NOTE: Need to get text output in order to get issue comments.
+          body=$(gh issue view "${ISSUE_URL}")
+          [[ "${body}" == *"1. test/test.go:1"* ]]
 
   issue-reopener-subdir-cleanup:
     runs-on: ubuntu-latest
