@@ -44,6 +44,23 @@ func newContext(app *cli.App, args []string) *cli.Context {
 	return cli.NewContext(app, fs, nil)
 }
 
+func Test_TODOsApp_help(t *testing.T) {
+	t.Parallel()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.Writer = &b
+	c := newContext(app, []string{"--help"})
+	if err := app.Action(c); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	prefix := "NAME:"
+	if !strings.HasPrefix(b.String(), prefix) {
+		t.Fatalf("expected %q in output: \n%q", prefix, b.String())
+	}
+}
+
 func Test_TODOsApp_version(t *testing.T) {
 	t.Parallel()
 

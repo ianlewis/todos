@@ -58,19 +58,23 @@ var (
 	ErrWalk = errors.New("walking")
 )
 
-// newTODOsApp returns a new `todos` application.
-func newTODOsApp() *cli.App {
+func init() {
 	// Set the HelpFlag to a random name so that it isn't used. `cli` handles
 	// the flag with the root command such that it takes a command name argument
 	// but we don't use commands.
+	// This flag is hidden by the help output.
 	// See: #442
+	//
 	// TODO(github.com/urfave/cli/issues/1809): Remove when upstream bug is fixed.
 	cli.HelpFlag = &cli.BoolFlag{
-		// Use a random name no one would guess.
-		Name:               "shtuastuehasuthesuthsntheuasuthh",
+		// NOTE: Use a random name no one would guess.
+		Name:               "d41d8cd98f00b204e980",
 		DisableDefaultText: true,
 	}
+}
 
+// newTODOsApp returns a new `todos` application.
+func newTODOsApp() *cli.App {
 	return &cli.App{
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
@@ -134,7 +138,8 @@ func newTODOsApp() *cli.App {
 		HideHelpCommand: true,
 		Action: func(c *cli.Context) error {
 			if c.Bool("help") {
-				cli.ShowAppHelpAndExit(c, ExitCodeSuccess)
+				cli.ShowAppHelp(c)
+				return nil
 			}
 
 			if c.Bool("version") {
