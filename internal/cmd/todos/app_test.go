@@ -50,8 +50,24 @@ func Test_TODOsApp_help(t *testing.T) {
 	app := newTODOsApp()
 	var b strings.Builder
 	app.Writer = &b
-	c := newContext(app, []string{"--help"})
-	if err := app.Action(c); err != nil {
+	if err := app.Run([]string{"todos", "--help"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	prefix := "NAME:"
+	if !strings.HasPrefix(b.String(), prefix) {
+		t.Fatalf("expected %q in output: \n%q", prefix, b.String())
+	}
+}
+
+func Test_TODOsApp_help_arg(t *testing.T) {
+	t.Parallel()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.Writer = &b
+	// NOTE: somearg should be ignored.
+	if err := app.Run([]string{"todos", "--help", "somearg"}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
