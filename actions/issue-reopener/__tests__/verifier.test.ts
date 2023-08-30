@@ -82,8 +82,6 @@ describe("downloadSLSAVerifier", () => {
   });
 
   it("downloads the verifier", async () => {
-    tc.downloadTool.mockClear();
-
     const tmpDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "downloadSLSAVerifier_"),
     );
@@ -104,8 +102,6 @@ describe("downloadSLSAVerifier", () => {
   });
 
   it("fails validation", async () => {
-    tc.downloadTool.mockClear();
-
     const tmpDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "downloadSLSAVerifier_"),
     );
@@ -123,7 +119,6 @@ describe("downloadSLSAVerifier", () => {
   });
 
   it("fails with http error", async () => {
-    tc.downloadTool.mockClear();
     tc.downloadTool.mockRejectedValueOnce(new tc.HTTPError("foo"));
 
     await expect(
@@ -149,8 +144,6 @@ describe("downloadAndVerifySLSA", () => {
   });
 
   it("succeeds download", async () => {
-    tc.downloadTool.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
     );
@@ -217,8 +210,6 @@ describe("downloadAndVerifySLSA", () => {
   });
 
   it("fails SLSA verification", async () => {
-    tc.downloadTool.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
     );
@@ -268,8 +259,6 @@ describe("downloadAndVerifySLSA", () => {
   });
 
   it("fails digest validation", async () => {
-    tc.downloadTool.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "downloadAndVerifySLSA_"),
     );

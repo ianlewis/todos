@@ -11,6 +11,7 @@ process.stdout.write = (str, encoding, cb) => {
 
 module.exports = {
   preset: "ts-jest",
+  resetMocks: true,
   testEnvironment: "node",
   collectCoverage: true,
   coverageReporters: ["text", "cobertura"],
