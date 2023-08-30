@@ -21,6 +21,38 @@ import (
 
 var errTest = errors.New("error")
 
+func TestCheck(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("unexpected panic: %v", r)
+			}
+		}()
+		Check(nil)
+	})
+
+	t.Run("fail", func(t *testing.T) {
+		t.Parallel()
+
+		defer func() {
+			r := recover()
+			got, ok := r.(error)
+			want := errTest
+			if !ok {
+				t.Errorf("expected panic, got: %v, want: %v", r, want)
+			}
+			if !errors.Is(got, want) {
+				t.Errorf("expected panic, got: %v, want: %v", got, want)
+			}
+		}()
+		Check(errTest)
+	})
+}
+
 func TestMust(t *testing.T) {
 	t.Parallel()
 

@@ -58,6 +58,22 @@ var (
 	ErrWalk = errors.New("walking")
 )
 
+// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
+//
+//nolint:gochecknoinits // init needed needed for global variable.
+func init() {
+	// Set the HelpFlag to a random name so that it isn't used. `cli` handles
+	// the flag with the root command such that it takes a command name argument
+	// but we don't use commands.
+	// This flag is hidden by the help output.
+	// See: #442
+	cli.HelpFlag = &cli.BoolFlag{
+		// NOTE: Use a random name no one would guess.
+		Name:               "d41d8cd98f00b204e980",
+		DisableDefaultText: true,
+	}
+}
+
 // newTODOsApp returns a new `todos` application.
 func newTODOsApp() *cli.App {
 	return &cli.App{
@@ -66,55 +82,67 @@ func newTODOsApp() *cli.App {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:               "exclude-hidden",
-				Usage:              "Exclude hidden files and directories",
+				Usage:              "exclude hidden files and directories",
 				DisableDefaultText: true,
 			},
 			&cli.StringFlag{
 				Name:    "charset",
-				Usage:   "The character set to use when reading files ('detect' to perform charset detection)",
+				Usage:   "character set to use when reading files ('detect' to perform charset detection)",
 				Value:   defaultCharset,
 				Aliases: []string{"c"},
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude",
-				Usage: "Exclude files that match `GLOB`",
+				Usage: "exclude files that match `GLOB`",
 			},
 			&cli.StringSliceFlag{
 				Name:  "exclude-dir",
-				Usage: "Exclude directories that match `GLOB`",
+				Usage: "exclude directories that match `GLOB`",
 			},
 			&cli.BoolFlag{
 				Name:               "include-vcs",
-				Usage:              "Include version control directories (.git, .hg, .svn)",
+				Usage:              "include version control directories (.git, .hg, .svn)",
 				DisableDefaultText: true,
 			},
 			&cli.BoolFlag{
 				Name:               "include-vendored",
-				Usage:              "Include vendored directories",
+				Usage:              "include vendored directories",
 				DisableDefaultText: true,
 			},
 			&cli.StringFlag{
 				Name:  "todo-types",
-				Usage: "Comma separated list of TODO `TYPES`",
+				Usage: "comma separated list of TODO `TYPES`",
 				Value: strings.Join(todos.DefaultTypes, ","),
 			},
 			&cli.StringFlag{
 				Name:    "output",
-				Usage:   "Output `TYPE` (default, github, json)",
+				Usage:   "output `TYPE` (default, github, json)",
 				Value:   "default",
 				Aliases: []string{"o"},
 			},
 			&cli.BoolFlag{
+				Name:               "help",
+				Usage:              "print this help text and exit",
+				Aliases:            []string{"h"},
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
 				Name:               "version",
-				Usage:              "Print the version and exit",
+				Usage:              "print version information and exit",
 				Aliases:            []string{"v"},
 				DisableDefaultText: true,
 			},
 		},
 		ArgsUsage:       "[PATH]...",
 		Copyright:       "Google LLC",
+		HideHelp:        true,
 		HideHelpCommand: true,
 		Action: func(c *cli.Context) error {
+			if c.Bool("help") {
+				utils.Check(cli.ShowAppHelp(c))
+				return nil
+			}
+
 			if c.Bool("version") {
 				versionInfo := version.GetVersionInfo()
 				_ = utils.Must(fmt.Fprintf(c.App.Writer, `%s %s
