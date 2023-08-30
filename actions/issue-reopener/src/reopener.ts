@@ -72,17 +72,28 @@ export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
     SLSA_VERIFIER_VERSION,
     SLSA_VERIFIER_SHA256SUM,
   );
-
   core.debug(`Setting ${todosPath} as executable`);
-
   await fs.chmod(todosPath, 0o700);
 
-  core.debug(`Running todos (${todosPath})`);
+  core.debug(`Running git to get repository root`);
+  const { stdout: gitOut } = await exec.getExecOutput(
+    "git",
+    ["rev-parse", "--show-toplevel"],
+    {
+      cwd: wd,
+    },
+  );
+  const repoRoot = gitOut.trim();
 
+  core.debug(`Running todos (${todosPath})`);
   const { exitCode, stdout, stderr } = await exec.getExecOutput(
     todosPath,
-    ["--output=json", wd],
-    { ignoreReturnCode: true },
+    // TODO: get new relative directory to repoRoot
+    ["--output=json", path.relative(repoRoot, wd)],
+    {
+      cwd: repoRoot,
+      ignoreReturnCode: true,
+    },
   );
   core.debug(`Ran todos (${todosPath})`);
   if (exitCode !== 0) {
@@ -127,6 +138,7 @@ export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
 
 // reopenIssues reopens issues linked to TODOs.
 export async function reopenIssues(
+  wd: string,
   issues: TODOIssue[],
   token: string,
   dryRun: boolean,
@@ -174,14 +186,12 @@ export async function reopenIssues(
 
     let body = "There are TODOs referencing this issue:\n";
     for (const [i, todo] of issueRef.todos.entries()) {
-      // NOTE: Path must be relative to the github.workspace since we want to
-      // get the path from the root of the repository.
-      // TODO(#262): Calculate relative path from repository root
-      const workspacePath = process.env.GITHUB_WORKSPACE as string;
-      const todoPath = path.relative(workspacePath, todo.path);
-      body += `${i + 1}. [${todoPath}:${todo.line}](https://github.com/${
+      // NOTE: Get the path from the root of the repository.
+      body += `${i + 1}. [${todo.path}:${todo.line}](https://github.com/${
         repo.owner
-      }/${repo.repo}/blob/${sha}/${todoPath}#L${todo.line}): ${todo.message}\n`;
+      }/${repo.repo}/blob/${sha}/${todo.path}#L${todo.line}): ${
+        todo.message
+      }\n`;
     }
 
     // Post the comment.

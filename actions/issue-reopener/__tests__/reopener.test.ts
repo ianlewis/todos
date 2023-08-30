@@ -46,21 +46,31 @@ describe("getTODOIssues", () => {
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...env };
+    process.env.GITHUB_WORKSPACE = "/home/user";
 
     github.context.repo = {
       owner: "owner",
       repo: "repo",
     };
+
+    github.context.sha = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
   });
 
   it("parses empty output", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -69,20 +79,26 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
   });
 
   it("skips non-match", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -91,20 +107,26 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
   });
 
   it("skips links to other repos", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -113,20 +135,26 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
   });
 
   it("handles malformed url", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -135,20 +163,26 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
       0,
     );
   });
 
   it("matches issue number only", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -157,7 +191,6 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -168,13 +201,20 @@ describe("getTODOIssues", () => {
   });
 
   it("matches issue number with #", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -183,7 +223,6 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -194,13 +233,20 @@ describe("getTODOIssues", () => {
   });
 
   it("matches issue url", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -209,7 +255,6 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
@@ -220,13 +265,20 @@ describe("getTODOIssues", () => {
   });
 
   it("groups todo", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -235,7 +287,6 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    const workspacePath = process.env.GITHUB_WORKSPACE as string;
     let p = reopener.getTODOIssues(workspacePath);
     await expect(p).resolves.toHaveLength(2);
     let issues = await p;
@@ -249,13 +300,20 @@ describe("getTODOIssues", () => {
   });
 
   it("handles todos error", async () => {
-    verifier.downloadAndVerifySLSA.mockClear();
-    exec.getExecOutput.mockClear();
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
     const todosPath = path.join(tmpDir, "todos");
     fs.writeFileSync(todosPath, "");
 
     verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: workspacePath + "\n",
+      stderr: "",
+    });
 
     // todos
     exec.getExecOutput.mockResolvedValueOnce({
@@ -265,10 +323,46 @@ describe("getTODOIssues", () => {
       stderr: "ERROR",
     });
 
-    const workspacePath = "/home/user";
-
     await expect(reopener.getTODOIssues(workspacePath)).rejects.toBeInstanceOf(
       reopener.ReopenError,
+    );
+  });
+
+  it("handles checkout in sub-dir", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "getTODOIssues_"));
+    const todosPath = path.join(tmpDir, "todos");
+    fs.writeFileSync(todosPath, "");
+
+    verifier.downloadAndVerifySLSA.mockResolvedValueOnce(todosPath);
+
+    const workspacePath = process.env.GITHUB_WORKSPACE as string;
+    const repoRoot = path.join(workspacePath, "checkout");
+
+    // git rev-parse --show-top-level
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: repoRoot + "\n",
+      stderr: "",
+    });
+
+    // todos
+    exec.getExecOutput.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: '{"path": "path/to/file.js", "label": "#123"}',
+      stderr: "",
+    });
+
+    await expect(
+      reopener.getTODOIssues(path.join(repoRoot, "path/to")),
+    ).resolves.toHaveLength(1);
+
+    expect(exec.getExecOutput).toBeCalledWith(
+      todosPath,
+      ["--output=json", "path/to"],
+      {
+        cwd: repoRoot,
+        ignoreReturnCode: true,
+      },
     );
   });
 });
@@ -294,7 +388,11 @@ describe("reopenIssues", () => {
       };
     });
 
-    await expect(reopener.reopenIssues([], "", false)).resolves.toBeUndefined();
+    const wd = process.env.GITHUB_WORKSPACE as string;
+
+    await expect(
+      reopener.reopenIssues(wd, [], "", false),
+    ).resolves.toBeUndefined();
 
     expect(issues.get).not.toHaveBeenCalled();
     expect(issues.createComment).not.toHaveBeenCalled();
@@ -313,11 +411,13 @@ describe("reopenIssues", () => {
       };
     });
 
+    const wd = process.env.GITHUB_WORKSPACE as string;
+
     // NOTE: todoIssue.todos is empty.
     const todoIssue = new reopener.TODOIssue(123);
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(wd, [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).not.toHaveBeenCalled();
@@ -343,11 +443,12 @@ describe("reopenIssues", () => {
       };
     });
 
+    const wd = process.env.GITHUB_WORKSPACE as string;
     const todoIssue = new reopener.TODOIssue(123);
     todoIssue.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(wd, [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -373,13 +474,15 @@ describe("reopenIssues", () => {
       };
     });
 
+    const wd = process.env.GITHUB_WORKSPACE as string;
+
     const todoIssue = new reopener.TODOIssue(123);
     // NOTE: multiple TODO references.
     todoIssue.todos.push(new reopener.TODORef());
     todoIssue.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(wd, [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -405,6 +508,8 @@ describe("reopenIssues", () => {
       };
     });
 
+    const wd = process.env.GITHUB_WORKSPACE as string;
+
     const todoIssue = new reopener.TODOIssue(123);
     // NOTE: multiple TODO references.
     todoIssue.todos.push(new reopener.TODORef());
@@ -412,7 +517,7 @@ describe("reopenIssues", () => {
 
     await expect(
       // NOTE: dry-run = true
-      reopener.reopenIssues([todoIssue], "", true),
+      reopener.reopenIssues(wd, [todoIssue], "", true),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -438,6 +543,8 @@ describe("reopenIssues", () => {
       };
     });
 
+    const wd = process.env.GITHUB_WORKSPACE as string;
+
     const todoIssue1 = new reopener.TODOIssue(123);
     todoIssue1.todos.push(new reopener.TODORef());
     todoIssue1.todos.push(new reopener.TODORef());
@@ -446,11 +553,12 @@ describe("reopenIssues", () => {
     todoIssue2.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue1, todoIssue2], "", false),
+      reopener.reopenIssues(wd, [todoIssue1, todoIssue2], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(2);
     expect(issues.createComment).toHaveBeenCalledTimes(2);
+
     expect(issues.update).toHaveBeenCalledTimes(2);
   });
 });

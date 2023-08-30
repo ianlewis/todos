@@ -35,9 +35,7 @@ describe("runAction", () => {
   });
 
   it("runs reopener", async () => {
-    reopener.getTODOIssues.mockClear();
     reopener.getTODOIssues.mockResolvedValueOnce([]);
-    reopener.reopenIssues.mockClear();
     reopener.reopenIssues.mockResolvedValueOnce(undefined);
 
     const workspacePath = "/home/user";
@@ -51,14 +49,17 @@ describe("runAction", () => {
     await action.runAction();
 
     expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
-    expect(reopener.reopenIssues).toBeCalledWith([], githubToken, dryRun);
+    expect(reopener.reopenIssues).toBeCalledWith(
+      workspacePath,
+      [],
+      githubToken,
+      dryRun,
+    );
     expect(process.exitCode).toBeUndefined();
   });
 
   it("handles getTODOIssues failure", async () => {
-    reopener.getTODOIssues.mockClear();
     reopener.getTODOIssues.mockRejectedValueOnce(new Error("test error"));
-    reopener.reopenIssues.mockClear();
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
@@ -76,9 +77,7 @@ describe("runAction", () => {
   });
 
   it("handles reopenIssues failure", async () => {
-    reopener.getTODOIssues.mockClear();
     reopener.getTODOIssues.mockResolvedValueOnce([]);
-    reopener.reopenIssues.mockClear();
     reopener.reopenIssues.mockRejectedValueOnce(new Error("test error"));
 
     const workspacePath = "/home/user";
@@ -92,7 +91,12 @@ describe("runAction", () => {
     await action.runAction();
 
     expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
-    expect(reopener.reopenIssues).toBeCalledWith([], githubToken, dryRun);
+    expect(reopener.reopenIssues).toBeCalledWith(
+      workspacePath,
+      [],
+      githubToken,
+      dryRun,
+    );
     expect(process.exitCode).not.toBe(0);
   });
 });
