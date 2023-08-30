@@ -27,6 +27,8 @@ jest.mock("@actions/exec");
 jest.mock("@actions/github");
 jest.mock("../src/verifier");
 
+// FIXME: mock getExecOutput to mock call to git rev-parse
+
 describe("TODORef", () => {
   it("constructs", async () => {
     const ref = new reopener.TODORef();
@@ -294,7 +296,9 @@ describe("reopenIssues", () => {
       };
     });
 
-    await expect(reopener.reopenIssues([], "", false)).resolves.toBeUndefined();
+    await expect(
+      reopener.reopenIssues(".", [], "", false),
+    ).resolves.toBeUndefined();
 
     expect(issues.get).not.toHaveBeenCalled();
     expect(issues.createComment).not.toHaveBeenCalled();
@@ -317,7 +321,7 @@ describe("reopenIssues", () => {
     const todoIssue = new reopener.TODOIssue(123);
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(".", [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).not.toHaveBeenCalled();
@@ -347,7 +351,7 @@ describe("reopenIssues", () => {
     todoIssue.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(".", [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -379,7 +383,7 @@ describe("reopenIssues", () => {
     todoIssue.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue], "", false),
+      reopener.reopenIssues(".", [todoIssue], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -412,7 +416,7 @@ describe("reopenIssues", () => {
 
     await expect(
       // NOTE: dry-run = true
-      reopener.reopenIssues([todoIssue], "", true),
+      reopener.reopenIssues(".", [todoIssue], "", true),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(1);
@@ -446,7 +450,7 @@ describe("reopenIssues", () => {
     todoIssue2.todos.push(new reopener.TODORef());
 
     await expect(
-      reopener.reopenIssues([todoIssue1, todoIssue2], "", false),
+      reopener.reopenIssues(".", [todoIssue1, todoIssue2], "", false),
     ).resolves.toBeUndefined();
 
     expect(issues.get).toHaveBeenCalledTimes(2);

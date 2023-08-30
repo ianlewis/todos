@@ -127,6 +127,7 @@ export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
 
 // reopenIssues reopens issues linked to TODOs.
 export async function reopenIssues(
+  wd: string,
   issues: TODOIssue[],
   token: string,
   dryRun: boolean,
@@ -172,13 +173,18 @@ export async function reopenIssues(
       state: "open",
     });
 
+    const { stdout: repoRoot } = await exec.getExecOutput(
+      "git",
+      ["rev-parse", "--show-toplevel"],
+      {
+        cwd: wd,
+      },
+    );
+
     let body = "There are TODOs referencing this issue:\n";
     for (const [i, todo] of issueRef.todos.entries()) {
-      // NOTE: Path must be relative to the github.workspace since we want to
-      // get the path from the root of the repository.
-      // TODO(#262): Calculate relative path from repository root
-      const workspacePath = process.env.GITHUB_WORKSPACE as string;
-      const todoPath = path.relative(workspacePath, todo.path);
+      // NOTE: Get the path from the root of the repository.
+      const todoPath = path.relative(repoRoot, todo.path);
       body += `${i + 1}. [${todoPath}:${todo.line}](https://github.com/${
         repo.owner
       }/${repo.repo}/blob/${sha}/${todoPath}#L${todo.line}): ${todo.message}\n`;
