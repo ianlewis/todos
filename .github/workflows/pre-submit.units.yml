@@ -302,6 +302,10 @@ jobs:
           state=$(gh issue view "${ISSUE_URL}" --json state | jq -r '.state')
           [ "${state}" == "OPEN" ]
 
+          # Check that the body contains the right path
+          body=$(gh issue view "${ISSUE_URL}" --json body | jq -r '.body')
+          [[ "${body}" == *"test/test.go"* ]]
+
   issue-reopener-basic-cleanup:
     runs-on: ubuntu-latest
     needs: issue-reopener-basic
@@ -370,4 +374,65 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # Ensure the the test issue is closed even if test fails.
+          gh issue close "${ISSUE_URL}" || true
+
+  issue-reopener-subdir:
+    runs-on: ubuntu-latest
+    # NOTE: Don't run on release since the binaries haven't been created yet.
+    if: ${{ ! startsWith(github.event.pull_request.title, 'chore(release):') }}
+    outputs:
+      issue-url: ${{ steps.create-issue.outputs.url }}
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+        path: "repo"
+
+      - id: create-issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          body=""
+          if [ "${PR_URL}" != "" ]; then
+            body="Test issue for commit $PR ${PR_URL}"
+          else
+            body="Test issue for commit ${GITHUB_SHA}"
+          fi
+          body="${body}
+          - [Workflow run](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT})"
+
+          url=$(gh issue create --title "issue-reopener-subdir pre-submit test issue" --body "${body}")
+          echo "${url}"
+          gh issue close "${url}"
+          mkdir -p repo/test
+          echo "// TODO(${url}): still open" > repo/test/test.go
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+      - uses: ./actions/issue-reopener/
+        with:
+          path: "repo/test"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ steps.create-issue.outputs.url }}
+        run: |
+          # Ensure the issue was reopened.
+          state=$(gh issue view "${ISSUE_URL}" --json state | jq -r '.state')
+          [ "${state}" == "OPEN" ]
+
+          # Check that the body contains the right path
+          body=$(gh issue view "${ISSUE_URL}" --json body | jq -r '.body')
+          [[ "${body}" == *"test/test.go"* ]]
+
+  issue-reopener-subdir-cleanup:
+    runs-on: ubuntu-latest
+    needs: issue-reopener-subdir
+    if: ${{ always() }}
+    permissions:
+      issues: write
+    steps:
+      - env:
+          ISSUE_URL: ${{ needs.issue-reopener-subdir.outputs.issue-url }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Close the test issue.
           gh issue close "${ISSUE_URL}" || true
