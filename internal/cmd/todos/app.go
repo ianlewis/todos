@@ -58,7 +58,7 @@ var (
 	ErrWalk = errors.New("walking")
 )
 
-// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
+// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed
 //
 //nolint:gochecknoinits // init needed needed for global variable.
 func init() {
