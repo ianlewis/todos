@@ -67,7 +67,6 @@ func init() {
 	// but we don't use commands.
 	// This flag is hidden by the help output.
 	// See: #442
-	//
 	cli.HelpFlag = &cli.BoolFlag{
 		// NOTE: Use a random name no one would guess.
 		Name:               "d41d8cd98f00b204e980",
