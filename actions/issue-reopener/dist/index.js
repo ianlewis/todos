@@ -62,7 +62,7 @@ function runAction() {
         const dryRun = core.getInput("dry-run") === "true";
         try {
             const issues = yield reopener.getTODOIssues(wd);
-            yield reopener.reopenIssues(issues, token, dryRun);
+            yield reopener.reopenIssues(wd, issues, token, dryRun);
         }
         catch (err) {
             const message = err instanceof Error ? err.message : `${err}`;
@@ -221,8 +221,17 @@ function getTODOIssues(wd) {
         const todosPath = yield verifier.downloadAndVerifySLSA(`https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64`, `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64.intoto.jsonl`, "github.com/ianlewis/todos", TODOS_VERSION, SLSA_VERIFIER_VERSION, SLSA_VERIFIER_SHA256SUM);
         core.debug(`Setting ${todosPath} as executable`);
         yield fs.chmod(todosPath, 0o700);
+        core.debug(`Running git to get repository root`);
+        const { stdout: repoRoot } = yield exec.getExecOutput("git", ["rev-parse", "--show-toplevel"], {
+            cwd: wd,
+        });
         core.debug(`Running todos (${todosPath})`);
-        const { exitCode, stdout, stderr } = yield exec.getExecOutput(todosPath, ["--output=json", wd], { ignoreReturnCode: true });
+        const { exitCode, stdout, stderr } = yield exec.getExecOutput(todosPath, 
+        // TODO: get new relative directory to repoRoot
+        ["--output=json", path.relative(repoRoot, wd)], {
+            cwd: repoRoot,
+            ignoreReturnCode: true,
+        });
         core.debug(`Ran todos (${todosPath})`);
         if (exitCode !== 0) {
             throw new ReopenError(`todos exited ${exitCode}: ${stderr}`);
@@ -259,7 +268,7 @@ function getTODOIssues(wd) {
 }
 exports.getTODOIssues = getTODOIssues;
 // reopenIssues reopens issues linked to TODOs.
-function reopenIssues(issues, token, dryRun) {
+function reopenIssues(wd, issues, token, dryRun) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = github.getOctokit(token);
         const repo = github.context.repo;
@@ -294,12 +303,8 @@ function reopenIssues(issues, token, dryRun) {
             });
             let body = "There are TODOs referencing this issue:\n";
             for (const [i, todo] of issueRef.todos.entries()) {
-                // NOTE: Path must be relative to the github.workspace since we want to
-                // get the path from the root of the repository.
-                // TODO(#262): Calculate relative path from repository root
-                const workspacePath = process.env.GITHUB_WORKSPACE;
-                const todoPath = path.relative(workspacePath, todo.path);
-                body += `${i + 1}. [${todoPath}:${todo.line}](https://github.com/${repo.owner}/${repo.repo}/blob/${sha}/${todoPath}#L${todo.line}): ${todo.message}\n`;
+                // NOTE: Get the path from the root of the repository.
+                body += `${i + 1}. [${todo.path}:${todo.line}](https://github.com/${repo.owner}/${repo.repo}/blob/${sha}/${todo.path}#L${todo.line}): ${todo.message}\n`;
             }
             // Post the comment.
             yield octokit.rest.issues.createComment({
