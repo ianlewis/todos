@@ -58,6 +58,9 @@ var (
 	ErrWalk = errors.New("walking")
 )
 
+// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
+//
+//nolint:gochecknoinits // init needed needed for global variable.
 func init() {
 	// Set the HelpFlag to a random name so that it isn't used. `cli` handles
 	// the flag with the root command such that it takes a command name argument
@@ -65,7 +68,6 @@ func init() {
 	// This flag is hidden by the help output.
 	// See: #442
 	//
-	// TODO(github.com/urfave/cli/issues/1809): Remove when upstream bug is fixed.
 	cli.HelpFlag = &cli.BoolFlag{
 		// NOTE: Use a random name no one would guess.
 		Name:               "d41d8cd98f00b204e980",
@@ -138,7 +140,7 @@ func newTODOsApp() *cli.App {
 		HideHelpCommand: true,
 		Action: func(c *cli.Context) error {
 			if c.Bool("help") {
-				cli.ShowAppHelp(c)
+				utils.Check(cli.ShowAppHelp(c))
 				return nil
 			}
 
