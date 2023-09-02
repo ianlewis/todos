@@ -1308,6 +1308,19 @@ var loaderTestCases = []struct {
 		scanCharset:    "UTF-8",
 		expectedConfig: nil,
 	},
+	{
+		name: "typescript_is_not_xml.ts",
+		src: []byte(`
+			function wrapInArray(obj: string | string[]) {
+				if (typeof obj === "string") {
+					return [obj];
+				}
+				return obj;
+			}
+		`),
+		scanCharset:    "UTF-8",
+		expectedConfig: &TypeScriptConfig,
+	},
 }
 
 func TestFromFile(t *testing.T) {

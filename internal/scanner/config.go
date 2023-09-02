@@ -68,7 +68,7 @@ var (
 		"Swift":         &SwiftConfig,
 		"SQL":           &SQLConfig,
 		"TOML":          &TOMLConfig,
-		"TypeScript":    &TypescriptConfig,
+		"TypeScript":    &TypeScriptConfig,
 		"Unix Assembly": &UnixAssemblyConfig,
 		"XML":           &XMLConfig,
 		"YAML":          &YAMLConfig,
@@ -275,8 +275,8 @@ var (
 	// TOMLConfig is a config for TOML.
 	TOMLConfig = ShellConfig
 
-	// TypescriptConfig is a config for Typescript.
-	TypescriptConfig = JavascriptConfig
+	// TypeScriptConfig is a config for Typescript.
+	TypeScriptConfig = JavascriptConfig
 
 	// UnixAssemblyConfig is a config for Unix Assembly.
 	UnixAssemblyConfig = AssemblyConfig

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -125,21 +126,29 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	linguistLock.Lock()
 	defer linguistLock.Unlock()
 
-	// NOTE: LanguageHints would allow detecting the right language by file
-	// name. Calling LanguageByFilename first is a performance optimization.
-	lang := linguist.LanguageByFilename(fileName)
+	// TODO(#518): Use linguist to detect by file name
+	if linguist.ShouldIgnoreContents(decodedContents) {
+		return nil, nil
+	}
+
+	var lang string
+	// TODO(github.com/dayvonjersen/linguist/issues/13): Revert special case when TypeScript is detected properly.
+	if filepath.Ext(fileName) == ".ts" {
+		lang = "TypeScript"
+	} else {
+		lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+	}
 	if lang == "" {
-		if !linguist.ShouldIgnoreContents(decodedContents) {
-			lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
-		}
+		return nil, nil
 	}
 
 	// Detect the language encoding.
-	if config, ok := languageMap[lang]; ok {
-		return New(bytes.NewReader(decodedContents), config), nil
+	config, ok := languageMap[lang]
+	if !ok {
+		return nil, nil
 	}
 
-	return nil, nil
+	return New(bytes.NewReader(decodedContents), config), nil
 }
 
 // New returns a new CommentScanner that scans code returned by r with the given Config.
