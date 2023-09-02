@@ -15,6 +15,10 @@
 name: "TODO Issue Reopener"
 description: "Reopen issues that are referenced by TODOs"
 inputs:
+  config-path:
+    description: "The path to the config file."
+    required: false
+    default: ".todos.yml"
   path:
     description: "Base path to search."
     required: false

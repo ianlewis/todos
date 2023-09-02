@@ -20,6 +20,7 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 
 import * as verifier from "./verifier";
+import * as config from "./config";
 
 const TODOS_VERSION = "v0.6.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
@@ -60,8 +61,38 @@ const labelMatch = new RegExp(
   "^s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)s*$",
 );
 
+// matchLabel matches the label and returns the GitHub issue number or -1 if
+// there is no match.
+export function matchLabel(label: string, conf: config.Config): number {
+  const repo = github.context.repo;
+  const match = label.match(labelMatch);
+
+  if (match) {
+    // NOTE: Skip the issue if it links to another repository.
+    if (
+      (match[3] || match[4]) &&
+      (match[3] !== repo.owner || match[4] !== repo.repo)
+    ) {
+      return -1;
+    }
+
+    if (match[5]) {
+      return Number(match[5]);
+    }
+
+    return -1;
+  }
+
+  // TODO: Try vanity urls.
+
+  return -1;
+}
+
 // reopenIssues downloads the todos CLI, runs it, and returns issues linked to TODOs.
-export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
+export async function getTODOIssues(
+  wd: string,
+  conf: config.Config,
+): Promise<TODOIssue[]> {
   const repo = github.context.repo;
 
   const todosPath = await verifier.downloadAndVerifySLSA(
@@ -108,29 +139,18 @@ export async function getTODOIssues(wd: string): Promise<TODOIssue[]> {
       continue;
     }
     const ref: TODORef = JSON.parse(line);
-    const match = ref.label.match(labelMatch);
 
-    if (!match) {
+    const issueNum = matchLabel(ref.label, conf);
+    if (issueNum <= 0) {
       continue;
     }
 
-    // NOTE: Skip the issue if it links to another repository.
-    if (
-      (match[3] || match[4]) &&
-      (match[3] !== repo.owner || match[4] !== repo.repo)
-    ) {
-      continue;
+    let issue = issueMap.get(issueNum);
+    if (!issue) {
+      issue = new TODOIssue(issueNum);
     }
-
-    if (match[5]) {
-      const issueID = Number(match[5]);
-      let issue = issueMap.get(issueID);
-      if (!issue) {
-        issue = new TODOIssue(issueID);
-      }
-      issue.todos.push(ref);
-      issueMap.set(issueID, issue);
-    }
+    issue.todos.push(ref);
+    issueMap.set(issueNum, issue);
   }
 
   return Array.from(issueMap.values());

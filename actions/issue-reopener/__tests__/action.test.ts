@@ -40,15 +40,17 @@ describe("runAction", () => {
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
+    const configPath = ".todos.yml";
     const dryRun = false;
 
     process.env.INPUT_PATH = workspacePath;
     process.env.INPUT_TOKEN = githubToken;
+    process.env["INPUT_CONFIG-PATH"] = configPath;
     process.env["INPUT_DRY-RUN"] = String(dryRun);
 
     await action.runAction();
 
-    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath, {});
     expect(reopener.reopenIssues).toBeCalledWith(
       workspacePath,
       [],
@@ -63,15 +65,17 @@ describe("runAction", () => {
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
+    const configPath = ".todos.yml";
     const dryRun = false;
 
     process.env.INPUT_PATH = workspacePath;
     process.env.INPUT_TOKEN = githubToken;
+    process.env["INPUT_CONFIG-PATH"] = configPath;
     process.env["INPUT_DRY-RUN"] = String(dryRun);
 
     await action.runAction();
 
-    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath, {});
 
     expect(process.exitCode).not.toBe(0);
   });
@@ -82,15 +86,17 @@ describe("runAction", () => {
 
     const workspacePath = "/home/user";
     const githubToken = "deadbeef";
+    const configPath = ".todos.yml";
     const dryRun = false;
 
     process.env.INPUT_PATH = workspacePath;
     process.env.INPUT_TOKEN = githubToken;
+    process.env["INPUT_CONFIG-PATH"] = configPath;
     process.env["INPUT_DRY-RUN"] = String(dryRun);
 
     await action.runAction();
 
-    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath);
+    expect(reopener.getTODOIssues).toBeCalledWith(workspacePath, {});
     expect(reopener.reopenIssues).toBeCalledWith(
       workspacePath,
       [],
