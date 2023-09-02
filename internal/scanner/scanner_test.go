@@ -1321,6 +1321,22 @@ var loaderTestCases = []struct {
 		scanCharset:    "UTF-8",
 		expectedConfig: &TypeScriptConfig,
 	},
+	{
+		name: "qt_translation_file.ts",
+		src: []byte(`
+			<!DOCTYPE TS><TS>
+			<context>
+			    <name>QPushButton</name>
+			    <message>
+			        <source>Hello world!</source>
+			        <translation type="unfinished"></translation>
+			    </message>
+			</context>
+			</TS>		
+		`),
+		scanCharset:    "UTF-8",
+		expectedConfig: &XMLConfig,
+	},
 }
 
 func TestFromFile(t *testing.T) {

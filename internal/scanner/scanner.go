@@ -134,7 +134,11 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	var lang string
 	// TODO(github.com/dayvonjersen/linguist/issues/13): Revert special case when TypeScript is detected properly.
 	if filepath.Ext(fileName) == ".ts" {
-		lang = "TypeScript"
+		// Try to detect if this is a Qt translation file (XML format).
+		lang = linguist.LanguageByContents(decodedContents, nil)
+		if lang != "XML" {
+			lang = "TypeScript"
+		}
 	} else {
 		lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
 	}
