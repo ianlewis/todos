@@ -520,6 +520,98 @@ func TestTODOScanner(t *testing.T) {
 			},
 			expected: nil,
 		},
+		"special_case_todo_naked.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "//TODO",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "//TODO",
+					Label:       "",
+					Message:     "",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+		},
+		"special_case_todo_with_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "//TODO Add some useful code here.",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "//TODO Add some useful code here.",
+					Label:       "",
+					Message:     "Add some useful code here.",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+		},
+		"special_case_todo_with_label.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "//TODO(github.com/foo/bar/issues/1) Add some useful code here.",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "//TODO(github.com/foo/bar/issues/1) Add some useful code here.",
+					Label:       "github.com/foo/bar/issues/1",
+					Message:     "Add some useful code here.",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+		},
+		"special_case_todo_no_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "//TODO(github.com/foo/bar/issues/1)",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "//TODO(github.com/foo/bar/issues/1)",
+					Label:       "github.com/foo/bar/issues/1",
+					Message:     "",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+		},
 		"multiline_comments_leading_whitespace.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
