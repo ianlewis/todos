@@ -87,7 +87,7 @@ type CommentScanner interface {
 type TODOScanner struct {
 	next           *TODO
 	s              CommentScanner
-	lineMatch      *regexp.Regexp
+	lineMatch      []*regexp.Regexp
 	multilineMatch *regexp.Regexp
 }
 
@@ -126,7 +126,17 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][6]) and message (match[0][7])
 	}, "|")
 
-	snr.lineMatch = regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`)
+	msgMatch2 := strings.Join([]string{
+		`\s*`,                       // Naked
+		`\s*[:\-/]*\s*(.*)`,         // With message (match[0][4])
+		`\((.*)\)\s*`,               // Naked w/ label (match[0][5])
+		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][6]) and message (match[0][7])
+	}, "|")
+
+	snr.lineMatch = []*regexp.Regexp{
+		regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`),
+		regexp.MustCompile(`^\s*(` + commentStartMatch + `)(` + typesMatch + `)(` + msgMatch2 + `)$`),
+	}
 	snr.multilineMatch = regexp.MustCompile(`^(` + multiStartMatch + `)?\s*(` + typesMatch + `)(` + msgMatch + `)$`)
 
 	return snr
@@ -176,26 +186,28 @@ func (t *TODOScanner) findMatch(c *scanner.Comment) *TODO {
 		}
 	}
 
-	match := t.lineMatch.FindAllStringSubmatch(c.Text, 1)
-	if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-		label := match[0][5]
-		if label == "" {
-			label = match[0][6]
-		}
+	for _, lnMatch := range t.lineMatch {
+		match := lnMatch.FindAllStringSubmatch(c.Text, 1)
+		if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
+			label := match[0][5]
+			if label == "" {
+				label = match[0][6]
+			}
 
-		message := match[0][4]
-		if message == "" {
-			message = match[0][7]
-		}
+			message := match[0][4]
+			if message == "" {
+				message = match[0][7]
+			}
 
-		return &TODO{
-			Type:    match[0][2],
-			Text:    strings.TrimSpace(c.Text),
-			Label:   strings.TrimSpace(label),
-			Message: strings.TrimSpace(message),
-			// Add the line relative to the file.
-			Line:        c.Line,
-			CommentLine: c.Line,
+			return &TODO{
+				Type:    match[0][2],
+				Text:    strings.TrimSpace(c.Text),
+				Label:   strings.TrimSpace(label),
+				Message: strings.TrimSpace(message),
+				// Add the line relative to the file.
+				Line:        c.Line,
+				CommentLine: c.Line,
+			}
 		}
 	}
 
