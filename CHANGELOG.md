@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new `--charset` flag was added which defaults to `UTF-8`. This is the
   character set used to read the code files. A special name of `detect`
   specifies that the character set of each file should be detected.
+- Support was added for TODO comments with no space between the comment start
+  and "TODO" marker and no delimiter.
+
+  ```go
+  //TODO Add some code here.
+  ```
 
 ### Changed
 
