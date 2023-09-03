@@ -14,8 +14,9 @@ proposing them via a Pull Request. -->
 **Checklist:**
 
 - [ ] Review the [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) documentation.
-- [ ] A reference to a related issue in the repository.
-- [ ] A description of the changes proposed in the pull request.
-- [ ] Please make sure to sign the [Google CLA](https://cla.developers.google.com/about/google-corporate).
+- [ ] Add a reference to a related issue in the repository.
+- [ ] Add a description of the changes proposed in the pull request.
+- [ ] Add unit tests if applicable.
+- [ ] Add a note in the [CHANGELOG.md](../blob/main/CHANGELOG.md) if applicable.
+- [ ] Sign the [Google CLA](https://cla.developers.google.com/about/google-corporate).
 - [ ] Please make sure your commits include a [Developer Certificate of Origin](https://developercertificate.org/) signoff.
-- [ ] Please add unit tests
