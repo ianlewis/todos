@@ -9,7 +9,7 @@ require (
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.25.7
-	golang.org/x/text v0.12.0
+	golang.org/x/text v0.13.0
 	sigs.k8s.io/release-utils v0.7.4
 )
 
