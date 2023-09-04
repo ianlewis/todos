@@ -39,16 +39,16 @@ Make sure you have configured `git` to connect to GitHub using `SSH`. See
 [Connecting to GitHub with SSH] for more info.
 
 One you have done that you can clone the repository to get a checkout of the
-code.
+code. Substitute your username here.
 
 ```shell
-git clone git@github.com:ianlewis/todos.git
+git clone git@github.com:myuser/todos.git
 ```
 
 ### Create a local branch
 
 Create a local branch to do development in. This will make it easier to create a
-Pull Request later. You can give this branch an appropriate name.
+pull request later. You can give this branch an appropriate name.
 
 ```shell
 git checkout -b my-new-feature
@@ -146,10 +146,8 @@ Make sure to stage any change or new files or new files.
 git add .
 ```
 
-Commit your code to your branch. Make sure to add a
-[DCO](#developer-certificate-of-origin) "sign off" on your commits using the
-`-s` flag. Commit messages should follow the [Conventional Commits] format but
-this isn't required.
+Commit your code to your branch. Commit messages should follow the [Conventional
+Commits] format but this isn't required.
 
 ```shell
 git commit -sm "feat: My new feature"
@@ -161,14 +159,14 @@ You can now push your changes to your fork.
 git push origin my-new-feature
 ```
 
-### Pull Requests
+### Pull requests
 
 Once you have your code pushed to your fork you can now created a new
-[Pull Request] (PR). This allows the project maintainers to review your submission.
+[pull request] (PR). This allows the project maintainers to review your submission.
 
 #### Create a PR
 
-You can [create a new Pull Request via the GitHub UI] or via the
+You can [create a new pull request via the GitHub UI] or via the
 [`gh` CLI] tool. Create the PR as a draft to start.
 
 ```shell
@@ -196,6 +194,6 @@ After your code is approved it will be merged into the `main` branch! Congrats!
 [Contributor License Agreement]: https://cla.developers.google.com/about
 [Google's Open Source Community Guidelines]: https://opensource.google/conduct/
 [Connecting to GitHub with SSH]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
-[Pull Request]: https://docs.github.com/pull-requests
+[pull request]: https://docs.github.com/pull-requests
 [`gh` CLI]: https://cli.github.com/
 [About pull request reviews]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews
