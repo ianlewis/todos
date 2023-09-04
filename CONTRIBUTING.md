@@ -166,9 +166,11 @@ Once you have your code pushed to your fork you can now created a new
 
 #### Create a PR
 
-You can [create a new pull request via the GitHub
-UI](https://github.com/ianlewis/todos/compare) or via the
-[`gh` CLI] tool. Create the PR as a draft to start.
+You can
+[create a new pull request via the GitHub UI](https://github.com/ianlewis/todos/compare)
+or via the [`gh` CLI] tool. Create the PR as a
+[draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests)
+to start.
 
 ```shell
 gh pr create --title "feat: My new feature" --draft
