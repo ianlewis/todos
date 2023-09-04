@@ -2,6 +2,22 @@
 
 We'd love to accept your patches and contributions to this project.
 
+## How can I help?
+
+There are many areas in the project that need help. These are managed in GitHub
+issues. Please let us know if you are willing to work on the issue and how you
+can contribute.
+
+- For new developers and contributors, please see issues labeled
+  [good first issue]. These issues should require minimal background knowledge
+  to contribute.
+- For slightly more involved changes that may require some background knowledge,
+  please see issues labeled [help wanted]
+- For experienced developers, any of the [open issues] is open to contribution.
+
+If you don't find an existing issue for your contribution feel free to
+[create an issue].
+
 ## Before you begin
 
 ### Sign our Contributor License Agreement
@@ -24,7 +40,16 @@ of Conduct] which all contributors are expected to follow. Please be familiar
 with them. Please see the Code of Conduct about how to report instances of
 abusive, harassing, or otherwise unacceptable behavior.
 
-## Contribution process
+## Providing feedback
+
+Feedback can include bug reports, feature requests, documentation change
+proposals, or just general feedback. The best way to provide feedback to the
+project is to [create an issue]. Please provide as much info as you can about
+your project feedback.
+
+For reporting a security vulnerability see the [Security Policy].
+
+## Code contribution process
 
 This section describes how to make a contribution to this project.
 
@@ -238,6 +263,11 @@ The following prefixes are supported:
 10. `revert`: reverts a previous change
 11. `test`: adds missing tests or corrects existing tests
 
+[create an issue]: https://github.com/ianlewis/todos/issues/new/choose
+[good first issue]: https://github.com/ianlewis/todos/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
+[help wanted]: https://github.com/ianlewis/todos/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3Ahelp+wanted%22
+[open issues]: https://github.com/ianlewis/todos/issues
+[Security Policy]: SECURITY.md
 [Code of Conduct]: CODE_OF_CONDUCT.md
 [Contributor License Agreement]: https://cla.developers.google.com/about
 [Google's Open Source Community Guidelines]: https://opensource.google/conduct/
