@@ -19,4 +19,3 @@ proposing them via a Pull Request. -->
 - [ ] Add unit tests if applicable.
 - [ ] Add a note in the [CHANGELOG.md](../blob/main/CHANGELOG.md) if applicable.
 - [ ] Sign the [Google CLA](https://cla.developers.google.com/about/google-corporate).
-- [ ] Please make sure your commits include a [Developer Certificate of Origin](https://developercertificate.org/) signoff.
