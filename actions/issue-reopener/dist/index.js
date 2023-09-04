@@ -181,7 +181,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
 const github = __importStar(__nccwpck_require__(5438));
 const verifier = __importStar(__nccwpck_require__(5854));
-const TODOS_VERSION = "v0.4.0";
+const TODOS_VERSION = "v0.5.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM = "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
 class ReopenError extends Error {
