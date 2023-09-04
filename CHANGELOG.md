@@ -1,4 +1,4 @@
-# Changelog
+#p Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -22,6 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ```go
   //TODO Add some code here.
+  ```
+
+- Support was added for TODO comments in JavaDoc/JSDoc/TSDoc that had a `*`
+  prefix.
+
+  ```java
+  /**
+   * Some comment.
+   * TODO: Add some code here.
+   */
   ```
 
 ### Changed
