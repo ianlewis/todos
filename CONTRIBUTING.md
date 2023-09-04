@@ -190,6 +190,51 @@ reviews. Once you have created a PR you should get a response within a few days.
 
 After your code is approved it will be merged into the `main` branch! Congrats!
 
+### Conventions
+
+This section contains info on general conventions in the project.
+
+#### Code style and formatting
+
+Most code, scripts, and documentation should be auto-formatted using a
+formatting tool.
+
+1. Go code should be is formatted using [`gofumpt`].
+2. TypeScript code should be [`prettier`].
+3. YAML should be formatted using [`prettier`].
+4. Markdown should be formatted using [`prettier`].
+
+#### Semantic Versioning
+
+This project uses [Semantic Versioning] for release versions.
+
+This means that when creating a new release version, in general, given a version
+number MAJOR.MINOR.PATCH, increment the:
+
+1. MAJOR version when you make incompatible API changes
+2. MINOR version when you add functionality in a backward compatible manner
+3. PATCH version when you make backward compatible bug fixes
+
+#### Conventional Commits
+
+PR titles are required to be in [Conventional Commits] format. Supported
+prefixes are defined in the file
+[`.github/pr-title-checker-config.json`](./.github/pr-title-checker-config.json).
+
+The following prefixes are supported:
+
+1. `fix`: patches a bug
+2. `feat`: introduces a new feature
+3. `docs`: a change in the documentation.
+4. `chore`: a change that performs a task but doesn't change functionality, such as updating dependencies.
+5. `refactor`: a code change that improves code quality
+6. `style`: coding style or format changes
+7. `build`: changes that affect the build system
+8. `ci`: changes to CI/CD configuration files or scripts
+9. `perf`: change to improve performance
+10. `revert`: reverts a previous change
+11. `test`: adds missing tests or corrects existing tests
+
 [Code of Conduct]: CODE_OF_CONDUCT.md
 [Contributor License Agreement]: https://cla.developers.google.com/about
 [Google's Open Source Community Guidelines]: https://opensource.google/conduct/
@@ -197,3 +242,7 @@ After your code is approved it will be merged into the `main` branch! Congrats!
 [pull request]: https://docs.github.com/pull-requests
 [`gh` CLI]: https://cli.github.com/
 [About pull request reviews]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews
+[Semantic Versioning]: https://semver.org/
+[Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
+[`gofumpt`]: https://github.com/mvdan/gofumpt
+[`prettier`]: https://prettier.io/

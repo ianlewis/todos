@@ -4,11 +4,11 @@
     "color": "EEEEEE"
   },
   "CHECKS": {
-    "regexp": "^(fix|feat|break|docs|chore|refactor|style|build|ci|revert|test)!?(\\(.*\\))?!?:.*"
+    "regexp": "^(fix|feat|docs|chore|refactor|style|build|ci|perf|revert|test)!?(\\(.*\\))?!?:.*"
   },
   "MESSAGES": {
     "success": "PR title is valid",
     "failure": "PR title is invalid",
-    "notice": "Title needs to pass regex '^(fix|feat|break|docs|chore|refactor|style|build|ci|revert|test)!?(\\(.*\\))?!?:.*"
+    "notice": "PR title should match conventional commits format. See CONTRIBUTING.md"
   }
 }
