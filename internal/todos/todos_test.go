@@ -488,7 +488,7 @@ func TestTODOScanner(t *testing.T) {
 					},
 					{
 						Text: "// godoc ",
-						Line: 7,
+						Line: 9,
 					},
 				},
 			},
@@ -499,6 +499,38 @@ func TestTODOScanner(t *testing.T) {
 				{
 					Type:        "TODO",
 					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Label:       "github.com/foo/bar/issues1",
+					Message:     "foo",
+					Line:        7,
+					CommentLine: 5,
+				},
+			},
+		},
+		"multiline_comments_javadoc.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/**\n * foo\n * TODO(github.com/foo/bar/issues1): foo\n */",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// javadoc ",
+						Line: 9,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "* TODO(github.com/foo/bar/issues1): foo",
 					Label:       "github.com/foo/bar/issues1",
 					Message:     "foo",
 					Line:        7,

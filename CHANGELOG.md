@@ -24,6 +24,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   //TODO Add some code here.
   ```
 
+- Support was added for TODO comments in JavaDoc/JSDoc/TSDoc that had a `*`
+  prefix.
+
+  ```java
+  /**
+   * Some comment.
+   * TODO: Add some code here.
+   */
+  ```
+
 ### Changed
 
 - `todos` no longer detects character encodings by default and now defaults to
