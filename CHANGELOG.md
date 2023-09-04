@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.5.0] - 2023-09-04
 
-### Added
+### Added in 0.5.0
 
 - Support for Erlang, Haskell, R, and SQL programming languages has been added.
 - A new `exclude-dir` flag was added to `todos` that allows for excluding
@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    */
   ```
 
-### Changed
+### Changed in 0.5.0
 
 - `todos` no longer detects character encodings by default and now defaults to
   reading files as UTF-8. Character detection can be enabled by using the
@@ -122,3 +122,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.2.0]: https://github.com/ianlewis/todos/releases/tag/v0.2.0
 [0.3.0]: https://github.com/ianlewis/todos/releases/tag/v0.3.0
 [0.4.0]: https://github.com/ianlewis/todos/releases/tag/v0.4.0
+[0.5.0]: https://github.com/ianlewis/todos/releases/tag/v0.5.0
