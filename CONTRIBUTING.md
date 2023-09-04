@@ -190,11 +190,11 @@ reviews. Once you have created a PR you should get a response within a few days.
 
 After your code is approved it will be merged into the `main` branch! Congrats!
 
-### Conventions
+## Conventions
 
 This section contains info on general conventions in the project.
 
-#### Code style and formatting
+### Code style and formatting
 
 Most code, scripts, and documentation should be auto-formatted using a
 formatting tool.
@@ -204,7 +204,7 @@ formatting tool.
 3. YAML should be formatted using [`prettier`].
 4. Markdown should be formatted using [`prettier`].
 
-#### Semantic Versioning
+### Semantic Versioning
 
 This project uses [Semantic Versioning] for release versions.
 
@@ -215,7 +215,7 @@ number MAJOR.MINOR.PATCH, increment the:
 2. MINOR version when you add functionality in a backward compatible manner
 3. PATCH version when you make backward compatible bug fixes
 
-#### Conventional Commits
+### Conventional Commits
 
 PR titles are required to be in [Conventional Commits] format. Supported
 prefixes are defined in the file
