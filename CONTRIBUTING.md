@@ -17,7 +17,7 @@ was for a different project), you probably don't need to do it again.
 Visit <https://cla.developers.google.com/> to see your current agreements or to
 sign a new one.
 
-### Review our community guidelines and Code of Conduct.
+### Review our community guidelines and Code of Conduct
 
 This project follows [Google's Open Source Community Guidelines] and has a [Code
 of Conduct] which all contributors are expected to follow. Please be familiar
@@ -186,7 +186,7 @@ All PR submissions require review. We use GitHub pull requests for this purpose.
 Consult [About pull request reviews] for more information on pull request code
 reviews. Once you have created a PR you should get a response within a few days.
 
-#### Merge!
+#### Merge
 
 After your code is approved it will be merged into the `main` branch! Congrats!
 
