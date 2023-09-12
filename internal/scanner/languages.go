@@ -15,7 +15,7 @@
 package scanner
 
 import (
-	// embed is required to be imported to use go:embed
+	// embed is required to be imported to use go:embed.
 	_ "embed"
 
 	"gopkg.in/yaml.v1"
@@ -79,7 +79,9 @@ func doubleEscape(s *CommentScanner, st *stateString) (bool, error) {
 // language names defined in the linguist library.
 var LanguagesConfig map[string]*Config
 
+//nolint:gochecknoinits // init needed to load embedded config.
 func init() {
+	// TODO(#460): Generate Go code rather than loading YAML at runtime.
 	if err := yaml.Unmarshal(languagesRaw, &LanguagesConfig); err != nil {
 		// NOTE: This shouldn't happen.
 		panic(err)
