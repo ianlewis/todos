@@ -41,27 +41,32 @@ var (
 	linguistLock sync.Mutex
 )
 
+type stringConfig struct {
+	Start      []rune
+	End        []rune
+	EscapeFunc escapeFunc
+}
+
 // config is configuration for a generic comment scanner.
 type config struct {
 	LineCommentStart      [][]rune
 	MultilineCommentStart []rune
 	MultilineCommentEnd   []rune
-	Strings               [][2][]rune
-	escapeFunc            func(s *CommentScanner, st *stateString) (bool, error)
+	Strings               []stringConfig
 }
 
 func convertConfig(c *Config) *config {
 	var c2 config
 	c2.LineCommentStart = stringsToRunes(c.LineCommentStart)
-	c2.MultilineCommentStart = []rune(c.MultilineCommentStart)
-	c2.MultilineCommentEnd = []rune(c.MultilineCommentEnd)
+	c2.MultilineCommentStart = []rune(c.MultilineComment.Start)
+	c2.MultilineCommentEnd = []rune(c.MultilineComment.End)
 	for i := range c.Strings {
-		c2.Strings = append(c2.Strings, [2][]rune{
-			[]rune(c.Strings[i][0]),
-			[]rune(c.Strings[i][1]),
+		c2.Strings = append(c2.Strings, stringConfig{
+			Start:      []rune(c.Strings[i].Start),
+			End:        []rune(c.Strings[i].End),
+			EscapeFunc: escapeFuncs[c.Strings[i].Escape],
 		})
 	}
-	c2.escapeFunc = c.escapeFunc
 	return &c2
 }
 
@@ -147,7 +152,7 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	}
 
 	// Detect the language encoding.
-	config, ok := languageMap[lang]
+	config, ok := LanguagesConfig[lang]
 	if !ok {
 		return nil, nil
 	}
@@ -262,13 +267,13 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 
 		// Check for string
 		for i, strs := range s.config.Strings {
-			eq, err := s.peekEqual(strs[0])
+			eq, err := s.peekEqual(strs.Start)
 			if err != nil {
 				return st, err
 			}
 			if eq {
 				// Discard the string opening.
-				if _, err := s.reader.Discard(len(strs[0])); err != nil {
+				if _, err := s.reader.Discard(len(strs.Start)); err != nil {
 					return st, err
 				}
 				return &stateString{
@@ -314,7 +319,7 @@ func (s *CommentScanner) multiLineMatch() ([]rune, error) {
 func (s *CommentScanner) processString(st *stateString) (state, error) {
 	for {
 		// Handle escaped characters.
-		escaped, err := s.config.escapeFunc(s, st)
+		escaped, err := s.config.Strings[st.index].EscapeFunc(s, st)
 		if err != nil {
 			return st, err
 		}
@@ -325,12 +330,12 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 			}
 		} else {
 			// Look for the end of the string.
-			stringEnd, err := s.peekEqual(s.config.Strings[st.index][1])
+			stringEnd, err := s.peekEqual(s.config.Strings[st.index].End)
 			if err != nil {
 				return st, err
 			}
 			if stringEnd {
-				if _, err := s.reader.Discard(len(s.config.Strings[st.index][1])); err != nil {
+				if _, err := s.reader.Discard(len(s.config.Strings[st.index].End)); err != nil {
 					return st, err
 				}
 				return &stateCode{}, nil

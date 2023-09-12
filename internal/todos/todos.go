@@ -104,7 +104,7 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	}
 	commentStartMatch := strings.Join(commentStarts, "|")
 
-	multiStartMatch := regexp.QuoteMeta(sConfig.MultilineCommentStart)
+	multiStartMatch := regexp.QuoteMeta(sConfig.MultilineComment.Start)
 
 	if config == nil {
 		config = &Config{
