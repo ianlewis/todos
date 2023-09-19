@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Support for CoffeeScript was added.
+
 ### Changed
 
 - The language of each file is now determined by it's file name in most
