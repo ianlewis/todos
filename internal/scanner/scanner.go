@@ -145,7 +145,10 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 			lang = "TypeScript"
 		}
 	} else {
-		lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+		lang = linguist.LanguageByFilename(fileName)
+		if lang == "" {
+			lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
+		}
 	}
 	if lang == "" {
 		return nil, nil
