@@ -154,6 +154,88 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// CoffeeScript
+	{
+		name: "line_comments.coffee",
+		src: `# file comment
+
+			###
+			TODO is a function.
+			###
+			TODO = () ->
+				return # Random comment
+			### extra comment ###`,
+		config: "CoffeeScript",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "###\n\t\t\tTODO is a function.\n\t\t\t###",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 7,
+			},
+			{
+				text: "### extra comment ###",
+				line: 8,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.coffee",
+		src: `# module comment
+
+			# TODO is a function
+			TODO = () ->
+				console.log("# Random comment\n")
+			`,
+		config: "CoffeeScript",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.go",
+		src: `# module comment
+
+			# TODO is a function
+			TODO = () ->
+				console.log("\"# Random comment\n")
+				console.log('\'# Random comment\n')
+			`,
+		config: "CoffeeScript",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function",
+				line: 3,
+			},
+		},
+	},
+
 	// Erlang
 	{
 		name: "line_comments.erl",
