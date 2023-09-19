@@ -1,0 +1,374 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+Assembly:
+  line_comment_start: [";"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: none
+    - start: "'"
+      end: "'"
+      escape: none
+C:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+C++:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+C#:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Dockerfile:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Erlang:
+  line_comment_start: ["%"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Go:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    # Rune
+    - start: "'"
+      end: "'"
+      escape: backslash
+    # Raw strings
+    - start: "`"
+      end: "`"
+      escape: none
+Go Module:
+  # NOTE: See https://go.dev/ref/mod#go-mod-file-lexical
+  line_comment_start: ["//"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    # Raw strings
+    - start: "`"
+      end: "`"
+      escape: none
+# NOTE: go.sum (Go Checksums) don't support comments.
+Haskell:
+  line_comment_start: ["--"]
+  multiline_comment:
+    start: "{-"
+    end: "-}"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+HTML:
+  multiline_comment:
+    start: "<!--"
+    end: "--!>"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Java:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+JavaScript:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+# NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
+# NOTE: HOCON format allows # comments (github.com/lightbend/config/blob/master/HOCON.md)
+JSON:
+  line_comment_start: ["//", "#"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Lua:
+  line_comment_start: ["--"]
+  multiline_comment:
+    start: "--[["
+    end: "--]]"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Makefile:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Objective-C:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Perl:
+  line_comment_start: ["#"]
+  # TODO(#665): = must be at the start of a line.
+  # multiline_comment:
+  #   start: "="
+  #   end: "=cut"
+  strings:
+    # TODO(#357): Perl supports strings with any delimiter.
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+PHP:
+  line_comment_start: ["#", "//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Python:
+  line_comment_start: ["#"]
+  multiline_comment:
+    start: '"""'
+    end: '"""'
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+R:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Ruby:
+  line_comment_start: ["#"]
+  multiline_comment:
+    # TODO(#665): = must be at the start of a line.
+    start: "=begin"
+    end: "=end"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+    - start: "%{"
+      end: "}"
+      escape: backslash
+Rust:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Scala:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Shell:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Swift:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+SQL:
+  line_comment_start: ["--"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: double
+    - start: "'"
+      end: "'"
+      escape: double
+TOML:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+TypeScript:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+Unix Assembly:
+  line_comment_start: [";"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: none
+    - start: "'"
+      end: "'"
+      escape: none
+XML:
+  multiline_comment:
+    start: "<!--"
+    end: "--!>"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
+YAML:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash

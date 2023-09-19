@@ -30,7 +30,7 @@ import (
 var scannerTestCases = []*struct {
 	name     string
 	src      string
-	config   Config
+	config   string
 	comments []struct {
 		text string
 		line int
@@ -44,7 +44,7 @@ var scannerTestCases = []*struct {
 			; TODO is a function.
 			TODO:
 				ret ; Random comment`,
-		config: UnixAssemblyConfig,
+		config: "Unix Assembly",
 		comments: []struct {
 			text string
 			line int
@@ -72,7 +72,7 @@ var scannerTestCases = []*struct {
 				msg x "; Random comment",0
 				msg y '; Random comment',0
 				ret`,
-		config: UnixAssemblyConfig,
+		config: "Unix Assembly",
 		comments: []struct {
 			text string
 			line int
@@ -96,7 +96,7 @@ var scannerTestCases = []*struct {
 				msg x "\"; Random comment",0
 				msg y '\'; Random comment',0
 				ret`,
-		config: UnixAssemblyConfig,
+		config: "Unix Assembly",
 		comments: []struct {
 			text string
 			line int
@@ -130,7 +130,7 @@ var scannerTestCases = []*struct {
 			TODO:
 				ret ; Random comment
 			/* extra comment */`,
-		config: UnixAssemblyConfig,
+		config: "Unix Assembly",
 		comments: []struct {
 			text string
 			line int
@@ -164,7 +164,7 @@ var scannerTestCases = []*struct {
 			TODO() ->
 				io:fwrite("Hello World\n") % Random comment
 			`,
-		config: ErlangConfig,
+		config: "Erlang",
 		comments: []struct {
 			text string
 			line int
@@ -192,7 +192,7 @@ var scannerTestCases = []*struct {
 			TODO() ->
 				io:fwrite("% Random comment\n")
 			`,
-		config: ErlangConfig,
+		config: "Erlang",
 		comments: []struct {
 			text string
 			line int
@@ -217,7 +217,7 @@ var scannerTestCases = []*struct {
 				io:fwrite("\"% Random comment\n")
 				io:fwrite('\'% Random comment\n')
 			`,
-		config: ErlangConfig,
+		config: "Erlang",
 		comments: []struct {
 			text string
 			line int
@@ -243,7 +243,7 @@ var scannerTestCases = []*struct {
 			func TODO() {
 				return // Random comment
 			}`,
-		config: GoConfig,
+		config: "Go",
 		comments: []struct {
 			text string
 			line int
@@ -273,7 +273,7 @@ var scannerTestCases = []*struct {
 				y := '// Random comment'
 				return x + y
 			}`,
-		config: GoConfig,
+		config: "Go",
 		comments: []struct {
 			text string
 			line int
@@ -299,7 +299,7 @@ var scannerTestCases = []*struct {
 				y := '\'// Random comment'
 				return x + y
 			}`,
-		config: GoConfig,
+		config: "Go",
 		comments: []struct {
 			text string
 			line int
@@ -329,7 +329,7 @@ var scannerTestCases = []*struct {
 				y := '\'// Random comment'
 				return x + y
 			}`,
-		config: GoConfig,
+		config: "Go",
 		comments: []struct {
 			text string
 			line int
@@ -356,7 +356,7 @@ var scannerTestCases = []*struct {
 				return // Random comment
 			}
 			/* extra comment */`,
-		config: GoConfig,
+		config: "Go",
 		comments: []struct {
 			text string
 			line int
@@ -389,7 +389,7 @@ var scannerTestCases = []*struct {
 			function TODO() {
 				return // Random comment
 			}`,
-		config: PHPConfig,
+		config: "PHP",
 		comments: []struct {
 			text string
 			line int
@@ -418,7 +418,7 @@ var scannerTestCases = []*struct {
 			TODO = do
 				putStrLn "fizzbuzz" -- Random comment
 			`,
-		config: HaskellConfig,
+		config: "Haskell",
 		comments: []struct {
 			text string
 			line int
@@ -446,7 +446,7 @@ var scannerTestCases = []*struct {
 				x = "-- Random comment";
 				y = '-- Random comment';
 			`,
-		config: HaskellConfig,
+		config: "Haskell",
 		comments: []struct {
 			text string
 			line int
@@ -471,7 +471,7 @@ var scannerTestCases = []*struct {
 				y = '\'-- Random comment';
 				x + y
 			}`,
-		config: HaskellConfig,
+		config: "Haskell",
 		comments: []struct {
 			text string
 			line int
@@ -497,7 +497,7 @@ var scannerTestCases = []*struct {
 			TODO = do
 				-- Random comment
 			`,
-		config: HaskellConfig,
+		config: "Haskell",
 		comments: []struct {
 			text string
 			line int
@@ -523,7 +523,7 @@ var scannerTestCases = []*struct {
 				putStrLn "fizzbuzz" -- Random comment
 			}
 			{- extra comment -}`,
-		config: HaskellConfig,
+		config: "Haskell",
 		comments: []struct {
 			text string
 			line int
@@ -556,7 +556,7 @@ var scannerTestCases = []*struct {
 			function TODO() {
 				return -- Random comment
 			}`,
-		config: LuaConfig,
+		config: "Lua",
 		comments: []struct {
 			text string
 			line int
@@ -585,7 +585,7 @@ var scannerTestCases = []*struct {
 				y = '-- Random comment'
 				return x + y
 			}`,
-		config: LuaConfig,
+		config: "Lua",
 		comments: []struct {
 			text string
 			line int
@@ -610,7 +610,7 @@ var scannerTestCases = []*struct {
 				y = '\'-- Random comment'
 				return x + y
 			}`,
-		config: LuaConfig,
+		config: "Lua",
 		comments: []struct {
 			text string
 			line int
@@ -636,7 +636,7 @@ var scannerTestCases = []*struct {
 				return -- Random comment
 			}
 			--[[ extra comment --]]`,
-		config: LuaConfig,
+		config: "Lua",
 		comments: []struct {
 			text string
 			line int
@@ -671,7 +671,7 @@ var scannerTestCases = []*struct {
 				y = '\'# Random comment'
 				return x + y
 			`,
-		config: PythonConfig,
+		config: "Python",
 		comments: []struct {
 			text string
 			line int
@@ -700,7 +700,7 @@ var scannerTestCases = []*struct {
 				y = '\'# Random comment'
 				return x + y
 			`,
-		config: PythonConfig,
+		config: "Python",
 		comments: []struct {
 			text string
 			line int
@@ -729,7 +729,7 @@ var scannerTestCases = []*struct {
 			TODO <- function() {
 				print("Hello World") # Random comment
 			`,
-		config: RConfig,
+		config: "R",
 		comments: []struct {
 			text string
 			line int
@@ -757,7 +757,7 @@ var scannerTestCases = []*struct {
 				print("# Random comment")
 				print('# Random comment')
 			`,
-		config: RConfig,
+		config: "R",
 		comments: []struct {
 			text string
 			line int
@@ -781,7 +781,7 @@ var scannerTestCases = []*struct {
 				print("\"# Random comment")
 				print('\'# Random comment')
 			`,
-		config: RConfig,
+		config: "R",
 		comments: []struct {
 			text string
 			line int
@@ -812,7 +812,7 @@ var scannerTestCases = []*struct {
 				y = '\'# Random comment y'
 				return x + y
 			end`,
-		config: RubyConfig,
+		config: "Ruby",
 		comments: []struct {
 			text string
 			line int
@@ -837,7 +837,7 @@ var scannerTestCases = []*struct {
 			fn TODO() {
 				println!("fizzbuzz"); // Random comment
 			}`,
-		config: RustConfig,
+		config: "Rust",
 		comments: []struct {
 			text string
 			line int
@@ -866,7 +866,7 @@ var scannerTestCases = []*struct {
 				let y: String = '// Random comment';
 				x + y
 			}`,
-		config: RustConfig,
+		config: "Rust",
 		comments: []struct {
 			text string
 			line int
@@ -891,7 +891,7 @@ var scannerTestCases = []*struct {
 				let y: String '\'// Random comment';
 				x + y
 			}`,
-		config: RustConfig,
+		config: "Rust",
 		comments: []struct {
 			text string
 			line int
@@ -920,7 +920,7 @@ var scannerTestCases = []*struct {
 				let y: String = '\'// Random comment';
 				x + y
 			}`,
-		config: RustConfig,
+		config: "Rust",
 		comments: []struct {
 			text string
 			line int
@@ -946,7 +946,7 @@ var scannerTestCases = []*struct {
 				println!("fizzbuzz"); // Random comment
 			}
 			/* extra comment */`,
-		config: RustConfig,
+		config: "Rust",
 		comments: []struct {
 			text string
 			line int
@@ -976,7 +976,7 @@ var scannerTestCases = []*struct {
 		src: `#!/bin/bash
 
 			echo "foo" # Random comment`,
-		config: ShellConfig,
+		config: "Shell",
 		comments: []struct {
 			text string
 			line int
@@ -997,7 +997,7 @@ var scannerTestCases = []*struct {
 
 			echo "foo" # Random comment
 			echo "#My comment"`,
-		config: ShellConfig,
+		config: "Shell",
 		comments: []struct {
 			text string
 			line int
@@ -1018,7 +1018,7 @@ var scannerTestCases = []*struct {
 
 			echo "foo" # Random comment
 			echo '#My comment'`,
-		config: ShellConfig,
+		config: "Shell",
 		comments: []struct {
 			text string
 			line int
@@ -1044,7 +1044,7 @@ var scannerTestCases = []*struct {
 			WHERE
 				x = "TODO" -- Random comment
 			LIMIT 1;`,
-		config: SQLConfig,
+		config: "SQL",
 		comments: []struct {
 			text string
 			line int
@@ -1073,7 +1073,7 @@ var scannerTestCases = []*struct {
 				x = "-- Random comment" AND
 				y = "-- Random comment"
 			LIMIT 1;`,
-		config: SQLConfig,
+		config: "SQL",
 		comments: []struct {
 			text string
 			line int
@@ -1098,7 +1098,7 @@ var scannerTestCases = []*struct {
 				x = 'foo '' -- Random comment' AND
 				y = "foo \"-- Random comment"
 			LIMIT 1;`,
-		config: SQLConfig,
+		config: "SQL",
 		comments: []struct {
 			text string
 			line int
@@ -1129,7 +1129,7 @@ var scannerTestCases = []*struct {
 				" AND
 				y = "-- Random comment"
 			LIMIT 1;`,
-		config: SQLConfig,
+		config: "SQL",
 		comments: []struct {
 			text string
 			line int
@@ -1153,7 +1153,7 @@ var scannerTestCases = []*struct {
 			*/
 			SELECT * from TODO
 			LIMIT 1;`,
-		config: SQLConfig,
+		config: "SQL",
 		comments: []struct {
 			text string
 			line int
@@ -1178,7 +1178,7 @@ func TestCommentScanner(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			s := New(strings.NewReader(tc.src), &tc.config)
+			s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
 
 			var comments []*Comment
 			for s.Scan() {
@@ -1209,7 +1209,7 @@ func BenchmarkCommentScanner(b *testing.B) {
 	for i := range scannerTestCases {
 		tc := scannerTestCases[i]
 		b.Run(tc.name, func(b *testing.B) {
-			s := New(strings.NewReader(tc.src), &tc.config)
+			s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
 			for s.Scan() {
 			}
 		})
@@ -1222,7 +1222,7 @@ var loaderTestCases = []struct {
 	src     []byte
 
 	scanCharset    string
-	expectedConfig *Config
+	expectedConfig string
 	err            error
 }{
 	{
@@ -1236,7 +1236,7 @@ var loaderTestCases = []struct {
 			func TODO() {
 				return // Random comment
 			}`),
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name:        "utf8.go",
@@ -1249,7 +1249,7 @@ var loaderTestCases = []struct {
 			func TODO() {
 				return // Random comment
 			}`),
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name:        "shift_jis.go",
@@ -1262,13 +1262,13 @@ var loaderTestCases = []struct {
 			func TODO() {
 				return // Random comment
 			}`),
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name:           "gb18030.go",
 		src:            []byte{255, 255, 255, 255, 255, 255, 250},
 		scanCharset:    "detect",
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name:        "zeros.go",
@@ -1282,7 +1282,7 @@ var loaderTestCases = []struct {
 		name:           "detect_by_filename.go",
 		src:            []byte{},
 		scanCharset:    "UTF-8",
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name: "detect_by_contents.foo",
@@ -1294,7 +1294,7 @@ var loaderTestCases = []struct {
 				return // Random comment
 			}`),
 		scanCharset:    "UTF-8",
-		expectedConfig: &GoConfig,
+		expectedConfig: "Go",
 	},
 	{
 		name: "binary.exe",
@@ -1306,7 +1306,7 @@ var loaderTestCases = []struct {
 		name:           "unsupported_lang.coq",
 		src:            []byte{},
 		scanCharset:    "UTF-8",
-		expectedConfig: nil,
+		expectedConfig: "", // nil
 	},
 	{
 		name: "typescript_is_not_xml.ts",
@@ -1319,7 +1319,7 @@ var loaderTestCases = []struct {
 			}
 		`),
 		scanCharset:    "UTF-8",
-		expectedConfig: &TypeScriptConfig,
+		expectedConfig: "TypeScript",
 	},
 	{
 		name: "qt_translation_file.ts",
@@ -1332,10 +1332,10 @@ var loaderTestCases = []struct {
 			        <translation type="unfinished"></translation>
 			    </message>
 			</context>
-			</TS>		
+			</TS>
 		`),
 		scanCharset:    "UTF-8",
-		expectedConfig: &XMLConfig,
+		expectedConfig: "XML",
 	},
 }
 
@@ -1375,7 +1375,7 @@ func TestFromFile(t *testing.T) {
 			if s != nil {
 				config = s.Config()
 			}
-			if got, want := config, tc.expectedConfig; got != want {
+			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})
@@ -1411,7 +1411,7 @@ func TestFromBytes(t *testing.T) {
 			if s != nil {
 				config = s.Config()
 			}
-			if got, want := config, tc.expectedConfig; got != want {
+			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})
