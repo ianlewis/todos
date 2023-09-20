@@ -61,6 +61,18 @@ C#:
     - start: "'"
       end: "'"
       escape: backslash
+CoffeeScript:
+  line_comment_start: ["#"]
+  multiline_comment:
+    start: "###"
+    end: "###"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
 Dockerfile:
   line_comment_start: ["#"]
   strings:
