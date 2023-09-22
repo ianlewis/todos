@@ -44,7 +44,7 @@ There a few veriants of this type of comment thare are in wide use.
 - **XXX**: Danger! Similar to "HACK". Modifying this code is dangerous. It
 - **COMBAK**: Something you should "come back" to.
 
-### TODO comment formats
+### TODO comment examples
 
 TODO comments can include some optional metadata. Here are some examples:
 
