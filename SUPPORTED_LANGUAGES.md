@@ -1,39 +1,40 @@
 # Supported Languages
 
-33 languages are currently supported.
+34 languages are currently supported.
 
 | File type     | Supported comments |
 | ------------- | ------------------ |
-| Go            | `//`, `/* */`      |
-| HTML          | `<!-- --!>`        |
-| Java          | `//`, `/* */`      |
-| JSON          | `//`, `#`, `/* */` |
-| TOML          | `#`                |
-| Makefile      | `#`                |
-| Ruby          | `#`, `=begin =end` |
-| C++           | `//`, `/* */`      |
+| Assembly      | `;`, `/* */`       |
+| C             | `//`, `/* */`      |
 | C#            | `//`, `/* */`      |
+| C++           | `//`, `/* */`      |
+| Clojure       | `;`                |
+| CoffeeScript  | `#`, `### ###`     |
 | Dockerfile    | `#`                |
+| Erlang        | `%`                |
+| Go            | `//`, `/* */`      |
+| Go Module     | `//`               |
+| HTML          | `<!-- --!>`        |
+| Haskell       | `--`, `{- -}`      |
+| JSON          | `//`, `#`, `/* */` |
+| Java          | `//`, `/* */`      |
+| JavaScript    | `//`, `/* */`      |
+| Lua           | `--`, `--[[ --]]`  |
+| Makefile      | `#`                |
+| Objective-C   | `//`, `/* */`      |
 | PHP           | `#`, `//`, `/* */` |
+| Perl          | `#`                |
+| Python        | `#`, `""" """`     |
+| R             | `#`                |
+| Ruby          | `#`, `=begin =end` |
+| Rust          | `//`, `/* */`      |
 | SQL           | `--`, `/* */`      |
-| YAML          | `#`                |
 | Scala         | `//`, `/* */`      |
+| Shell         | `#`                |
+| Swift         | `//`, `/* */`      |
+| TOML          | `#`                |
+| TeX           | `%`                |
 | TypeScript    | `//`, `/* */`      |
 | Unix Assembly | `;`, `/* */`       |
 | XML           | `<!-- --!>`        |
-| Assembly      | `;`, `/* */`       |
-| Erlang        | `%`                |
-| JavaScript    | `//`, `/* */`      |
-| Rust          | `//`, `/* */`      |
-| Swift         | `//`, `/* */`      |
-| Clojure       | `;`                |
-| Go Module     | `//`               |
-| Haskell       | `--`, `{- -}`      |
-| Lua           | `--`, `--[[ --]]`  |
-| Perl          | `#`                |
-| Shell         | `#`                |
-| C             | `//`, `/* */`      |
-| CoffeeScript  | `#`, `### ###`     |
-| Objective-C   | `//`, `/* */`      |
-| Python        | `#`, `""" """`     |
-| R             | `#`                |
+| YAML          | `#`                |

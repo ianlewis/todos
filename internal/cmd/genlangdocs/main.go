@@ -16,12 +16,41 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/ianlewis/todos/internal/scanner"
 )
 
+type langConfig struct {
+	lang   string
+	config *scanner.Config
+}
+
+type langConfigs []langConfig
+
+func (l langConfigs) Len() int {
+	return len(l)
+}
+
+func (l langConfigs) Less(i, j int) bool {
+	return l[i].lang < l[j].lang
+}
+
+func (l langConfigs) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
 func main() {
+	var langs langConfigs
+	for lang, config := range scanner.LanguagesConfig {
+		langs = append(langs, langConfig{
+			lang:   lang,
+			config: config,
+		})
+	}
+	sort.Sort(langs)
+
 	fmt.Println("# Supported Languages")
 	fmt.Println("")
 	fmt.Printf("%d languages are currently supported.\n", len(scanner.LanguagesConfig))
@@ -29,16 +58,17 @@ func main() {
 
 	fmt.Println("| File type | Supported comments |")
 	fmt.Println("| -- | -- |")
-	for lang, config := range scanner.LanguagesConfig {
+
+	for _, l := range langs {
 		var supported []string
-		for _, c := range config.LineCommentStart {
+		for _, c := range l.config.LineCommentStart {
 			supported = append(supported, fmt.Sprintf("`%s`", c))
 		}
-		if config.MultilineComment.Start != "" {
-			s := fmt.Sprintf("`%s %s`", config.MultilineComment.Start, config.MultilineComment.End)
+		if l.config.MultilineComment.Start != "" {
+			s := fmt.Sprintf("`%s %s`", l.config.MultilineComment.Start, l.config.MultilineComment.End)
 			supported = append(supported, s)
 		}
 
-		fmt.Printf("| %s | %s |\n", lang, strings.Join(supported, ", "))
+		fmt.Printf("| %s | %s |\n", l.lang, strings.Join(supported, ", "))
 	}
 }

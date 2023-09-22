@@ -358,6 +358,8 @@ TypeScript:
     - start: "'"
       end: "'"
       escape: backslash
+TeX:
+  line_comment_start: ["%"]
 Unix Assembly:
   line_comment_start: [";"]
   multiline_comment:
