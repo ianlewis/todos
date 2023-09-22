@@ -92,6 +92,7 @@ In order for the comments to be more easily parsed keep in mind the following:
 - Spaces between the comment start and 'TODO' is optional (e.g. `//TODO: some comment`)
 - TODOs should have a colon if a message is present so it can be distingished
   from normal comments.
+- TODOs can be prefixed with `@` (e.g. `// @TODO: comment`)
 - Comments can be on the same line with other code (e.g. `x = f() // TODO: call f`
 - Line comment start sequences can be repeated (e.g. `//// TODO: some comment`)
 - Only the single line where the TODO occurs is printed for multi-line comments.
