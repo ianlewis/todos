@@ -7,7 +7,11 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ianlewis/todos/badge)](https://api.securityscorecards.dev/projects/github.com/ianlewis/todos)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
 
-Tools for dealing with TODOs in code.
+Parse out TODOs, FIXMEs, BUGs and HACKs from your code.
+
+<p align="center"><img src="img/todos.png?raw=true"/></p>
+
+This repo contains the following tools for dealing with TODOs in code.
 
 - [`todos` CLI]: searches for TODO comments in code and prints them in various
   formats.
@@ -16,7 +20,7 @@ Tools for dealing with TODOs in code.
 
 See the [FAQ] for more info on the philosophy behind the project.
 
-## TODO comments
+## TODO comment format
 
 "TODO" comments are comments in code that mark a task that is intended to be
 done in the future.
@@ -24,10 +28,10 @@ done in the future.
 For example:
 
 ```go
-// TODO: Update this code.
+// TODO(some label or reference): Update this code.
 ```
 
-### TODO comment variants
+### TODO comment type variants
 
 There a few veriants of this type of comment thare are in wide use.
 
@@ -40,9 +44,9 @@ There a few veriants of this type of comment thare are in wide use.
 - **XXX**: Danger! Similar to "HACK". Modifying this code is dangerous. It
 - **COMBAK**: Something you should "come back" to.
 
-### TODO comment formats
+### TODO comment examples
 
-There are a few ways to format a TODO comment with metadata.
+TODO comments can include some optional metadata. Here are some examples:
 
 - A naked TODO comment.
 
@@ -83,12 +87,20 @@ main.go:27:// TODO(#123): Return a proper exit code.
 main.go:28:// TODO(ianlewis): Implement the main method.
 ```
 
+In order for the comments to be more easily parsed keep in mind the following:
+
+- Spaces between the comment start and 'TODO' is optional (e.g. `//TODO: some comment`)
+- TODOs should have a colon if a message is present so it can be distingished
+  from normal comments.
+- Comments can be on the same line with other code (e.g. `x = f() // TODO: call f`
+- Only the single line where the TODO occurs is printed for multi-line comments.
+- `TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can
+  change this with the `--todo-types` flag.
+
 ## `todos` CLI tool
 
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
 finds in various formats.
-
-<p align="center"><img src="img/todos.png?raw=true"/></p>
 
 ### Install `todos`
 
@@ -241,6 +253,12 @@ kubernetes$ todos -o json
 kubernetes$ # Get all the unique files with TODOs that Tim Hockin owns.
 kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uniq
 ```
+
+## Related projects
+
+- [pgilad/leasot](https://github.com/pgilad/leasot): A fairly robust tool with good integration with the Node.js ecosystem.
+- [judepereira/checktodo](https://github.com/judepereira/checktodo): A GitHub PR checker that checks if PRs contain TODOs.
+- [kynikos/report-todo](https://github.com/kynikos/report-todo): A generic reporting tool for TODOs.
 
 ## FAQ
 
