@@ -718,6 +718,29 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+		"extra_line_comment_prefix.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "//// TODO: comment",
+						Line: 1,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "//// TODO: comment",
+					Label:       "",
+					Message:     "comment",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+		},
 	}
 
 	for name, tc := range testCases {

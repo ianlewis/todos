@@ -100,7 +100,7 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	sConfig := s.Config()
 	var commentStarts []string
 	for _, lineCommentStart := range sConfig.LineCommentStart {
-		commentStarts = append(commentStarts, regexp.QuoteMeta(lineCommentStart))
+		commentStarts = append(commentStarts, "(?:"+regexp.QuoteMeta(lineCommentStart)+")+")
 	}
 	commentStartMatch := strings.Join(commentStarts, "|")
 
