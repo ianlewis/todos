@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for [Clojure](https://clojure.org/) and
   [CoffeeScript](https://coffeescript.org/) were added.
+- Support for an `@` prefix on TODOs was added.
 
 ### Fixed
 
