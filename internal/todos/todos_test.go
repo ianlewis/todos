@@ -508,6 +508,46 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+		"multiline_comments_multiple_todos.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\nTODO: second task\n */",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 9,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "TODO(github.com/foo/bar/issues1): foo",
+					Label:       "github.com/foo/bar/issues1",
+					Message:     "foo",
+					Line:        7,
+					CommentLine: 5,
+				},
+				{
+					Type:        "TODO",
+					Text:        "TODO: second task",
+					Label:       "",
+					Message:     "second task",
+					Line:        8,
+					CommentLine: 5,
+				},
+			},
+		},
 		"multiline_comments_javadoc.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{

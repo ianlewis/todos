@@ -85,7 +85,7 @@ type CommentScanner interface {
 
 // TODOScanner scans for TODO comments.
 type TODOScanner struct {
-	next           *TODO
+	next           []*TODO
 	s              CommentScanner
 	lineMatch      []*regexp.Regexp
 	multilineMatch *regexp.Regexp
@@ -145,48 +145,63 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 
 // Scan scans for the next TODO.
 func (t *TODOScanner) Scan() bool {
+	if len(t.next) > 0 {
+		t.next = t.next[1:]
+		if len(t.next) > 0 {
+			return true
+		}
+	}
+
 	for t.s.Scan() {
 		next := t.s.Next()
 
-		match := t.findMatch(next)
+		if next.Multiline {
+			matches := t.findMultilineMatches(next)
+			t.next = append(t.next, matches...)
+			return true
+		}
+
+		match := t.findLineMatch(next)
 		if match != nil {
-			t.next = match
+			t.next = append(t.next, match)
 			return true
 		}
 	}
 	return false
 }
 
-// findMatch returns the TODO type, the full TODO line, the label, message, and
-// the line number it was found on or zero if it was not found.
-func (t *TODOScanner) findMatch(c *scanner.Comment) *TODO {
-	if c.Multiline {
-		for i, line := range strings.Split(c.Text, "\n") {
-			match := t.multilineMatch.FindAllStringSubmatch(line, 1)
-			if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-				label := match[0][5]
-				if label == "" {
-					label = match[0][6]
-				}
-
-				message := match[0][4]
-				if message == "" {
-					message = match[0][7]
-				}
-
-				return &TODO{
-					Type:    match[0][2],
-					Text:    strings.TrimSpace(line),
-					Label:   strings.TrimSpace(label),
-					Message: strings.TrimSpace(message),
-					// Add the line relative to the file.
-					Line:        c.Line + i,
-					CommentLine: c.Line,
-				}
+// findMultilineMatch returns the TODO for the comment if it was found.
+func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
+	var matches []*TODO
+	for i, line := range strings.Split(c.Text, "\n") {
+		match := t.multilineMatch.FindAllStringSubmatch(line, 1)
+		if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
+			label := match[0][5]
+			if label == "" {
+				label = match[0][6]
 			}
+
+			message := match[0][4]
+			if message == "" {
+				message = match[0][7]
+			}
+
+			matches = append(matches, &TODO{
+				Type:    match[0][2],
+				Text:    strings.TrimSpace(line),
+				Label:   strings.TrimSpace(label),
+				Message: strings.TrimSpace(message),
+				// Add the line relative to the file.
+				Line:        c.Line + i,
+				CommentLine: c.Line,
+			})
 		}
 	}
+	return matches
+}
 
+// findLineMatch returns the TODO for the comment if it was found.
+func (t *TODOScanner) findLineMatch(c *scanner.Comment) *TODO {
 	for _, lnMatch := range t.lineMatch {
 		match := lnMatch.FindAllStringSubmatch(c.Text, 1)
 		if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
@@ -217,7 +232,10 @@ func (t *TODOScanner) findMatch(c *scanner.Comment) *TODO {
 
 // Next returns the next TODO.
 func (t *TODOScanner) Next() *TODO {
-	return t.next
+	if len(t.next) > 0 {
+		return t.next[0]
+	}
+	return nil
 }
 
 // Err returns the first error encountered.
