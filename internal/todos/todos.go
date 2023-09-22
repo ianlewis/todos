@@ -158,7 +158,7 @@ func (t *TODOScanner) Scan() bool {
 		if next.Multiline {
 			matches := t.findMultilineMatches(next)
 			t.next = append(t.next, matches...)
-			return true
+			return len(t.next) > 0
 		}
 
 		match := t.findLineMatch(next)

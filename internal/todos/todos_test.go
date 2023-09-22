@@ -508,7 +508,7 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
-		"multiline_comments_multiple_todos.go": {
+		"multiline_comments_no_todo.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
 					{
@@ -516,7 +516,7 @@ func TestTODOScanner(t *testing.T) {
 						Line: 1,
 					},
 					{
-						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\nTODO: second task\n */",
+						Text:      "/*\nfoo\nfoo\n*/",
 						Line:      5,
 						Multiline: true,
 					},
@@ -529,7 +529,47 @@ func TestTODOScanner(t *testing.T) {
 			config: &Config{
 				Types: []string{"TODO"},
 			},
+			expected: nil,
+		},
+
+		"multiline_comments_multiple_todos.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+					},
+					{
+						Text: "// TODO: before",
+						Line: 2,
+					},
+					{
+						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\nTODO: second task\n */",
+						Line:      5,
+						Multiline: true,
+					},
+					{
+						Text: "// godoc ",
+						Line: 9,
+					},
+					{
+						Text: "// TODO: after",
+						Line: 10,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
 			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO: before",
+					Label:       "",
+					Message:     "before",
+					Line:        2,
+					CommentLine: 2,
+				},
 				{
 					Type:        "TODO",
 					Text:        "TODO(github.com/foo/bar/issues1): foo",
@@ -545,6 +585,14 @@ func TestTODOScanner(t *testing.T) {
 					Message:     "second task",
 					Line:        8,
 					CommentLine: 5,
+				},
+				{
+					Type:        "TODO",
+					Text:        "// TODO: after",
+					Label:       "",
+					Message:     "after",
+					Line:        10,
+					CommentLine: 10,
 				},
 			},
 		},
