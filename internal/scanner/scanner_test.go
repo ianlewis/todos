@@ -154,6 +154,82 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Clojure
+	{
+		name: "line_comments.clj",
+		src: `; file comment
+
+			;; TODO is a function.
+			(defn TODO [] (str "Hello") ) ; Random comment
+			;;; extra comment ;;;`,
+		config: "Clojure",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: ";; TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "; Random comment",
+				line: 4,
+			},
+			{
+				text: ";;; extra comment ;;;",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.clj",
+		src: `; module comment
+
+			; TODO is a function
+			(defn TODO [] (str "; Random comment") )
+			`,
+		config: "Clojure",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; module comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.clj",
+		src: `; module comment
+
+			; TODO is a function
+			(defn TODO [] (str "\"; Random comment") )
+			`,
+		config: "Clojure",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; module comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function",
+				line: 3,
+			},
+		},
+	},
+
 	// CoffeeScript
 	{
 		name: "line_comments.coffee",

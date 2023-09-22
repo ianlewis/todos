@@ -61,6 +61,12 @@ C#:
     - start: "'"
       end: "'"
       escape: backslash
+Clojure:
+  line_comment_start: [";"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
 CoffeeScript:
   line_comment_start: ["#"]
   multiline_comment:
