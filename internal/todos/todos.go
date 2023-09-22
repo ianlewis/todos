@@ -134,11 +134,11 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	}, "|")
 
 	snr.lineMatch = []*regexp.Regexp{
-		regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*(` + typesMatch + `)(` + msgMatch + `)$`),
-		regexp.MustCompile(`^\s*(` + commentStartMatch + `)(` + typesMatch + `)(` + msgMatch2 + `)$`),
+		regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*@?(` + typesMatch + `)(` + msgMatch + `)$`),
+		regexp.MustCompile(`^\s*(` + commentStartMatch + `)@?(` + typesMatch + `)(` + msgMatch2 + `)$`),
 	}
 	snr.multilineMatch = regexp.MustCompile(
-		`^(` + multiStartMatch + `\s*|\s*\*?\s*)?(` + typesMatch + `)(` + msgMatch + `)$`)
+		`^(` + multiStartMatch + `\s*|\s*\*?\s*)?@?(` + typesMatch + `)(` + msgMatch + `)$`)
 
 	return snr
 }
