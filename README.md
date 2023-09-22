@@ -98,6 +98,10 @@ In order for the comments to be more easily parsed keep in mind the following:
 - `TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can
   change this with the `--todo-types` flag.
 
+### Supported Languages
+
+See [SUPPORTED_LANGUAGES.md].
+
 ## `todos` CLI tool
 
 The `todos` CLI scans files in a directory and prints any "TODO" comments it
@@ -296,3 +300,4 @@ See [CONTRIBUTING.md] for contributor documentation.
 [`actions/issue-reopener`]: actions/issue-reopener/README.md
 [FAQ]: #faq
 [CONTRIBUTING.md]: CONTRIBUTING.md
+[SUPPORTED_LANGUAGES.md]: SUPPORTED_LANGUAGES.md

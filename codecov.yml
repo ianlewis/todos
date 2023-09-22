@@ -28,6 +28,9 @@ coverage:
         base: auto
         if_ci_failed: failure # success, failure, error, ignore
 
+ignore:
+  - "internal/cmd/genlangdocs"
+
 comment:
   layout: "reach, diff, flags, files"
   behavior: default
