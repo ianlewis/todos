@@ -1326,6 +1326,29 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+
+	// TeX
+	{
+		name: "line_comments.tex",
+		src: `% file comment
+
+			% Random comment
+			This is some text.`,
+		config: "TeX",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% file comment",
+				line: 1,
+			},
+			{
+				text: "% Random comment",
+				line: 3,
+			},
+		},
+	},
 }
 
 func TestCommentScanner(t *testing.T) {
@@ -1484,16 +1507,28 @@ var loaderTestCases = []struct {
 		src: []byte(`
 			<!DOCTYPE TS><TS>
 			<context>
-			    <name>QPushButton</name>
-			    <message>
-			        <source>Hello world!</source>
-			        <translation type="unfinished"></translation>
-			    </message>
+				<name>QPushButton</name>
+				<message>
+					<source>Hello world!</source>
+					<translation type="unfinished"></translation>
+				</message>
 			</context>
 			</TS>
 		`),
 		scanCharset:    "UTF-8",
 		expectedConfig: "XML",
+	},
+	{
+		name: "texfile.tex",
+		src: []byte(`
+		% file comment
+		\documentclass{jsarticle}
+		\begin{document}
+		This is some tex.
+		\end{document}
+		`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "TeX",
 	},
 }
 
