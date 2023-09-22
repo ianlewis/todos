@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- All TODOs in a multi-line comment are now reported (#721).
+- All TODOs in a multi-line comment are now reported
+  ([#721](https://github.com/ianlewis/todos/pull/721)).
 
 ### Changed
 
