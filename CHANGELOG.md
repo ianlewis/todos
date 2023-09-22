@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for CoffeeScript was added.
 
+### Fixed
+
+- All TODOs in a multi-line comment are now reported (#721).
+
 ### Changed
 
 - The language of each file is now determined by it's file name in most
