@@ -1,6 +1,6 @@
 # Supported Languages
 
-34 languages are currently supported.
+36 languages are currently supported.
 
 | File type     | Supported comments |
 | ------------- | ------------------ |
@@ -11,9 +11,11 @@
 | Clojure       | `;`                |
 | CoffeeScript  | `#`, `### ###`     |
 | Dockerfile    | `#`                |
+| Emacs Lisp    | `;`                |
 | Erlang        | `%`                |
 | Go            | `//`, `/* */`      |
 | Go Module     | `//`               |
+| Groovy        | `//`, `/* */`      |
 | HTML          | `<!-- --!>`        |
 | Haskell       | `--`, `{- -}`      |
 | JSON          | `//`, `#`, `/* */` |
