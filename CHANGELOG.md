@@ -5,21 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.6.0] - 2023-09-23
 
-### Added
+### Added in 0.6.0
 
 - Support for [Clojure](https://clojure.org/),
   [CoffeeScript](https://coffeescript.org/),
   [Groovy](https://groovy-lang.org/), and [TeX](https://tug.org/) were added.
 - Support for an `@` prefix on TODOs was added.
 
-### Fixed
+### Fixed in 0.6.0
 
 - All TODOs in a multi-line comment are now reported
   ([#721](https://github.com/ianlewis/todos/pull/721)).
 
-### Changed
+### Changed in 0.6.0
 
 - The language of each file is now determined by it's file name in most
   circumstances allowing for much faster language detection.
@@ -135,10 +135,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of `todos` CLI application.
 - Simple support for scanning directories for TODO/FIXME/BUG/HACK/XXX comments.
 
-[unreleased]: https://github.com/ianlewis/todos/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/ianlewis/todos/compare/v0.6.0...HEAD
 [0.0.1]: https://github.com/ianlewis/todos/releases/tag/v0.0.1
 [0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0
 [0.2.0]: https://github.com/ianlewis/todos/releases/tag/v0.2.0
 [0.3.0]: https://github.com/ianlewis/todos/releases/tag/v0.3.0
 [0.4.0]: https://github.com/ianlewis/todos/releases/tag/v0.4.0
 [0.5.0]: https://github.com/ianlewis/todos/releases/tag/v0.5.0
+[0.6.0]: https://github.com/ianlewis/todos/releases/tag/v0.6.0

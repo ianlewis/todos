@@ -21,7 +21,7 @@ import * as github from "@actions/github";
 
 import * as verifier from "./verifier";
 
-const TODOS_VERSION = "v0.5.0";
+const TODOS_VERSION = "v0.6.0";
 const SLSA_VERIFIER_VERSION = "v2.3.0";
 const SLSA_VERIFIER_SHA256SUM =
   "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d";
