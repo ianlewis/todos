@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for [Clojure](https://clojure.org/),
-  [CoffeeScript](https://coffeescript.org/), and [TeX](https://tug.org/) were
-  added.
+  [CoffeeScript](https://coffeescript.org/),
+  [Groovy](https://groovy-lang.org/), and [TeX](https://tug.org/) were added.
 - Support for an `@` prefix on TODOs was added.
 
 ### Fixed
