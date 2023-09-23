@@ -538,6 +538,153 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Groovy
+	{
+		name: "line_comments.groovy",
+		src: `#!/usr/bin/env groovy
+			// package comment
+
+			// TODO is a function.
+			def TODO() {
+				return // Random comment
+			}`,
+		config: "Groovy",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// package comment",
+				line: 2,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 4,
+			},
+			{
+				text: "// Random comment",
+				line: 6,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.groovy",
+		src: `#!/usr/bin/env groovy
+			// package comment
+
+			// TODO is a function.
+			def TODO() String {
+				x = "// Random comment"
+				y = '// Random comment'
+				return x + y
+			}`,
+		config: "Groovy",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// package comment",
+				line: 2,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 4,
+			},
+		},
+	},
+	{
+		name: "escaped_string.groovy",
+		src: `#!/usr/bin/env groovy
+			// package comment
+
+			// TODO is a function.
+			def TODO() String {
+				x = "\"// Random comment"
+				y = '\'// Random comment'
+				return x + y
+			}`,
+		config: "Groovy",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// package comment",
+				line: 2,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 4,
+			},
+		},
+	},
+	{
+		name: "multiline_string.groovy",
+		src: `#!/usr/bin/env groovy
+			// package comment
+
+			z = ''' 
+			// TODO is a function.
+			'''
+
+			def TODO() String {
+				// Random comment
+				x = "\"// Random comment"
+				y = '\'// Random comment'
+				return x + y
+			}`,
+		config: "Groovy",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// package comment",
+				line: 2,
+			},
+			{
+				text: "// Random comment",
+				line: 9,
+			},
+		},
+	},
+	{
+		name: "multi_line.groovy",
+		src: `#!/usr/bin/env groovy
+			// package comment
+
+			/*
+			TODO is a function.
+			*/
+			def TODO() String {
+				return // Random comment
+			}
+			/* extra comment */`,
+		config: "Groovy",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// package comment",
+				line: 2,
+			},
+			{
+				text: "/*\n\t\t\tTODO is a function.\n\t\t\t*/",
+				line: 4,
+			},
+			{
+				text: "// Random comment",
+				line: 8,
+			},
+			{
+				text: "/* extra comment */",
+				line: 10,
+			},
+		},
+	},
+
 	// PHP
 	{
 		name: "line_comments.php",
