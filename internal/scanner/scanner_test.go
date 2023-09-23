@@ -312,6 +312,82 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Emacs Lisp
+	{
+		name: "line_comments.el",
+		src: `; file comment
+
+			;; TODO is a function.
+			(defun TODO () "Hello") ; Random comment
+			;;; extra comment ;;;`,
+		config: "Emacs Lisp",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; file comment",
+				line: 1,
+			},
+			{
+				text: ";; TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "; Random comment",
+				line: 4,
+			},
+			{
+				text: ";;; extra comment ;;;",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.el",
+		src: `; module comment
+
+			; TODO is a function
+			(defun TODO () "; Random comment")
+			`,
+		config: "Emacs Lisp",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; module comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.el",
+		src: `; module comment
+
+			; TODO is a function
+			(defun TODO () "\"; Random comment")
+			`,
+		config: "Emacs Lisp",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; module comment",
+				line: 1,
+			},
+			{
+				text: "; TODO is a function",
+				line: 3,
+			},
+		},
+	},
+
 	// Erlang
 	{
 		name: "line_comments.erl",
@@ -1553,6 +1629,20 @@ var loaderTestCases = []struct {
 	expectedConfig string
 	err            error
 }{
+	// Emacs Lisp
+	{
+		name:        "line_comments.el",
+		charset:     "ISO-8859-1",
+		scanCharset: "ISO-8859-1",
+		src: []byte(`; file comment
+
+			;; TODO is a function.
+			(defun TODO () "Hello") ; Random comment
+			;;; extra comment ;;;`),
+		expectedConfig: "Emacs Lisp",
+	},
+
+	// Go
 	{
 		name:        "ascii.go",
 		charset:     "ISO-8859-1",
