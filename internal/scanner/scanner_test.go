@@ -1572,6 +1572,64 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+
+	// TODO(#460): Support Vim Script
+	// {
+	// 	name: "line_comments.vim",
+	// 	src: `" file comment
+
+	// 		" TODO is a function.
+	// 		function TODO()
+	// 			return "Hello" " Random comment
+	// 		endfunction
+	// 		" extra comment`,
+	// 	config: "Vim Script",
+	// 	comments: []struct {
+	// 		text string
+	// 		line int
+	// 	}{
+	// 		{
+	// 			text: "\" file comment",
+	// 			line: 1,
+	// 		},
+	// 		{
+	// 			text: "\" TODO is a function.",
+	// 			line: 3,
+	// 		},
+	// 		{
+	// 			text: "\" Random comment",
+	// 			line: 5,
+	// 		},
+	// 		{
+	// 			text: "\" extra comment",
+	// 			line: 7,
+	// 		},
+	// 	},
+	// },
+	// {
+	// 	name: "escaped_string.vim",
+	// 	src: `" module comment
+
+	// 		" TODO is a function
+	// 		function TODO()
+	// 			return "\" Random comment"
+	// 		endfunction
+	// 		`,
+	// 	config: "Vim Script",
+	// 	comments: []struct {
+	// 		text string
+	// 		line int
+	// 	}{
+	// 		{
+	// 			text: "\" module comment",
+	// 			line: 1,
+	// 		},
+	// 		{
+	// 			text: "\" TODO is a function",
+	// 			line: 3,
+	// 		},
+	// 	},
+	// },
 }
 
 func TestCommentScanner(t *testing.T) {
