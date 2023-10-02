@@ -172,4 +172,9 @@ yamllint: ## Runs the yamllint linter.
 
 .PHONY: clean
 clean: ## Delete temporary files.
-	rm -rf vendor node_modules
+	rm -rf vendor node_modules coverage.out
+	@set -e;\
+		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name package.json -type f | xargs dirname); \
+		for path in $$PATHS; do \
+			make -C $$path clean; \
+		done
