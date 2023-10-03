@@ -15,6 +15,7 @@
 package scanner
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -25,6 +26,8 @@ import (
 	"sync"
 
 	"github.com/ianlewis/linguist"
+	"github.com/ianlewis/todos/internal/runes"
+	"github.com/ianlewis/todos/internal/utils"
 	"github.com/saintfish/chardet"
 	"golang.org/x/text/encoding/ianaindex"
 )
@@ -168,7 +171,7 @@ func New(r io.Reader, c *Config) *CommentScanner {
 	return &CommentScanner{
 		originalConfig: c,
 		config:         convertConfig(c),
-		reader:         NewRuneReader(r),
+		reader:         runes.NewReader(bufio.NewReader(r)),
 
 		// Starting state
 		state: &stateCode{},
@@ -178,7 +181,7 @@ func New(r io.Reader, c *Config) *CommentScanner {
 
 // CommentScanner is a generic code comment scanner.
 type CommentScanner struct {
-	reader         *RuneReader
+	reader         *runes.RuneReader
 	originalConfig *Config
 	config         *config
 
@@ -417,7 +420,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 }
 
 func (s *CommentScanner) nextRune() (rune, error) {
-	rn, err := s.reader.Next()
+	rn, _, err := s.reader.ReadRune()
 	if err != nil {
 		return rn, err
 	}
@@ -455,5 +458,5 @@ func (s *CommentScanner) peekEqual(val []rune) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return compareRunes(runes, val), nil
+	return utils.SliceEqual(runes, val), nil
 }
