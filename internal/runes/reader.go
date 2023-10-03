@@ -16,7 +16,6 @@ package runes
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"unicode/utf8"
 )
@@ -25,7 +24,6 @@ import (
 const defaultBufSize = 1024
 
 var (
-	errRuneDecode    = errors.New("UTF-8 rune decoding error")
 	errBufferFull    = fmt.Errorf("buffer full")
 	errNegativeCount = fmt.Errorf("negative count")
 )
@@ -59,7 +57,7 @@ func NewReader(r *bufio.Reader) *RuneReader {
 func NewReaderSize(r *bufio.Reader, size int) *RuneReader {
 	return &RuneReader{
 		rd:  r,
-		buf: make([]rune, defaultBufSize),
+		buf: make([]rune, size),
 	}
 }
 

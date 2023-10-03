@@ -26,10 +26,11 @@ import (
 	"sync"
 
 	"github.com/ianlewis/linguist"
-	"github.com/ianlewis/todos/internal/runes"
-	"github.com/ianlewis/todos/internal/utils"
 	"github.com/saintfish/chardet"
 	"golang.org/x/text/encoding/ianaindex"
+
+	"github.com/ianlewis/todos/internal/runes"
+	"github.com/ianlewis/todos/internal/utils"
 )
 
 var (
@@ -264,7 +265,7 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 
 			// Discard the opening. It will be added by processMultilineComment.
 			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
-				return st, errDiscard
+				return st, fmt.Errorf("parsing code: %w", errDiscard)
 			}
 			return &stateMultilineComment{
 				line: s.line,
@@ -280,7 +281,7 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 			if eq {
 				// Discard the string opening.
 				if _, err := s.reader.Discard(len(strs.Start)); err != nil {
-					return st, err
+					return st, fmt.Errorf("parsing code: %w", err)
 				}
 				return &stateString{
 					index: i,
@@ -332,24 +333,24 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 		if escaped {
 			// Skip the backslash character.
 			if _, err := s.reader.Discard(1); err != nil {
-				return st, err
+				return st, fmt.Errorf("parsing string: %w", err)
 			}
 		} else {
 			// Look for the end of the string.
 			stringEnd, err := s.peekEqual(s.config.Strings[st.index].End)
 			if err != nil {
-				return st, err
+				return st, fmt.Errorf("parsing string: %w", err)
 			}
 			if stringEnd {
 				if _, err := s.reader.Discard(len(s.config.Strings[st.index].End)); err != nil {
-					return st, err
+					return st, fmt.Errorf("parsing string: %w", err)
 				}
 				return &stateCode{}, nil
 			}
 		}
 
 		if _, err := s.nextRune(); err != nil {
-			return st, err
+			return st, fmt.Errorf("parsing string: %w", err)
 		}
 	}
 }
@@ -395,7 +396,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 		}
 		if mlEnd {
 			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentEnd)); errDiscard != nil {
-				return st, errDiscard
+				return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 			}
 			// Add the ending to the builder.
 			b.WriteString(string(s.config.MultilineCommentEnd))
@@ -422,7 +423,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 func (s *CommentScanner) nextRune() (rune, error) {
 	rn, _, err := s.reader.ReadRune()
 	if err != nil {
-		return rn, err
+		return rn, fmt.Errorf("reading rune: %w", err)
 	}
 	if rn == '\n' {
 		s.line++
@@ -454,9 +455,9 @@ func (s *CommentScanner) isLineEnd() (bool, error) {
 }
 
 func (s *CommentScanner) peekEqual(val []rune) (bool, error) {
-	runes, err := s.reader.Peek(len(val))
+	r, err := s.reader.Peek(len(val))
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("reading rune: %w", err)
 	}
-	return utils.SliceEqual(runes, val), nil
+	return utils.SliceEqual(r, val), nil
 }
