@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scanner
+package utils
 
-func compareRunes(l, r []rune) bool {
+// SliceEqual returns true if the two slices are equal.
+func SliceEqual[T comparable](l, r []T) bool {
 	if len(l) != len(r) {
 		return false
 	}
