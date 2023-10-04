@@ -40,15 +40,17 @@ node_modules/.installed: package.json package-lock.json
 
 .PHONY: action
 action: node_modules/.installed ## Builds the action.
+	rm -rf lib
 	npm run build
 
 .PHONY: package
 package: action ## Builds the distribution package.
+	rm -rf dist
 	npm run package
 
 .PHONY: clean
 clean:
-	rm -rf dist lib node_modules
+	rm -rf lib node_modules coverage
 
 ## Tools
 #####################################################################
