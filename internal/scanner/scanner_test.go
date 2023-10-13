@@ -790,6 +790,91 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Puppet
+	{
+		name: "line_comments.pp",
+		src: `# file comment
+
+			# todo is a service
+			service { 'todo':
+			  name      => $service_name, # Random comment
+			  ensure    => running,
+			  enable    => true,
+			}
+		`,
+
+		config: "Puppet",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# todo is a service",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.pp",
+		src: `# file comment
+
+			# hello.txt
+			file { '/tmp/hello.txt':
+			  ensure  => file,
+			  content => "# some comment",
+			}
+		`,
+
+		config: "Puppet",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# hello.txt",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.pp",
+		src: `# file comment
+
+			# hello.txt
+			file { '/tmp/hello.txt':
+			  ensure  => file,
+			  content => "\"# some comment",
+			}
+		`,
+
+		config: "Puppet",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# hello.txt",
+				line: 3,
+			},
+		},
+	},
+
 	// Haskell
 	{
 		name: "line_comments.hs",

@@ -267,6 +267,15 @@ PHP:
     - start: "'"
       end: "'"
       escape: backslash
+Puppet:
+  line_comment_start: ["#"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
 Python:
   line_comment_start: ["#"]
   multiline_comment:

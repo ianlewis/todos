@@ -1,6 +1,6 @@
 # Supported Languages
 
-36 languages are currently supported.
+37 languages are currently supported.
 
 | File type     | Supported comments |
 | ------------- | ------------------ |
@@ -25,7 +25,8 @@
 | Makefile      | `#`                |
 | Objective-C   | `//`, `/* */`      |
 | PHP           | `#`, `//`, `/* */` |
-| Perl          | `#`                |
+| Perl          | `#`, `= =cut`      |
+| Puppet        | `#`                |
 | Python        | `#`, `""" """`     |
 | R             | `#`                |
 | Ruby          | `#`, `=begin =end` |
