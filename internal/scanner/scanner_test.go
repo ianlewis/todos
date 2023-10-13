@@ -1208,6 +1208,102 @@ var scannerTestCases = []*struct {
 			},
 		},
 	},
+	{
+		name: "multi_line.rs",
+		src: `# file comment
+
+=begin
+TODO is a function.
+=end
+
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`,
+		config: "Ruby",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "=begin\nTODO is a function.\n=end",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 8,
+			},
+		},
+	},
+	{
+		name: "multi_line_not_line_start.rs",
+		src: `# file comment
+
+	=begin
+TODO is a function.
+=end
+
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`,
+		config: "Ruby",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# Random comment",
+				line: 8,
+			},
+		},
+	},
+	{
+		name: "multi_line_end.rs",
+		src: `# file comment
+
+=begin
+TODO is a function.
+	=end
+=end
+
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`,
+		config: "Ruby",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "=begin\nTODO is a function.\n\t=end\n=end",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 9,
+			},
+		},
+	},
 
 	// Rust
 	{

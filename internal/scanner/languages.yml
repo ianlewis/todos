@@ -243,10 +243,10 @@ Objective-C:
       escape: backslash
 Perl:
   line_comment_start: ["#"]
-  # TODO(#665): = must be at the start of a line.
-  # multiline_comment:
-  #   start: "="
-  #   end: "=cut"
+  multiline_comment:
+    start: "="
+    end: "=cut"
+    at_line_start: true
   strings:
     # TODO(#357): Perl supports strings with any delimiter.
     - start: '"'
@@ -291,9 +291,9 @@ R:
 Ruby:
   line_comment_start: ["#"]
   multiline_comment:
-    # TODO(#665): = must be at the start of a line.
     start: "=begin"
     end: "=end"
+    at_line_start: true
   strings:
     - start: '"'
       end: '"'
