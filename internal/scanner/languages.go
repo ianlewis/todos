@@ -26,8 +26,9 @@ var languagesRaw []byte
 
 // MultilineCommentConfig describes multi-line comments.
 type MultilineCommentConfig struct {
-	Start string `yaml:"start,omitempty"`
-	End   string `yaml:"end,omitempty"`
+	Start       string `yaml:"start,omitempty"`
+	End         string `yaml:"end,omitempty"`
+	AtLineStart bool   `yaml:"at_line_start,omitempty"`
 }
 
 var (

@@ -53,10 +53,11 @@ type stringConfig struct {
 
 // config is configuration for a generic comment scanner.
 type config struct {
-	LineCommentStart      [][]rune
-	MultilineCommentStart []rune
-	MultilineCommentEnd   []rune
-	Strings               []stringConfig
+	LineCommentStart            [][]rune
+	MultilineCommentStart       []rune
+	MultilineCommentEnd         []rune
+	MultilineCommentAtLineStart bool
+	Strings                     []stringConfig
 }
 
 func convertConfig(c *Config) *config {
@@ -64,6 +65,7 @@ func convertConfig(c *Config) *config {
 	c2.LineCommentStart = stringsToRunes(c.LineCommentStart)
 	c2.MultilineCommentStart = []rune(c.MultilineComment.Start)
 	c2.MultilineCommentEnd = []rune(c.MultilineComment.End)
+	c2.MultilineCommentAtLineStart = c.MultilineComment.AtLineStart
 	for i := range c.Strings {
 		c2.Strings = append(c2.Strings, stringConfig{
 			Start:      []rune(c.Strings[i].Start),
@@ -189,6 +191,10 @@ type CommentScanner struct {
 	// state is the current state-machine state.
 	state state
 
+	// atLineStart indicates whether the next character is at the start of the
+	// line.
+	atLineStart bool
+
 	// line is the current line in the input.
 	line int
 
@@ -263,13 +269,15 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 				return &stateLineComment{}, nil
 			}
 
-			// Discard the opening. It will be added by processMultilineComment.
-			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
-				return st, fmt.Errorf("parsing code: %w", errDiscard)
+			if !s.config.MultilineCommentAtLineStart || s.atLineStart {
+				// Discard the opening. It will be added by processMultilineComment.
+				if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
+					return st, fmt.Errorf("parsing code: %w", errDiscard)
+				}
+				return &stateMultilineComment{
+					line: s.line,
+				}, nil
 			}
-			return &stateMultilineComment{
-				line: s.line,
-			}, nil
 		}
 
 		// Check for string
@@ -394,7 +402,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 		if err != nil {
 			return st, err
 		}
-		if mlEnd {
+		if mlEnd && (!s.config.MultilineCommentAtLineStart || s.atLineStart) {
 			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentEnd)); errDiscard != nil {
 				return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 			}
@@ -427,6 +435,9 @@ func (s *CommentScanner) nextRune() (rune, error) {
 	}
 	if rn == '\n' {
 		s.line++
+		s.atLineStart = true
+	} else {
+		s.atLineStart = false
 	}
 	return rn, nil
 }
