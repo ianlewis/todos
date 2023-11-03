@@ -98,6 +98,7 @@ linters-settings:
           - "github.com/gobwas/glob"
           - "github.com/google/go-github"
           - "github.com/ianlewis/linguist"
+          - "github.com/ianlewis/runeio"
           - "github.com/saintfish/chardet"
           - "github.com/urfave/cli/v2"
           - "sigs.k8s.io/release-utils/version"
