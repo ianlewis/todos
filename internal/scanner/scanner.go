@@ -26,10 +26,10 @@ import (
 	"sync"
 
 	"github.com/ianlewis/linguist"
+	"github.com/ianlewis/runeio"
 	"github.com/saintfish/chardet"
 	"golang.org/x/text/encoding/ianaindex"
 
-	"github.com/ianlewis/todos/internal/runes"
 	"github.com/ianlewis/todos/internal/utils"
 )
 
@@ -174,7 +174,7 @@ func New(r io.Reader, c *Config) *CommentScanner {
 	return &CommentScanner{
 		originalConfig: c,
 		config:         convertConfig(c),
-		reader:         runes.NewReader(bufio.NewReader(r)),
+		reader:         runeio.NewReader(bufio.NewReader(r)),
 
 		// Starting state
 		state: &stateCode{},
@@ -184,7 +184,7 @@ func New(r io.Reader, c *Config) *CommentScanner {
 
 // CommentScanner is a generic code comment scanner.
 type CommentScanner struct {
-	reader         *runes.RuneReader
+	reader         *runeio.RuneReader
 	originalConfig *Config
 	config         *config
 
