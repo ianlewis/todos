@@ -14,6 +14,8 @@
 
 import * as fs from "fs/promises";
 
+import * as core from "@actions/core";
+
 import YAML from "yaml";
 
 export interface Config {
@@ -25,9 +27,13 @@ export async function readConfig(configPath: string): Promise<Config> {
   try {
     contents = await fs.readFile(configPath, { encoding: "utf8" });
   } catch (err) {
+    core.debug(`error reading \"${configPath}\": ${err}`);
     return {};
   }
 
   const config: Config = YAML.parse(contents);
+  if (!config) {
+    return {};
+  }
   return config;
 }
