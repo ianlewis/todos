@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support for [Emacs Lisp](https://www.gnu.org/software/emacs/), and
-  [Puppet manifests](https://www.puppet.com/docs/puppet/8/puppet_language) was added.
+- Support for [Emacs Lisp](https://www.gnu.org/software/emacs/), [Puppet
+  manifests](https://www.puppet.com/docs/puppet/8/puppet_language), and [Visual
+  Basic](https://learn.microsoft.com/en-us/dotnet/visual-basic/) was added.
 - Support for recognizing multi-line comments only at the beginning of a line
   (Ruby, Perl) was added.
 
