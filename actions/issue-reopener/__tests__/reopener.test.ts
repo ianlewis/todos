@@ -572,6 +572,14 @@ describe("labelMatch", () => {
     expect(num).toBe(123);
   });
 
+  it("github url with spaces", async () => {
+    let num = reopener.matchLabel(
+      " \thttps://github.com/owner/repo/issues/123  ",
+      {},
+    );
+    expect(num).toBe(123);
+  });
+
   it("github url no scheme", async () => {
     let num = reopener.matchLabel("github.com/owner/repo/issues/123", {});
     expect(num).toBe(123);

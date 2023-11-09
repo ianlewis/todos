@@ -58,7 +58,7 @@ export class TODOIssue {
 }
 
 const labelMatch = new RegExp(
-  "^s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)s*$",
+  "^\\s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)\\s*$",
 );
 
 // matchLabel matches the label and returns the GitHub issue number or -1 if
