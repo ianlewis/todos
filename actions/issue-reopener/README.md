@@ -44,12 +44,12 @@ jobs:
 
 ## Inputs
 
-| Name        | Required | Default            | Description                                                                |
-| ----------- | -------- | ------------------ | -------------------------------------------------------------------------- |
-| path        | No       | `github.workspace` | The root path of the source code to search.                                |
-| token       | No       | `github.token`     | The GitHub token to use. This token must have `issues: write` permissions. |
-| dry-run     | No       | `false`            | If true, issues are only output to logs and not actually reopened.         |
-| config-path | No       | `.todos.yml`       | Path to the todos config file.                                             |
+| Name        | Required | Default                      | Description                                                                |
+| ----------- | -------- | ---------------------------- | -------------------------------------------------------------------------- |
+| path        | No       | `github.workspace`           | The root path of the source code to search.                                |
+| token       | No       | `github.token`               | The GitHub token to use. This token must have `issues: write` permissions. |
+| dry-run     | No       | `false`                      | If true, issues are only output to logs and not actually reopened.         |
+| config-path | No       | `.github/issue-reopener.yml` | Path to the config file.                                                   |
 
 ## Outputs
 
@@ -57,7 +57,7 @@ There are currently no outputs.
 
 ## Configuration
 
-A configuration file in YAML format can added to your repository.
+An optional configuration file in YAML format can added to your repository.
 
 ### vanityURLs
 
