@@ -167,6 +167,14 @@ yamllint: ## Runs the yamllint linter.
 		fi; \
 		yamllint --strict -c .yamllint.yaml . $$extraargs
 
+## Documentation
+#####################################################################
+
+SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.yml ## Supported languages documentation.
+	@set -e;\
+		go mod vendor; \
+		go run ./internal/cmd/genlangdocs | ./node_modules/.bin/prettier --parser markdown > $@
+
 ## Maintenance
 #####################################################################
 

@@ -412,6 +412,18 @@ Unix Assembly:
 #     - start: "'"
 #       end: "'"
 #       escape: backslash
+VBA:
+  line_comment_start: ["'"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+Visual Basic .NET:
+  line_comment_start: ["'"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
 XML:
   multiline_comment:
     start: "<!--"

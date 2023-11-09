@@ -700,7 +700,7 @@ var scannerTestCases = []*struct {
 		src: `#!/usr/bin/env groovy
 			// package comment
 
-			z = ''' 
+			z = '''
 			// TODO is a function.
 			'''
 
@@ -1754,62 +1754,115 @@ TODO is a function.
 		},
 	},
 
+	// VBA
+	{
+		name: "line_comments.vba",
+		src: `' A "Hello, World!" program in Visual Basic.
+Module Hello
+  Sub Main()
+      MsgBox("Hello, World!") ' Display message on computer screen.
+  End Sub
+End Module`,
+		config: "VBA",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "' A \"Hello, World!\" program in Visual Basic.",
+				line: 1,
+			},
+			{
+				text: "' Display message on computer screen.",
+				line: 4,
+			},
+		},
+	},
+
+	// Visual Basic .NET
+	{
+		name: "line_comments.vba",
+		src: `' A "Hello, World!" program in Visual Basic.
+Imports System 'System is a Namespace
+Module Hello_Program
+    Sub Main()
+        Console.WriteLine("Hello, Welcome to the world of VB.NET")
+        Console.WriteLine("Press any key to continue...")
+        Console.ReadKey()
+    End Sub
+End Module`,
+		config: "Visual Basic .NET",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "' A \"Hello, World!\" program in Visual Basic.",
+				line: 1,
+			},
+			{
+				text: "'System is a Namespace",
+				line: 2,
+			},
+		},
+	},
+
 	// TODO(#460): Support Vim Script
 	// {
-	// 	name: "line_comments.vim",
-	// 	src: `" file comment
+	//	name: "line_comments.vim",
+	//	src: `" file comment
 
-	// 		" TODO is a function.
-	// 		function TODO()
-	// 			return "Hello" " Random comment
-	// 		endfunction
-	// 		" extra comment`,
-	// 	config: "Vim Script",
-	// 	comments: []struct {
-	// 		text string
-	// 		line int
-	// 	}{
-	// 		{
-	// 			text: "\" file comment",
-	// 			line: 1,
-	// 		},
-	// 		{
-	// 			text: "\" TODO is a function.",
-	// 			line: 3,
-	// 		},
-	// 		{
-	// 			text: "\" Random comment",
-	// 			line: 5,
-	// 		},
-	// 		{
-	// 			text: "\" extra comment",
-	// 			line: 7,
-	// 		},
-	// 	},
+	//		" TODO is a function.
+	//		function TODO()
+	//			return "Hello" " Random comment
+	//		endfunction
+	//		" extra comment`,
+	//	config: "Vim Script",
+	//	comments: []struct {
+	//		text string
+	//		line int
+	//	}{
+	//		{
+	//			text: "\" file comment",
+	//			line: 1,
+	//		},
+	//		{
+	//			text: "\" TODO is a function.",
+	//			line: 3,
+	//		},
+	//		{
+	//			text: "\" Random comment",
+	//			line: 5,
+	//		},
+	//		{
+	//			text: "\" extra comment",
+	//			line: 7,
+	//		},
+	//	},
 	// },
 	// {
-	// 	name: "escaped_string.vim",
-	// 	src: `" module comment
+	//	name: "escaped_string.vim",
+	//	src: `" module comment
 
-	// 		" TODO is a function
-	// 		function TODO()
-	// 			return "\" Random comment"
-	// 		endfunction
-	// 		`,
-	// 	config: "Vim Script",
-	// 	comments: []struct {
-	// 		text string
-	// 		line int
-	// 	}{
-	// 		{
-	// 			text: "\" module comment",
-	// 			line: 1,
-	// 		},
-	// 		{
-	// 			text: "\" TODO is a function",
-	// 			line: 3,
-	// 		},
-	// 	},
+	//		" TODO is a function
+	//		function TODO()
+	//			return "\" Random comment"
+	//		endfunction
+	//		`,
+	//	config: "Vim Script",
+	//	comments: []struct {
+	//		text string
+	//		line int
+	//	}{
+	//		{
+	//			text: "\" module comment",
+	//			line: 1,
+	//		},
+	//		{
+	//			text: "\" TODO is a function",
+	//			line: 3,
+	//		},
+	//	},
 	// },
 }
 
