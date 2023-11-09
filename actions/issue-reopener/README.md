@@ -44,12 +44,33 @@ jobs:
 
 ## Inputs
 
-| Name    | Required | Default            | Description                                                                |
-| ------- | -------- | ------------------ | -------------------------------------------------------------------------- |
-| path    | No       | `github.workspace` | The root path of the source code to search.                                |
-| token   | No       | `github.token`     | The GitHub token to use. This token must have `issues: write` permissions. |
-| dry-run | No       | false              | If true, issues are only output to logs and not actually reopened.         |
+| Name        | Required | Default                      | Description                                                                |
+| ----------- | -------- | ---------------------------- | -------------------------------------------------------------------------- |
+| path        | No       | `github.workspace`           | The root path of the source code to search.                                |
+| token       | No       | `github.token`               | The GitHub token to use. This token must have `issues: write` permissions. |
+| dry-run     | No       | `false`                      | If true, issues are only output to logs and not actually reopened.         |
+| config-path | No       | `.github/issue-reopener.yml` | Path to an optional [config file](#configuration).                         |
 
 ## Outputs
 
 There are currently no outputs.
+
+## Configuration
+
+An optional configuration file in YAML format can added to your repository.
+
+### vanityURLs
+
+Some projects use a custom vanity URL for issues. `vanityURLs` is a list of
+[`RegExp`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
+values used to match URLs and extract a GitHub issue number. The issue number
+must be extracted with a
+[named capturing group](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Named_capturing_group)
+named "id".
+
+Example:
+
+```yaml
+vanityURLs:
+  - "^\\s*(https?://)?golang.org/issues/(?<id>[0-9]+)\\s*$",
+```

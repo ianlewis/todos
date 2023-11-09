@@ -79,9 +79,9 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
-      0,
-    );
+    await expect(
+      reopener.getTODOIssues(workspacePath, {}),
+    ).resolves.toHaveLength(0);
   });
 
   it("skips non-match", async () => {
@@ -107,9 +107,9 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
-      0,
-    );
+    await expect(
+      reopener.getTODOIssues(workspacePath, {}),
+    ).resolves.toHaveLength(0);
   });
 
   it("skips links to other repos", async () => {
@@ -135,9 +135,9 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
-      0,
-    );
+    await expect(
+      reopener.getTODOIssues(workspacePath, {}),
+    ).resolves.toHaveLength(0);
   });
 
   it("handles malformed url", async () => {
@@ -163,9 +163,9 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    await expect(reopener.getTODOIssues(workspacePath)).resolves.toHaveLength(
-      0,
-    );
+    await expect(
+      reopener.getTODOIssues(workspacePath, {}),
+    ).resolves.toHaveLength(0);
   });
 
   it("matches issue number only", async () => {
@@ -191,7 +191,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    let p = reopener.getTODOIssues(workspacePath);
+    let p = reopener.getTODOIssues(workspacePath, {});
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
 
@@ -223,7 +223,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    let p = reopener.getTODOIssues(workspacePath);
+    let p = reopener.getTODOIssues(workspacePath, {});
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
 
@@ -255,7 +255,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    let p = reopener.getTODOIssues(workspacePath);
+    let p = reopener.getTODOIssues(workspacePath, {});
     await expect(p).resolves.toHaveLength(1);
     let issues = await p;
 
@@ -287,7 +287,7 @@ describe("getTODOIssues", () => {
       stderr: "",
     });
 
-    let p = reopener.getTODOIssues(workspacePath);
+    let p = reopener.getTODOIssues(workspacePath, {});
     await expect(p).resolves.toHaveLength(2);
     let issues = await p;
 
@@ -323,9 +323,9 @@ describe("getTODOIssues", () => {
       stderr: "ERROR",
     });
 
-    await expect(reopener.getTODOIssues(workspacePath)).rejects.toBeInstanceOf(
-      reopener.ReopenError,
-    );
+    await expect(
+      reopener.getTODOIssues(workspacePath, {}),
+    ).rejects.toBeInstanceOf(reopener.ReopenError);
   });
 
   it("handles checkout in sub-dir", async () => {
@@ -353,7 +353,7 @@ describe("getTODOIssues", () => {
     });
 
     await expect(
-      reopener.getTODOIssues(path.join(repoRoot, "path/to")),
+      reopener.getTODOIssues(path.join(repoRoot, "path/to"), {}),
     ).resolves.toHaveLength(1);
 
     expect(exec.getExecOutput).toBeCalledWith(
@@ -560,5 +560,74 @@ describe("reopenIssues", () => {
     expect(issues.createComment).toHaveBeenCalledTimes(2);
 
     expect(issues.update).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("labelMatch", () => {
+  it("github url", async () => {
+    let num = reopener.matchLabel(
+      "https://github.com/owner/repo/issues/123",
+      {},
+    );
+    expect(num).toBe(123);
+  });
+
+  it("github url with spaces", async () => {
+    let num = reopener.matchLabel(
+      " \thttps://github.com/owner/repo/issues/123  ",
+      {},
+    );
+    expect(num).toBe(123);
+  });
+
+  it("github url no scheme", async () => {
+    let num = reopener.matchLabel("github.com/owner/repo/issues/123", {});
+    expect(num).toBe(123);
+  });
+
+  it("github url different repo", async () => {
+    let num = reopener.matchLabel("github.com/owner/other/issues/123", {});
+    expect(num).toBe(-1);
+  });
+
+  it("github url different repo", async () => {
+    let num = reopener.matchLabel("github.com/owner/other/issues/123", {});
+    expect(num).toBe(-1);
+  });
+
+  it("num only", async () => {
+    let num = reopener.matchLabel("123", {});
+    expect(num).toBe(123);
+  });
+
+  it("num with #", async () => {
+    let num = reopener.matchLabel("#123", {});
+    expect(num).toBe(123);
+  });
+
+  it("no match", async () => {
+    let num = reopener.matchLabel("no match", {});
+    expect(num).toBe(-1);
+  });
+
+  it("vanity url", async () => {
+    let num = reopener.matchLabel("golang.org/issues/123", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+)$"],
+    });
+    expect(num).toBe(123);
+  });
+
+  it("vanity url no match", async () => {
+    let num = reopener.matchLabel("golang.org/issues", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+)$"],
+    });
+    expect(num).toBe(-1);
+  });
+
+  it("vanity url error", async () => {
+    let num = reopener.matchLabel("golang.org/issues/123", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+$"],
+    });
+    expect(num).toBe(-1);
   });
 });
