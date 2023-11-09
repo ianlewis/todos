@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Basic](https://learn.microsoft.com/en-us/dotnet/visual-basic/) was added.
 - Support for recognizing multi-line comments only at the beginning of a line
   (Ruby, Perl) was added.
+- Added support for [vanity urls](actions/issue-reopener/README.md#vanityurls)
+  to the issue-reopener action.
 
 ## [0.6.0] - 2023-09-23
 
