@@ -76,11 +76,7 @@ export function matchLabel(label: string, conf: config.Config): number {
       return -1;
     }
 
-    if (match[5]) {
-      return Number(match[5]);
-    }
-
-    return -1;
+    return Number(match[5]);
   }
 
   // Try vanity urls.

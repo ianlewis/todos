@@ -562,3 +562,64 @@ describe("reopenIssues", () => {
     expect(issues.update).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("labelMatch", () => {
+  it("github url", async () => {
+    let num = reopener.matchLabel(
+      "https://github.com/owner/repo/issues/123",
+      {},
+    );
+    expect(num).toBe(123);
+  });
+
+  it("github url no scheme", async () => {
+    let num = reopener.matchLabel("github.com/owner/repo/issues/123", {});
+    expect(num).toBe(123);
+  });
+
+  it("github url different repo", async () => {
+    let num = reopener.matchLabel("github.com/owner/other/issues/123", {});
+    expect(num).toBe(-1);
+  });
+
+  it("github url different repo", async () => {
+    let num = reopener.matchLabel("github.com/owner/other/issues/123", {});
+    expect(num).toBe(-1);
+  });
+
+  it("num only", async () => {
+    let num = reopener.matchLabel("123", {});
+    expect(num).toBe(123);
+  });
+
+  it("num with #", async () => {
+    let num = reopener.matchLabel("#123", {});
+    expect(num).toBe(123);
+  });
+
+  it("no match", async () => {
+    let num = reopener.matchLabel("no match", {});
+    expect(num).toBe(-1);
+  });
+
+  it("vanity url", async () => {
+    let num = reopener.matchLabel("golang.org/issues/123", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+)$"],
+    });
+    expect(num).toBe(123);
+  });
+
+  it("vanity url no match", async () => {
+    let num = reopener.matchLabel("golang.org/issues", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+)$"],
+    });
+    expect(num).toBe(-1);
+  });
+
+  it("vanity url error", async () => {
+    let num = reopener.matchLabel("golang.org/issues/123", {
+      vanityURLs: ["^golang.org/issues/(?<id>[0-9]+$"],
+    });
+    expect(num).toBe(-1);
+  });
+});
