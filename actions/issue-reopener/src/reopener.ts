@@ -83,7 +83,8 @@ export function matchLabel(label: string, conf: config.Config): number {
     return -1;
   }
 
-  // TODO: Try vanity urls.
+  // TODO(#1017): Try vanity urls.
+  core.debug(`Vanity URLs: ${conf.vanityURLs}`);
 
   return -1;
 }
@@ -93,8 +94,6 @@ export async function getTODOIssues(
   wd: string,
   conf: config.Config,
 ): Promise<TODOIssue[]> {
-  const repo = github.context.repo;
-
   const todosPath = await verifier.downloadAndVerifySLSA(
     `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64`,
     `https://github.com/ianlewis/todos/releases/download/${TODOS_VERSION}/todos-linux-amd64.intoto.jsonl`,
