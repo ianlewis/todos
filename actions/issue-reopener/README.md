@@ -49,7 +49,7 @@ jobs:
 | path        | No       | `github.workspace`           | The root path of the source code to search.                                |
 | token       | No       | `github.token`               | The GitHub token to use. This token must have `issues: write` permissions. |
 | dry-run     | No       | `false`                      | If true, issues are only output to logs and not actually reopened.         |
-| config-path | No       | `.github/issue-reopener.yml` | Path to the config file.                                                   |
+| config-path | No       | `.github/issue-reopener.yml` | Path to an optional [config file](#configuration).                         |
 
 ## Outputs
 
