@@ -83,16 +83,16 @@ export function matchLabel(label: string, conf: config.Config): number {
   core.debug(`Vanity URLs: ${conf.vanityURLs}`);
 
   if (conf && conf.vanityURLs) {
-    for (let urlMatch of conf.vanityURLs) {
+    for (const urlMatch of conf.vanityURLs) {
       try {
         // Match the url and get the 'id' named capture group.
-        let r = new RegExp(urlMatch);
-        let m = r.exec(label);
+        const r = new RegExp(urlMatch);
+        const m = r.exec(label);
         if (m && m.groups) {
           return Number(m.groups.id);
         }
       } catch (e) {
-        let msg = String(e);
+        const msg = String(e);
         core.warning(`error parsing vanity url regex: ${msg}`);
       }
     }

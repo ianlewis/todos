@@ -27,7 +27,7 @@ export async function readConfig(configPath: string): Promise<Config> {
   try {
     contents = await fs.readFile(configPath, { encoding: "utf8" });
   } catch (err) {
-    core.debug(`error reading \"${configPath}\": ${err}`);
+    core.debug(`error reading "${configPath}": ${err}`);
     return {};
   }
 

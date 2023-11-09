@@ -143,7 +143,7 @@ function readConfig(configPath) {
             contents = yield fs.readFile(configPath, { encoding: "utf8" });
         }
         catch (err) {
-            core.debug(`error reading \"${configPath}\": ${err}`);
+            core.debug(`error reading "${configPath}": ${err}`);
             return {};
         }
         const config = yaml_1.default.parse(contents);
@@ -296,7 +296,7 @@ class TODOIssue {
     }
 }
 exports.TODOIssue = TODOIssue;
-const labelMatch = new RegExp("^s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)s*$");
+const labelMatch = new RegExp("^\\s*((https?://)?github.com/(.+)/(.+)/issues/|#?)([0-9]+)\\s*$");
 // matchLabel matches the label and returns the GitHub issue number or -1 if
 // there is no match.
 function matchLabel(label, conf) {
@@ -313,17 +313,17 @@ function matchLabel(label, conf) {
     // Try vanity urls.
     core.debug(`Vanity URLs: ${conf.vanityURLs}`);
     if (conf && conf.vanityURLs) {
-        for (let urlMatch of conf.vanityURLs) {
+        for (const urlMatch of conf.vanityURLs) {
             try {
                 // Match the url and get the 'id' named capture group.
-                let r = new RegExp(urlMatch);
-                let m = r.exec(label);
+                const r = new RegExp(urlMatch);
+                const m = r.exec(label);
                 if (m && m.groups) {
                     return Number(m.groups.id);
                 }
             }
             catch (e) {
-                let msg = String(e);
+                const msg = String(e);
                 core.warning(`error parsing vanity url regex: ${msg}`);
             }
         }
