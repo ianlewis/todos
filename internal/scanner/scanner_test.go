@@ -1294,7 +1294,7 @@ var scannerTestCases = []*struct {
 		},
 	},
 	{
-		name: "multi_line.rs",
+		name: "multi_line.rb",
 		src: `# file comment
 
 =begin
@@ -1327,7 +1327,7 @@ TODO is a function.
 		},
 	},
 	{
-		name: "multi_line_not_line_start.rs",
+		name: "multi_line_not_line_start.rb",
 		src: `# file comment
 
 	=begin
@@ -1356,7 +1356,7 @@ TODO is a function.
 		},
 	},
 	{
-		name: "multi_line_end.rs",
+		name: "multi_line_end.rb",
 		src: `# file comment
 
 =begin
@@ -1905,8 +1905,10 @@ func BenchmarkCommentScanner(b *testing.B) {
 	for i := range scannerTestCases {
 		tc := scannerTestCases[i]
 		b.Run(tc.name, func(b *testing.B) {
-			s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
-			for s.Scan() {
+			for i := 0; i < b.N; i++ {
+				s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
+				for s.Scan() {
+				}
 			}
 		})
 	}
