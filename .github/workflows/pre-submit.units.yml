@@ -466,10 +466,10 @@ jobs:
 
           url=$(gh issue create -R "${GITHUB_REPOSITORY}" --title "issue-reopener-vanityURLs pre-submit test issue" --body "${body}")
           issue_no="${url##*/}"
-          echo "issue : ${issue_no}"
           gh issue close "${url}"
           mkdir test
           vanity_url="https://golang.org/issues/${issue_no}"
+          echo "${vanity_url}"
           echo "// TODO(${vanity_url}): still open" > test/test.go
           echo "vanityURLs:" >> test/issue-reopener.yml
           echo "- \"^\\\\s*(https?://)?golang.org/issues/(?<id>[0-9]+)\\\\s*$\"" >> test/issue-reopener.yml
