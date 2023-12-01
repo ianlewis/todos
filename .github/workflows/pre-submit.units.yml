@@ -439,3 +439,68 @@ jobs:
         run: |
           # Close the test issue.
           gh issue close "${ISSUE_URL}" || true
+
+  issue-reopener-vanityURLs:
+    runs-on: ubuntu-latest
+    # NOTE: Don't run on release since the binaries haven't been created yet.
+    if: ${{ ! startsWith(github.event.pull_request.title, 'chore(release):') }}
+    outputs:
+      issue-url: ${{ steps.create-issue.outputs.url }}
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - id: create-issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          body=""
+          if [ "${PR_URL}" != "" ]; then
+            body="Test issue for commit $PR ${PR_URL}"
+          else
+            body="Test issue for commit ${GITHUB_SHA}"
+          fi
+          body="${body}
+          - [Workflow run](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT})"
+
+          url=$(gh issue create -R "${GITHUB_REPOSITORY}" --title "issue-reopener-vanityURLs pre-submit test issue" --body "${body}")
+          issue_no="${url##*/}"
+          gh issue close "${url}"
+          mkdir test
+          vanity_url="https://golang.org/issues/${issue_no}"
+          echo "${vanity_url}"
+          echo "// TODO(${vanity_url}): still open" > test/test.go
+          echo "vanityURLs:" >> test/issue-reopener.yml
+          echo "- \"^\\\\s*(https?://)?golang.org/issues/(?<id>[0-9]+)\\\\s*$\"" >> test/issue-reopener.yml
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+      - uses: ./actions/issue-reopener/
+        with:
+          path: "test/"
+          config-path: "test/issue-reopener.yml"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_URL: ${{ steps.create-issue.outputs.url }}
+        run: |
+          # Ensure the issue was reopened.
+          state=$(gh issue view "${ISSUE_URL}" --json state | jq -r '.state')
+          [ "${state}" == "OPEN" ]
+
+          # Check that the body contains the right path
+          # NOTE: Need to get text output in order to get issue comments.
+          body=$(gh issue view "${ISSUE_URL}" -c)
+          [[ "${body}" == *"1. [test/test.go:1]"* ]]
+
+  issue-reopener-vanityURLs-cleanup:
+    runs-on: ubuntu-latest
+    needs: issue-reopener-vanityURLs
+    if: ${{ always() }}
+    permissions:
+      issues: write
+    steps:
+      - env:
+          ISSUE_URL: ${{ needs.issue-reopener-vanityURLs.outputs.issue-url }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Close the test issue.
+          gh issue close "${ISSUE_URL}" || true
