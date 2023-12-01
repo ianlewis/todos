@@ -17,6 +17,10 @@ github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328 h1:R1BTpM/BUQVTt
 github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328/go.mod h1:/85HhvK60Tqz5MWctYX/Ec7ScPeIDa/nJlIQkmOLIwc=
 github.com/ianlewis/runeio v1.0.0 h1:cHnpEWDvx0Q+LPHCUZSZgDlY9GOG/vMXPB0YV2o3pZ0=
 github.com/ianlewis/runeio v1.0.0/go.mod h1:hM+Z7HfSnXU2NNvh09Aphh0UMAftz5uwFbEz7baLNT4=
+github.com/ianlewis/runeio v1.1.0 h1:lErv0asDlK9bdQVyrE3Al0GLxWaaGohhbVlvu/kur7w=
+github.com/ianlewis/runeio v1.1.0/go.mod h1:hM+Z7HfSnXU2NNvh09Aphh0UMAftz5uwFbEz7baLNT4=
+github.com/ianlewis/runeio v1.1.1 h1:HOdj/6dytZFBAuK8FRjjrdLPcvs2jfX0ELEcNwHp6RM=
+github.com/ianlewis/runeio v1.1.1/go.mod h1:hM+Z7HfSnXU2NNvh09Aphh0UMAftz5uwFbEz7baLNT4=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a h1:gbdjhSslIoRRiSSLCP3kKuLmqAJGmhnPVhIyf6Dbw34=
