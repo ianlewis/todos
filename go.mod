@@ -7,7 +7,7 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
-	github.com/ianlewis/runeio v1.0.0
+	github.com/ianlewis/runeio v1.1.0
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/text v0.14.0
