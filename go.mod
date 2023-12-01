@@ -3,7 +3,7 @@ module github.com/ianlewis/todos
 go 1.20
 
 require (
-	github.com/fatih/color v1.15.0
+	github.com/fatih/color v1.16.0
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
@@ -22,12 +22,12 @@ require (
 	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rogpeppe/go-internal v1.10.1-0.20230524175051-ec119421bb97 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
