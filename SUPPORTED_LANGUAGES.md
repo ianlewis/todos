@@ -1,6 +1,6 @@
 # Supported Languages
 
-39 languages are currently supported.
+40 languages are currently supported.
 
 | File type         | Supported comments |
 | ----------------- | ------------------ |
@@ -21,6 +21,7 @@
 | JSON              | `//`, `#`, `/* */` |
 | Java              | `//`, `/* */`      |
 | JavaScript        | `//`, `/* */`      |
+| Kotlin            | `//`, `/* */`      |
 | Lua               | `--`, `--[[ --]]`  |
 | Makefile          | `#`                |
 | Objective-C       | `//`, `/* */`      |

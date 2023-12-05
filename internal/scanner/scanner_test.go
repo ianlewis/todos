@@ -761,6 +761,120 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Kotlin
+	{
+		name: "line_comments.kt",
+		src: `// file comment
+
+			// TODO is a function.
+			fun TODO() {
+				return // Random comment
+			}`,
+		config: "Kotlin",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "multi_line.kt",
+		src: `// file comment
+
+			/*
+			TODO is a function.
+			*/
+			fun TODO() {
+				return // Random comment
+			}
+			/* extra comment */`,
+		config: "Kotlin",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "/*\n\t\t\tTODO is a function.\n\t\t\t*/",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 7,
+			},
+			{
+				text: "/* extra comment */",
+				line: 9,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.kt",
+		src: `// file comment
+
+			// TODO is a function.
+			fun TODO():String {
+				String x = "// Random comment";
+				String y = "/* Random comment */";
+				String z = '// Random comment';
+				return x + y + z;
+			}`,
+		config: "Kotlin",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.kt",
+		src: `// file comment
+
+			// TODO is a function.
+			fun TODO():String {
+				String x = "\"// Random comment";
+				String y = '\'// Random comment';
+				return x + y;
+			}`,
+		config: "Kotlin",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+
 	// PHP
 	{
 		name: "line_comments.php",
