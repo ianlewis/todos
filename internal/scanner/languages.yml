@@ -208,6 +208,18 @@ JSON:
     - start: "'"
       end: "'"
       escape: backslash
+Kotlin:
+  line_comment_start: ["//"]
+  multiline_comment:
+    start: "/*"
+    end: "*/"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
 Lua:
   line_comment_start: ["--"]
   multiline_comment:
