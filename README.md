@@ -9,7 +9,7 @@
 
 Parse out TODOs, FIXMEs, BUGs and HACKs from your code.
 
-<p align="center"><img src="img/todos.png?raw=true"/></p>
+<p align="center"><img src="img/todos.png?raw=true" alt="todos screenshot"/></p>
 
 This repo contains the following tools for dealing with TODOs in code.
 
