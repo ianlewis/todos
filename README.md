@@ -104,7 +104,7 @@ In order for the comments to be more easily parsed keep in mind the following:
 
 See the [`todos` CLI] documentation for more info.
 
-### Re-open prematurely closed issues.
+### Re-open prematurely closed issues
 
 Sometimes issues get closed before all of the relevant code is updated. You can
 use `todos` to re-open issues where TODO comments that reference the issue
