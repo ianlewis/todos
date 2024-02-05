@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for [Kotlin](https://kotlinlang.org/) was added.
 
+### Removed
+
+- The `action/issue-reopener` GitHub Action was removed in favor of the
+  [`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener).
+
 ## [0.7.0] - 2023-12-01
 
 ### Added in 0.7.0

@@ -15,8 +15,6 @@ This repo contains the following tools for dealing with TODOs in code.
 
 - [`todos` CLI]: searches for TODO comments in code and prints them in various
   formats.
-- [`actions/issue-reopener`]: A GitHub Action to reopen issues that still have
-  TODO comments referencing them.
 
 See the [FAQ] for more info on the philosophy behind the project.
 
@@ -75,6 +73,11 @@ TODO comments can include some optional metadata. Here are some examples:
   // TODO(ianlewis): Do something.
   ```
 
+## Use Cases
+
+Tracking TODOs in code can help you have a cleaner and heathier code base. Here
+are some basic use cases.
+
 ### Finding TODOs in your code
 
 You can use the [`todos` CLI] to find TODO comments in your code and print them
@@ -99,9 +102,21 @@ In order for the comments to be more easily parsed keep in mind the following:
 - `TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can
   change this with the `--todo-types` flag.
 
-### Supported Languages
+See the [`todos` CLI] documentation for more info.
 
-See [SUPPORTED_LANGUAGES.md].
+### Re-open prematurely closed issues
+
+Sometimes issues get closed before all of the relevant code is updated. You can
+use `todos` to re-open issues where TODO comments that reference the issue
+still exist in the code with the
+[`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener)
+action.
+
+```golang
+// TODO(#123): Still needs work.
+```
+
+See [`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener) for more information.
 
 ## `todos` CLI tool
 
@@ -259,6 +274,10 @@ kubernetes$ todos -o json
 kubernetes$ # Get all the unique files with TODOs that Tim Hockin owns.
 kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uniq
 ```
+
+### Supported Languages
+
+See [SUPPORTED_LANGUAGES.md].
 
 ## Related projects
 

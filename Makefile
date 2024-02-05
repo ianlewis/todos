@@ -42,7 +42,7 @@ node_modules/.installed: package.json package-lock.json
 #####################################################################
 
 .PHONY: unit-test
-unit-test: go-test ts-test ## Runs all unit tests.
+unit-test: go-test ## Runs all unit tests.
 
 .PHONY: go-test
 go-test: ## Runs Go unit tests.
@@ -53,15 +53,6 @@ go-test: ## Runs Go unit tests.
 			extraargs="-v"; \
 		fi; \
 		go test $$extraargs -mod=vendor -race -coverprofile=coverage.out -covermode=atomic ./...
-
-.PHONY: ts-test
-ts-test: ## Run TypeScript unit tests.
-	@# Run unit tests for all TS actions where tests are found.
-	@set -e;\
-		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name __tests__ -type d | xargs dirname); \
-		for path in $$PATHS; do \
-			make -C $$path unit-test; \
-		done
 
 ## Benchmarking
 #####################################################################
@@ -107,7 +98,7 @@ autogen: ## Runs autogen on code files.
 #####################################################################
 
 .PHONY: lint
-lint: golangci-lint eslint yamllint actionlint markdownlint ## Run all linters.
+lint: golangci-lint yamllint actionlint markdownlint ## Run all linters.
 
 .PHONY: actionlint
 actionlint: ## Runs the actionlint linter.
@@ -125,14 +116,6 @@ actionlint: ## Runs the actionlint linter.
 		else \
 			actionlint $${files}; \
 		fi
-
-.PHONY: eslint
-eslint: ## Runs the eslint linter.
-	@set -e;\
-		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name package.json -type f | xargs dirname); \
-		for path in $$PATHS; do \
-			make -C $$path lint; \
-		done
 
 .PHONY: markdownlint
 markdownlint: node_modules/.installed ## Runs the markdownlint linter.
@@ -184,8 +167,3 @@ SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.yml #
 .PHONY: clean
 clean: ## Delete temporary files.
 	rm -rf vendor node_modules coverage.out
-	@set -e;\
-		PATHS=$$(find actions/ -not -path '*/node_modules/*' -name package.json -type f | xargs dirname); \
-		for path in $$PATHS; do \
-			make -C $$path clean; \
-		done
