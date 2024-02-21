@@ -76,6 +76,12 @@ func init() {
 
 // newTODOsApp returns a new `todos` application.
 func newTODOsApp() *cli.App {
+	defaultOutput := "default"
+	gha := os.Getenv("GITHUB_ACTIONS")
+	if gha == "true" {
+		defaultOutput = "github"
+	}
+
 	return &cli.App{
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
@@ -117,7 +123,7 @@ func newTODOsApp() *cli.App {
 			&cli.StringFlag{
 				Name:    "output",
 				Usage:   "output `TYPE` (default, github, json)",
-				Value:   "default",
+				Value:   defaultOutput,
 				Aliases: []string{"o"},
 			},
 			&cli.BoolFlag{

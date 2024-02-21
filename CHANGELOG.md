@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- The `--exclude-dir` option now ignores trailing path separators (#1463)
+- The `--exclude-dir` option now ignores trailing path separators ([#1463](https://github.com/ianlewis/todos/issues/1463))
+- The `--output` flag defaults to `github` when `todos` is run on GitHub
+  Actions ([#1459](https://github.com/ianlewis/todos/issues/1459)).
 
 ### Removed
 
