@@ -5,19 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.8.0] - 2024-02-21
 
-### Added
+### Added in 0.8.0
 
 - Support for [Kotlin](https://kotlinlang.org/) was added.
 
-### Fixed
+### Fixed in 0.8.0
 
 - The `--exclude-dir` option now ignores trailing path separators ([#1463](https://github.com/ianlewis/todos/issues/1463))
 - The `--output` flag defaults to `github` when `todos` is run on GitHub
   Actions ([#1459](https://github.com/ianlewis/todos/issues/1459)).
 
-### Removed
+### Removed in 0.8.0
 
 - The `action/issue-reopener` GitHub Action was removed in favor of the
   [`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener).
@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of `todos` CLI application.
 - Simple support for scanning directories for TODO/FIXME/BUG/HACK/XXX comments.
 
-[Unreleased]: https://github.com/ianlewis/todos/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/ianlewis/todos/compare/v0.8.0...HEAD
 [0.0.1]: https://github.com/ianlewis/todos/releases/tag/v0.0.1
 [0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0
 [0.2.0]: https://github.com/ianlewis/todos/releases/tag/v0.2.0
@@ -173,3 +173,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.5.0]: https://github.com/ianlewis/todos/releases/tag/v0.5.0
 [0.6.0]: https://github.com/ianlewis/todos/releases/tag/v0.6.0
 [0.7.0]: https://github.com/ianlewis/todos/releases/tag/v0.7.0
+[0.8.0]: https://github.com/ianlewis/todos/releases/tag/v0.8.0
