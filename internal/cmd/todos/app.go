@@ -306,7 +306,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	}
 
 	for _, gs := range c.StringSlice("exclude-dir") {
-		g, err := glob.Compile(gs)
+		g, err := glob.Compile(strings.TrimRight(gs, string(os.PathSeparator)))
 		if err != nil {
 			return nil, fmt.Errorf("%w: exclude-dir: %w", ErrFlagParse, err)
 		}
