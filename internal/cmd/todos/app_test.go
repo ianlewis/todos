@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"os"
 	"strings"
 	"testing"
 
@@ -489,6 +490,18 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Charset:         defaultCharset,
 				IncludeHidden:   true,
 				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?"), glob.MustCompile("foo")},
+				Paths:           []string{"."},
+			},
+		},
+		"exclude-dir-pathsep": {
+			args: []string{"--exclude-dir=exclude" + string(os.PathSeparator)},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:         defaultCharset,
+				IncludeHidden:   true,
+				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude")},
 				Paths:           []string{"."},
 			},
 		},
