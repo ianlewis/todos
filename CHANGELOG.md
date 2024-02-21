@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for [Kotlin](https://kotlinlang.org/) was added.
 
+### Fixed
+
+- The `--output` flag defaults to `github` when `todos` is run on GitHub
+  Actions (#1459).
+
 ### Removed
 
 - The `action/issue-reopener` GitHub Action was removed in favor of the
