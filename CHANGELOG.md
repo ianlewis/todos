@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for [Kotlin](https://kotlinlang.org/) was added.
 
+### Fixed
+
+- The `--exclude-dir` option now ignores trailing path separators (#1463)
+
 ### Removed
 
 - The `action/issue-reopener` GitHub Action was removed in favor of the
