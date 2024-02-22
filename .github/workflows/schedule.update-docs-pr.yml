@@ -1,0 +1,60 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions: {}
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - id: update-docs
+        run: |
+          old_versions=""
+          for old_ver in $(gh release list --json name,isLatest --jq '.[] | select(.isLatest == false) | .name'); do
+            old_ver_regex="${old_ver//./\\.}"
+            old_versions="${old_versions}\\|${old_ver_regex}"
+          done
+          old_versions="${old_versions:1}"
+
+          latest_ver=$(gh release list --exclude-drafts --exclude-pre-releases --json name,isLatest --jq '.[] | select(.isLatest == true) | .name')
+          sed_script="s/${old_versions}/${latest_ver}/g"
+
+          for md_file in $(git ls-files '*.md' '**/*.md' '*.markdown' '**/*.markdown'); do
+            if [[ "${md_file}" != "CHANGELOG.md" ]]; then
+              sed --in-place "${sed_script}" "${md_file}"
+            fi
+          done
+
+          git diff
+
+          echo "latest_ver=${latest_ver}" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@b1ddad2c994a25fbc81a28b3ec0e368bb2021c50 "v6.0.0"
+        with:
+          title: "docs: Update latest version to ${{ steps.update-docs.outputs.latest_ver }}"
+          body: ""
+          signoff: true
+          branch: "update-docs-${{ steps.update-docs.outputs.latest_ver }}"
+          delete-branch: true
