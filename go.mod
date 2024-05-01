@@ -9,7 +9,7 @@ require (
 	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
 	github.com/ianlewis/runeio v1.1.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
-	github.com/urfave/cli/v2 v2.27.1
+	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 	sigs.k8s.io/release-utils v0.7.7
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	golang.org/x/sys v0.14.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
