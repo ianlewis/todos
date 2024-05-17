@@ -1,6 +1,6 @@
 # Supported Languages
 
-40 languages are currently supported.
+42 languages are currently supported.
 
 | File type         | Supported comments |
 | ----------------- | ------------------ |
@@ -13,6 +13,8 @@
 | Dockerfile        | `#`                |
 | Emacs Lisp        | `;`                |
 | Erlang            | `%`                |
+| Fortran           | `!`                |
+| Fortran Free Form | `!`                |
 | Go                | `//`, `/* */`      |
 | Go Module         | `//`               |
 | Groovy            | `//`, `/* */`      |
