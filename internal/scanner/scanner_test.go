@@ -467,6 +467,68 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Fortran
+	{
+		name: "line_comments.f90",
+		src: `! file comment
+
+			! INPUT is a subroutine
+			SUBROUTINE INPUT(X, Y, Z)
+			REAL X,Y,Z
+			PRINT *,'ENTER THREE NUMBERS => '
+			READ *,X,Y,Z  ! Random comment
+			RETURN
+			END`,
+		config: "Fortran Free Form",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "! file comment",
+				line: 1,
+			},
+			{
+				text: "! INPUT is a subroutine",
+				line: 3,
+			},
+			{
+				text: "! Random comment",
+				line: 7,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.f90",
+		src: `! file comment
+
+			! INPUT is a subroutine
+			SUBROUTINE INPUT(X, Y, Z)
+			REAL X,Y,Z
+			PRINT *,'ENTER THREE NUMBERS ! => '
+			READ *,X,Y,Z  ! Random comment
+			RETURN
+			END`,
+		config: "Fortran Free Form",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "! file comment",
+				line: 1,
+			},
+			{
+				text: "! INPUT is a subroutine",
+				line: 3,
+			},
+			{
+				text: "! Random comment",
+				line: 7,
+			},
+		},
+	},
+
 	// Go
 	{
 		name: "line_comments.go",

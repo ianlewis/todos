@@ -103,6 +103,24 @@ Erlang:
     - start: "'"
       end: "'"
       escape: backslash
+Fortran:
+  line_comment_start: ["!"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: none
+    - start: "'"
+      end: "'"
+      escape: none
+Fortran Free Form:
+  line_comment_start: ["!"]
+  strings:
+    - start: '"'
+      end: '"'
+      escape: none
+    - start: "'"
+      end: "'"
+      escape: none
 Go:
   line_comment_start: ["//"]
   multiline_comment:
