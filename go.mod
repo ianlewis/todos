@@ -10,9 +10,9 @@ require (
 	github.com/ianlewis/runeio v1.1.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.15.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
-	sigs.k8s.io/release-utils v0.7.7
+	sigs.k8s.io/release-utils v0.8.2
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a // indirect
-	github.com/kr/pretty v0.3.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rogpeppe/go-internal v1.10.1-0.20230524175051-ec119421bb97 // indirect
@@ -28,6 +28,6 @@ require (
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
