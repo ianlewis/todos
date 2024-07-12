@@ -236,7 +236,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	}
 
 	// NOTE: go-enry seems to think .github is a vendor directory.
-	if !w.options.IncludeVendored && enry.IsVendor(strings.ReplaceAll(fullPath, ".github", "github")) {
+	if !w.options.IncludeVendored && enry.IsVendor(fullPath) {
 		return fs.SkipDir
 	}
 	return nil
