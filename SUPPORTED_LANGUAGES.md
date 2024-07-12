@@ -2,47 +2,47 @@
 
 42 languages are currently supported.
 
-| File type         | Supported comments |
-| ----------------- | ------------------ |
-| Assembly          | `;`, `/* */`       |
-| C                 | `//`, `/* */`      |
-| C#                | `//`, `/* */`      |
-| C++               | `//`, `/* */`      |
-| Clojure           | `;`                |
-| CoffeeScript      | `#`, `### ###`     |
-| Dockerfile        | `#`                |
-| Emacs Lisp        | `;`                |
-| Erlang            | `%`                |
-| Fortran           | `!`                |
-| Fortran Free Form | `!`                |
-| Go                | `//`, `/* */`      |
-| Go Module         | `//`               |
-| Groovy            | `//`, `/* */`      |
-| HTML              | `<!-- --!>`        |
-| Haskell           | `--`, `{- -}`      |
-| JSON              | `//`, `#`, `/* */` |
-| Java              | `//`, `/* */`      |
-| JavaScript        | `//`, `/* */`      |
-| Kotlin            | `//`, `/* */`      |
-| Lua               | `--`, `--[[ --]]`  |
-| Makefile          | `#`                |
-| Objective-C       | `//`, `/* */`      |
-| PHP               | `#`, `//`, `/* */` |
-| Perl              | `#`, `= =cut`      |
-| Puppet            | `#`                |
-| Python            | `#`, `""" """`     |
-| R                 | `#`                |
-| Ruby              | `#`, `=begin =end` |
-| Rust              | `//`, `/* */`      |
-| SQL               | `--`, `/* */`      |
-| Scala             | `//`, `/* */`      |
-| Shell             | `#`                |
-| Swift             | `//`, `/* */`      |
-| TOML              | `#`                |
-| TeX               | `%`                |
-| TypeScript        | `//`, `/* */`      |
-| Unix Assembly     | `;`, `/* */`       |
-| VBA               | `'`                |
-| Visual Basic .NET | `'`                |
-| XML               | `<!-- --!>`        |
-| YAML              | `#`                |
+| File type | Extension | Supported comments |
+| -- | -- | -- |
+| Assembly | `.asm`, `.a51`, `.i`, `.inc`, `.nas`, `.nasm` | `;`, `/* */` |
+| C | `.c`, `.cats`, `.h`, `.idc` | `//`, `/* */` |
+| C# | `.cs`, `.cake`, `.cs.pp`, `.csx`, `.linq` | `//`, `/* */` |
+| C++ | `.cpp`, `.c++`, `.cc`, `.cp`, `.cppm`, `.cxx`, `.h`, `.h++`, `.hh`, `.hpp`, `.hxx`, `.inc`, `.inl`, `.ino`, `.ipp`, `.ixx`, `.re`, `.tcc`, `.tpp`, `.txx` | `//`, `/* */` |
+| Clojure | `.clj`, `.bb`, `.boot`, `.cl2`, `.cljc`, `.cljs`, `.cljs.hl`, `.cljscm`, `.cljx`, `.hic` | `;` |
+| CoffeeScript | `.coffee`, `._coffee`, `.cake`, `.cjsx`, `.iced` | `#`, `### ###` |
+| Dockerfile | `.dockerfile` | `#` |
+| Emacs Lisp | `.el`, `.emacs`, `.emacs.desktop` | `;` |
+| Erlang | `.erl`, `.app`, `.app.src`, `.es`, `.escript`, `.hrl`, `.xrl`, `.yrl` | `%` |
+| Fortran | `.f`, `.f77`, `.for`, `.fpp` | `!` |
+| Fortran Free Form | `.f90`, `.f03`, `.f08`, `.f95` | `!` |
+| Go | `.go` | `//`, `/* */` |
+| Go Module |  | `//` |
+| Groovy | `.groovy`, `.grt`, `.gtpl`, `.gvy` | `//`, `/* */` |
+| HTML | `.html`, `.hta`, `.htm`, `.html.hl`, `.inc`, `.xht`, `.xhtml` | `<!-- --!>` |
+| Haskell | `.hs`, `.hs-boot`, `.hsc` | `--`, `{- -}` |
+| JSON | `.json`, `.4DForm`, `.4DProject`, `.avsc`, `.geojson`, `.gltf`, `.har`, `.ice`, `.JSON-tmLanguage`, `.jsonl`, `.mcmeta`, `.sarif`, `.tfstate`, `.tfstate.backup`, `.topojson`, `.webapp`, `.webmanifest`, `.yy`, `.yyp` | `//`, `#`, `/* */` |
+| Java | `.java`, `.jav`, `.jsh` | `//`, `/* */` |
+| JavaScript | `.js`, `._js`, `.bones`, `.cjs`, `.es`, `.es6`, `.frag`, `.gs`, `.jake`, `.javascript`, `.jsb`, `.jscad`, `.jsfl`, `.jslib`, `.jsm`, `.jspre`, `.jss`, `.jsx`, `.mjs`, `.njs`, `.pac`, `.sjs`, `.ssjs`, `.xsjs`, `.xsjslib` | `//`, `/* */` |
+| Kotlin | `.kt`, `.ktm`, `.kts` | `//`, `/* */` |
+| Lua | `.lua`, `.fcgi`, `.nse`, `.p8`, `.pd_lua`, `.rbxs`, `.rockspec`, `.wlua` | `--`, `--[[ --]]` |
+| Makefile | `.mak`, `.d`, `.make`, `.makefile`, `.mk`, `.mkfile` | `#` |
+| Objective-C | `.m`, `.h` | `//`, `/* */` |
+| PHP | `.php`, `.aw`, `.ctp`, `.fcgi`, `.inc`, `.php3`, `.php4`, `.php5`, `.phps`, `.phpt` | `#`, `//`, `/* */` |
+| Perl | `.pl`, `.al`, `.cgi`, `.fcgi`, `.perl`, `.ph`, `.plx`, `.pm`, `.psgi`, `.t` | `#`, `= =cut` |
+| Puppet | `.pp` | `#` |
+| Python | `.py`, `.cgi`, `.fcgi`, `.gyp`, `.gypi`, `.lmi`, `.py3`, `.pyde`, `.pyi`, `.pyp`, `.pyt`, `.pyw`, `.rpy`, `.spec`, `.tac`, `.wsgi`, `.xpy` | `#`, `""" """` |
+| R | `.r`, `.rd`, `.rsx` | `#` |
+| Ruby | `.rb`, `.builder`, `.eye`, `.fcgi`, `.gemspec`, `.god`, `.jbuilder`, `.mspec`, `.pluginspec`, `.podspec`, `.prawn`, `.rabl`, `.rake`, `.rbi`, `.rbuild`, `.rbw`, `.rbx`, `.ru`, `.ruby`, `.spec`, `.thor`, `.watchr` | `#`, `=begin =end` |
+| Rust | `.rs`, `.rs.in` | `//`, `/* */` |
+| SQL | `.sql`, `.cql`, `.ddl`, `.inc`, `.mysql`, `.prc`, `.tab`, `.udf`, `.viw` | `--`, `/* */` |
+| Scala | `.scala`, `.kojo`, `.sbt`, `.sc` | `//`, `/* */` |
+| Shell | `.sh`, `.bash`, `.bats`, `.cgi`, `.command`, `.fcgi`, `.ksh`, `.sh.in`, `.tmux`, `.tool`, `.trigger`, `.zsh`, `.zsh-theme` | `#` |
+| Swift | `.swift` | `//`, `/* */` |
+| TOML | `.toml` | `#` |
+| TeX | `.tex`, `.aux`, `.bbx`, `.cbx`, `.cls`, `.dtx`, `.ins`, `.lbx`, `.ltx`, `.mkii`, `.mkiv`, `.mkvi`, `.sty`, `.toc` | `%` |
+| TypeScript | `.ts`, `.cts`, `.mts` | `//`, `/* */` |
+| Unix Assembly | `.s`, `.ms` | `;`, `/* */` |
+| VBA | `.bas`, `.cls`, `.frm`, `.vba` | `'` |
+| Visual Basic .NET | `.vb`, `.vbhtml` | `'` |
+| XML | `.xml`, `.adml`, `.admx`, `.ant`, `.axaml`, `.axml`, `.builds`, `.ccproj`, `.ccxml`, `.clixml`, `.cproject`, `.cscfg`, `.csdef`, `.csl`, `.csproj`, `.ct`, `.depproj`, `.dita`, `.ditamap`, `.ditaval`, `.dll.config`, `.dotsettings`, `.filters`, `.fsproj`, `.fxml`, `.glade`, `.gml`, `.gmx`, `.grxml`, `.gst`, `.hzp`, `.iml`, `.ivy`, `.jelly`, `.jsproj`, `.kml`, `.launch`, `.mdpolicy`, `.mjml`, `.mm`, `.mod`, `.mojo`, `.mxml`, `.natvis`, `.ncl`, `.ndproj`, `.nproj`, `.nuspec`, `.odd`, `.osm`, `.pkgproj`, `.pluginspec`, `.proj`, `.props`, `.ps1xml`, `.psc1`, `.pt`, `.qhelp`, `.rdf`, `.res`, `.resx`, `.rs`, `.rss`, `.sch`, `.scxml`, `.sfproj`, `.shproj`, `.srdf`, `.storyboard`, `.sublime-snippet`, `.sw`, `.targets`, `.tml`, `.ts`, `.tsx`, `.typ`, `.ui`, `.urdf`, `.ux`, `.vbproj`, `.vcxproj`, `.vsixmanifest`, `.vssettings`, `.vstemplate`, `.vxml`, `.wixproj`, `.workflow`, `.wsdl`, `.wsf`, `.wxi`, `.wxl`, `.wxs`, `.x3d`, `.xacro`, `.xaml`, `.xib`, `.xlf`, `.xliff`, `.xmi`, `.xml.dist`, `.xmp`, `.xproj`, `.xsd`, `.xspec`, `.xul`, `.zcml` | `<!-- --!>` |
+| YAML | `.yml`, `.mir`, `.reek`, `.rviz`, `.sublime-syntax`, `.syntax`, `.yaml`, `.yaml-tmlanguage`, `.yaml.sed`, `.yml.mysql` | `#` |
