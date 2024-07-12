@@ -400,6 +400,42 @@ var testCases = []struct {
 		},
 	},
 	{
+		name: "vendor directory specified",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+			Paths:   []string{"vendor"},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
 		name: "vendored file processed",
 		files: []*testutils.File{
 			{
@@ -421,7 +457,6 @@ var testCases = []struct {
 			},
 			Charset:         "UTF-8",
 			IncludeVendored: true,
-			Paths:           []string{filepath.Join("vendor", "line_comments.go")},
 		},
 		expected: []*TODORef{
 			{
