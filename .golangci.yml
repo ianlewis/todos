@@ -95,9 +95,9 @@ linters-settings:
 
           # Dependencies.
           - "github.com/fatih/color"
+          - "github.com/go-enry/go-enry/v2"
           - "github.com/gobwas/glob"
           - "github.com/google/go-github"
-          - "github.com/ianlewis/linguist"
           - "github.com/ianlewis/runeio"
           - "github.com/saintfish/chardet"
           - "github.com/urfave/cli/v2"

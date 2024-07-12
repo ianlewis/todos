@@ -21,11 +21,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
-	"sync"
 
-	"github.com/ianlewis/linguist"
+	"github.com/go-enry/go-enry/v2"
 	"github.com/ianlewis/runeio"
 	"github.com/saintfish/chardet"
 	"golang.org/x/text/encoding/ianaindex"
@@ -39,10 +37,6 @@ var (
 
 	// errDecodeCharset is an error when decoding a charset.
 	errDecodeCharset = errors.New("decoding charset")
-
-	// linguistLock manages a global lock on lingist language detection which
-	// is not thread-safe.
-	linguistLock sync.Mutex
 )
 
 type stringConfig struct {
@@ -98,6 +92,11 @@ func FromFile(f *os.File, charset string) (*CommentScanner, error) {
 // FromBytes returns an appropriate CommentScanner for the given contents. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
 func FromBytes(fileName string, rawContents []byte, charset string) (*CommentScanner, error) {
+	// Ignore binary files.
+	if enry.IsBinary(rawContents) {
+		return nil, nil
+	}
+
 	if charset == "detect" {
 		// Detect the character set.
 		det := chardet.NewTextDetector()
@@ -133,30 +132,8 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	}
 
 	// Detect the programming language.
-	// NOTE: Linguist is not threadsafe so we protect it using a global lock.
-	linguistLock.Lock()
-	defer linguistLock.Unlock()
-
-	// TODO(#518): Use linguist to detect by file name
-	if linguist.ShouldIgnoreContents(decodedContents) {
-		return nil, nil
-	}
-
-	var lang string
-	// TODO(github.com/dayvonjersen/linguist/issues/13): Revert special case when TypeScript is detected properly.
-	if filepath.Ext(fileName) == ".ts" {
-		// Try to detect if this is a Qt translation file (XML format).
-		lang = linguist.LanguageByContents(decodedContents, nil)
-		if lang != "XML" {
-			lang = "TypeScript"
-		}
-	} else {
-		lang = linguist.LanguageByFilename(fileName)
-		if lang == "" {
-			lang = linguist.LanguageByContents(decodedContents, linguist.LanguageHints(fileName))
-		}
-	}
-	if lang == "" {
+	lang := enry.GetLanguage(fileName, decodedContents)
+	if lang == enry.OtherLanguage {
 		return nil, nil
 	}
 

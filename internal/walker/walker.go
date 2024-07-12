@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-enry/go-enry/v2"
 	"github.com/gobwas/glob"
-	"github.com/ianlewis/linguist"
 
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
@@ -227,15 +227,16 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		return fs.SkipDir
 	}
 
-	// NOTE: linguist only matches paths with a *nix path separators.
-	// TODO(github.com/ianlewis/linguist/issues/1): Update when linguist supports Windows.
+	// NOTE: linguist regexs only matches paths with a *nix path separators.
 	fullPath = strings.ReplaceAll(fullPath, string(os.PathSeparator), "/")
 
-	// NOTE: linguist only matches paths with a path separator at the end.
+	// NOTE: linguist regexs only matches paths with a path separator at the end.
 	if !strings.HasSuffix(fullPath, "/") {
 		fullPath += "/"
 	}
-	if !w.options.IncludeVendored && linguist.IsVendored(fullPath) {
+
+	// NOTE: go-enry seems to think .github is a vendor directory.
+	if !w.options.IncludeVendored && enry.IsVendor(strings.ReplaceAll(fullPath, ".github", "github")) {
 		return fs.SkipDir
 	}
 	return nil
