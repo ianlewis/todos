@@ -228,15 +228,15 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	}
 
 	// NOTE: linguist regexs only matches paths with a *nix path separators.
-	fullPath = strings.ReplaceAll(fullPath, string(os.PathSeparator), "/")
+	basePath := strings.ReplaceAll(filepath.Base(fullPath), string(os.PathSeparator), "/")
 
 	// NOTE: linguist regexs only matches paths with a path separator at the end.
-	if !strings.HasSuffix(fullPath, "/") {
-		fullPath += "/"
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
 	}
 
 	// NOTE: go-enry seems to think .github is a vendor directory.
-	if !w.options.IncludeVendored && enry.IsVendor(fullPath) {
+	if !w.options.IncludeVendored && enry.IsVendor(basePath) {
 		return fs.SkipDir
 	}
 	return nil
