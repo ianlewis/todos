@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/fatih/color v1.16.0
+	github.com/go-enry/go-enry/v2 v2.8.8
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
-	github.com/ianlewis/linguist v0.0.0-20220509081505-4e84ef081328
 	github.com/ianlewis/runeio v1.1.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.27.1
@@ -18,8 +18,8 @@ require (
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
+	github.com/go-enry/go-oniguruma v1.2.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jbrukh/bayesian v0.0.0-20200318221351-d726b684ca4a // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
