@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for [Fortran](https://fortran-lang.org/) was added.
 
+### Changed
+
+- Language detection has been updated. The language of some files may be
+  detected differently.
+- The `.github`, `.obsidian`, and `.teamcity` directories are now considered a
+  vendored directories and are skipped by default. The `vignettes` directory is
+  no longer considered a vendored directory.
+
 ## [0.8.0] - 2024-02-21
 
 ### Added in 0.8.0
