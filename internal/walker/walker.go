@@ -32,6 +32,8 @@ import (
 	"github.com/ianlewis/todos/internal/vendoring"
 )
 
+var errGit = errors.New("git")
+
 // GitUser is a git user (e.g. committer).
 type GitUser struct {
 	// Name is the git user.name.
@@ -342,32 +344,32 @@ func (w *TODOWalker) gitBlame(path string, lineNo int) (*GitUser, error) {
 	// Attempt to get the git committer of the change.
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errGit, err)
 	}
 
 	r, err := git.PlainOpenWithOptions(filepath.Dir(absPath), &git.PlainOpenOptions{
 		DetectDotGit: true,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errGit, err)
 	}
 
 	ref, err := r.Head()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errGit, err)
 	}
 
 	c, err := r.CommitObject(ref.Hash())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errGit, err)
 	}
 
 	br, err := git.Blame(c, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errGit, err)
 	}
 	if lineNo >= len(br.Lines) {
-		return nil, fmt.Errorf("invalid blame line no: %d", lineNo)
+		return nil, fmt.Errorf("%w: invalid blame line no: %d", errGit, lineNo)
 	}
 	blameLine := br.Lines[lineNo-1]
 	return &GitUser{
