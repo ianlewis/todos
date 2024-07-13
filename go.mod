@@ -3,7 +3,7 @@ module github.com/ianlewis/todos
 go 1.20
 
 require (
-	github.com/fatih/color v1.16.0
+	github.com/fatih/color v1.17.0
 	github.com/go-enry/go-enry/v2 v2.8.8
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
