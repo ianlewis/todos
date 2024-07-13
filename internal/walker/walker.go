@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-enry/go-enry/v2"
 	"github.com/gobwas/glob"
 
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
+	"github.com/ianlewis/todos/internal/vendoring"
 )
 
 // TODORef represents a TODO in a specific file.
@@ -236,7 +236,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	}
 
 	// NOTE: go-enry seems to think .github is a vendor directory.
-	if !w.options.IncludeVendored && enry.IsVendor(basePath) {
+	if !w.options.IncludeVendored && vendoring.IsVendor(basePath) {
 		return fs.SkipDir
 	}
 	return nil
