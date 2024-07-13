@@ -980,7 +980,7 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		},
 		Charset: "UTF-8",
 		// Override the handler to cause it to stop early.
-		TODOFunc: func(r *TODORef) error {
+		TODOFunc: func(_ *TODORef) error {
 			return fs.SkipAll
 		},
 	}
