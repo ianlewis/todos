@@ -50,7 +50,6 @@ func init() {
 	for _, s := range rawRegex {
 		switch {
 		case strings.HasPrefix(s, "^"):
-			//nolint:goconst // `(?:` doesn't need to be a constant.
 			startPrefix = append(startPrefix, `(?:`+strings.TrimPrefix(s, "^")+`)`)
 		case strings.HasPrefix(s, "(^|/)"):
 			slashPrefix = append(slashPrefix, `(?:`+strings.TrimPrefix(s, "(^|/)")+`)`)
