@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for [Fortran](https://fortran-lang.org/) was added.
+- Generated files are now ignored by default. The option `--include-generated`
+  was added to allow generated files to be scanned for TODOs.
 
 ## [0.8.0] - 2024-02-21
 

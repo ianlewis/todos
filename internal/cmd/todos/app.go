@@ -111,8 +111,15 @@ func newTODOsApp() *cli.App {
 				DisableDefaultText: true,
 			},
 			&cli.BoolFlag{
+				Name:               "include-generated",
+				Usage:              "include generated files",
+				Value:              false,
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
 				Name:               "include-vendored",
 				Usage:              "include vendored directories",
+				Value:              false,
 				DisableDefaultText: true,
 			},
 			&cli.StringFlag{
@@ -319,6 +326,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 		o.ExcludeDirGlobs = append(o.ExcludeDirGlobs, g)
 	}
 
+	o.IncludeGenerated = c.Bool("include-generated")
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
 	o.IncludeVendored = c.Bool("include-vendored")
