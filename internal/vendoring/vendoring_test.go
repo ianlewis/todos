@@ -19,6 +19,8 @@ import (
 )
 
 func TestIsVendor(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name     string
 		path     string
@@ -52,7 +54,11 @@ func TestIsVendor(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got, want := IsVendor(tc.path), tc.expected; got != want {
 				t.Errorf("IsVendor(%q); got: %v, want: %v", tc.path, got, want)
 			}
