@@ -239,6 +239,104 @@ var testCases = []struct {
 			},
 		},
 	},
+
+	{
+		name: "generated file skipped",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("package-lock.json"),
+				Contents: []byte(`{
+				  "name": "example", // TODO: name
+				  "version": "1.0.0",
+				  "lockfileVersion": 1,
+				  "dependencies": {}
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+
+			// Ensure it's not skipped for another reason.
+			IncludeHidden:   true,
+			IncludeVendored: true,
+
+			Charset: "UTF-8",
+		},
+		expected: nil,
+	},
+	{
+		name: "generated file specified",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("package-lock.json"),
+				Contents: []byte(`{
+				  "name": "example", // TODO: name
+				  "version": "1.0.0",
+				  "lockfileVersion": 1,
+				  "dependencies": {}
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+
+			Charset: "UTF-8",
+			Paths:   []string{filepath.Join("package-lock.json")},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("package-lock.json"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: name",
+					Message:     "name",
+					Line:        2,
+					CommentLine: 2,
+				},
+			},
+		},
+	},
+	{
+		name: "generated file processed",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("package-lock.json"),
+				Contents: []byte(`{
+				  "name": "example", // TODO: name
+				  "version": "1.0.0",
+				  "lockfileVersion": 1,
+				  "dependencies": {}
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:          "UTF-8",
+			IncludeGenerated: true,
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("package-lock.json"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: name",
+					Message:     "name",
+					Line:        2,
+					CommentLine: 2,
+				},
+			},
+		},
+	},
+
 	{
 		name: "hidden file skipped",
 		files: []*testutils.File{
@@ -339,138 +437,7 @@ var testCases = []struct {
 			},
 		},
 	},
-	{
-		name: "vendored file skipped",
-		files: []*testutils.File{
-			{
-				Path: filepath.Join("vendor", "line_comments.go"),
-				Contents: []byte(`package foo
-				// package comment
 
-				// TODO is a function.
-				// TODO: some task.
-				func TODO() {
-					return // Random comment
-				}`),
-				Mode: 0o600,
-			},
-		},
-		opts: &Options{
-			Config: &todos.Config{
-				Types: []string{"TODO"},
-			},
-			Charset: "UTF-8",
-		},
-		expected: nil,
-	},
-	{
-		name: "vendored file specified",
-		files: []*testutils.File{
-			{
-				Path: filepath.Join("vendor", "line_comments.go"),
-				Contents: []byte(`package foo
-				// package comment
-
-				// TODO is a function.
-				// TODO: some task.
-				func TODO() {
-					return // Random comment
-				}`),
-				Mode: 0o600,
-			},
-		},
-		opts: &Options{
-			Config: &todos.Config{
-				Types: []string{"TODO"},
-			},
-			Charset: "UTF-8",
-			Paths:   []string{filepath.Join("vendor", "line_comments.go")},
-		},
-		expected: []*TODORef{
-			{
-				FileName: filepath.Join("vendor", "line_comments.go"),
-				TODO: &todos.TODO{
-					Type:        "TODO",
-					Text:        "// TODO: some task.",
-					Message:     "some task.",
-					Line:        5,
-					CommentLine: 5,
-				},
-			},
-		},
-	},
-	{
-		name: "vendor directory specified",
-		files: []*testutils.File{
-			{
-				Path: filepath.Join("vendor", "line_comments.go"),
-				Contents: []byte(`package foo
-				// package comment
-
-				// TODO is a function.
-				// TODO: some task.
-				func TODO() {
-					return // Random comment
-				}`),
-				Mode: 0o600,
-			},
-		},
-		opts: &Options{
-			Config: &todos.Config{
-				Types: []string{"TODO"},
-			},
-			Charset: "UTF-8",
-			Paths:   []string{"vendor"},
-		},
-		expected: []*TODORef{
-			{
-				FileName: filepath.Join("vendor", "line_comments.go"),
-				TODO: &todos.TODO{
-					Type:        "TODO",
-					Text:        "// TODO: some task.",
-					Message:     "some task.",
-					Line:        5,
-					CommentLine: 5,
-				},
-			},
-		},
-	},
-	{
-		name: "vendored file processed",
-		files: []*testutils.File{
-			{
-				Path: filepath.Join("vendor", "line_comments.go"),
-				Contents: []byte(`package foo
-				// package comment
-
-				// TODO is a function.
-				// TODO: some task.
-				func TODO() {
-					return // Random comment
-				}`),
-				Mode: 0o600,
-			},
-		},
-		opts: &Options{
-			Config: &todos.Config{
-				Types: []string{"TODO"},
-			},
-			Charset:         "UTF-8",
-			IncludeVendored: true,
-		},
-		expected: []*TODORef{
-			{
-				FileName: filepath.Join("vendor", "line_comments.go"),
-				TODO: &todos.TODO{
-					Type:        "TODO",
-					Text:        "// TODO: some task.",
-					Message:     "some task.",
-					Line:        5,
-					CommentLine: 5,
-				},
-			},
-		},
-	},
 	{
 		name: "hidden dir skipped",
 		files: []*testutils.File{
@@ -561,6 +528,138 @@ var testCases = []struct {
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join(".somepath", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored file skipped",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+		},
+		expected: nil,
+	},
+	{
+		name: "vendored file specified",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+			Paths:   []string{filepath.Join("vendor", "line_comments.go")},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendored file processed",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:         "UTF-8",
+			IncludeVendored: true,
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "vendor directory specified",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("vendor", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+			Paths:   []string{"vendor"},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("vendor", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
@@ -668,6 +767,7 @@ var testCases = []struct {
 			},
 		},
 	},
+
 	{
 		name: "single file traverse path multiple todos",
 		files: []*testutils.File{

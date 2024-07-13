@@ -17,11 +17,13 @@ package walker
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/go-enry/go-enry/v2"
 	"github.com/gobwas/glob"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -61,6 +63,10 @@ type Options struct {
 
 	// ExcludeDirGlobs is a list of Glob that matches excluded dirs.
 	ExcludeDirGlobs []glob.Glob
+
+	// IncludeGenerated indicates whether generated files should be processed. Generated
+	// paths are always processed if there are specified explicitly in `paths`.
+	IncludeGenerated bool
 
 	// IncludeHidden indicates whether hidden paths should be processed. Hidden
 	// paths are always processed if there are specified explicitly in `paths`.
@@ -130,8 +136,8 @@ func (w *TODOWalker) Walk() bool {
 			// Walk the directory
 			w.walkDir(path)
 		} else {
-			// single file
-			if err := w.scanFile(f); err != nil {
+			// Single file. Always scan this file since it was explicitly specified.
+			if err := w.scanFile(f, true); err != nil {
 				if herr := w.handleErr(path, err); herr != nil {
 					break
 				}
@@ -235,7 +241,6 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		basePath += "/"
 	}
 
-	// NOTE: go-enry seems to think .github is a vendor directory.
 	if !w.options.IncludeVendored && vendoring.IsVendor(basePath) {
 		return fs.SkipDir
 	}
@@ -261,11 +266,20 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 		return nil
 	}
 
-	return w.scanFile(f)
+	return w.scanFile(f, false)
 }
 
-func (w *TODOWalker) scanFile(f *os.File) error {
-	s, err := scanner.FromFile(f, w.options.Charset)
+func (w *TODOWalker) scanFile(f *os.File, force bool) error {
+	rawContents, err := io.ReadAll(f)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", f.Name(), err)
+	}
+
+	if !force && !w.options.IncludeGenerated && enry.IsGenerated(f.Name(), rawContents) {
+		return nil
+	}
+
+	s, err := scanner.FromBytes(f.Name(), rawContents, w.options.Charset)
 	if err != nil {
 		if herr := w.handleErr(f.Name(), err); herr != nil {
 			return herr
