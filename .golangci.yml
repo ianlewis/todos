@@ -39,6 +39,7 @@ linters:
     - asciicheck
     - depguard
     - dogsled
+    - err113
     - errcheck
     - errorlint
     - exhaustive
@@ -51,7 +52,6 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
     - gofmt
     - gofumpt
     - goheader
@@ -159,6 +159,7 @@ linters-settings:
       - default
       - prefix(github.com/ianlewis/todos)
   gocritic:
+    disable-all: true
     enabled-checks:
       # Diagnostic
       - appendAssign
