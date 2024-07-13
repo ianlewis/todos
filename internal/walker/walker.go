@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/go-enry/go-enry/v2"
+	"github.com/go-git/go-git/v5"
 	"github.com/gobwas/glob"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -31,10 +32,20 @@ import (
 	"github.com/ianlewis/todos/internal/vendoring"
 )
 
+// GitUser is a git user (e.g. committer).
+type GitUser struct {
+	// Name is the git user.name.
+	Name string
+
+	// Email is the git user.email.
+	Email string
+}
+
 // TODORef represents a TODO in a specific file.
 type TODORef struct {
 	FileName string
 	TODO     *todos.TODO
+	GitUser  *GitUser
 }
 
 // TODOHandler handles found TODO references. It can return SkipAll or SkipDir.
@@ -78,6 +89,10 @@ type Options struct {
 
 	// IncludeVCS indicates that VCS paths (.git, .hg, .svn, etc.) should be included.
 	IncludeVCS bool
+
+	// Blame indicates that the walker should attempt to find the git committer
+	// that committed each TODO.
+	Blame bool
 
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
@@ -294,9 +309,21 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	for t.Scan() {
 		todo := t.Next()
 		if w.options.TODOFunc != nil {
+			var gitUser *GitUser
+			if w.options.Blame {
+				committer, err := w.gitBlame(f.Name(), todo.Line)
+				if err != nil {
+					if herr := w.handleErr(f.Name(), err); herr != nil {
+						return herr
+					}
+				}
+				gitUser = committer
+			}
+
 			if err := w.options.TODOFunc(&TODORef{
 				FileName: f.Name(),
 				TODO:     todo,
+				GitUser:  gitUser,
 			}); err != nil {
 				return err
 			}
@@ -309,6 +336,44 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	}
 
 	return nil
+}
+
+func (w *TODOWalker) gitBlame(path string, lineNo int) (*GitUser, error) {
+	// Attempt to get the git committer of the change.
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := git.PlainOpenWithOptions(filepath.Dir(absPath), &git.PlainOpenOptions{
+		DetectDotGit: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := r.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	br, err := git.Blame(c, path)
+	if err != nil {
+		return nil, err
+	}
+	if lineNo >= len(br.Lines) {
+		return nil, fmt.Errorf("invalid blame line no: %d", lineNo)
+	}
+	blameLine := br.Lines[lineNo-1]
+	return &GitUser{
+		Name:  blameLine.AuthorName,
+		Email: blameLine.Author,
+	}, nil
 }
 
 func (w *TODOWalker) handleErr(prefix string, err error) error {

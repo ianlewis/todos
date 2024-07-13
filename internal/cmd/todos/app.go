@@ -122,6 +122,12 @@ func newTODOsApp() *cli.App {
 				Value:              false,
 				DisableDefaultText: true,
 			},
+			&cli.BoolFlag{
+				Name:               "blame",
+				Usage:              "attempt to find committer info",
+				Value:              false,
+				DisableDefaultText: true,
+			},
 			&cli.StringFlag{
 				Name:  "todo-types",
 				Usage: "comma separated list of TODO `TYPES`",
@@ -205,11 +211,20 @@ func outCLI(w io.Writer) walker.TODOHandler {
 		if o == nil {
 			return nil
 		}
-		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s\n",
+		var blameInfo string
+		if o.GitUser != nil {
+			blameInfo = color.GreenString(o.GitUser.Name)
+			if o.GitUser.Email != "" {
+				blameInfo += color.GreenString(" <" + o.GitUser.Email + ">")
+			}
+			blameInfo += color.CyanString(":")
+		}
+		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
 			color.GreenString(fmt.Sprintf("%d", o.TODO.Line)),
 			color.CyanString(":"),
+			blameInfo,
 			o.TODO.Text,
 		))
 		return nil
@@ -326,6 +341,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 		o.ExcludeDirGlobs = append(o.ExcludeDirGlobs, g)
 	}
 
+	o.Blame = c.Bool("blame")
 	o.IncludeGenerated = c.Bool("include-generated")
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
