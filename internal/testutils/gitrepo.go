@@ -29,7 +29,7 @@ type TempRepo struct {
 	repo *git.Repository
 }
 
-// NewTempRepo creates a new TempRepo with the given files commited into a
+// NewTempRepo creates a new TempRepo with the given files committed into a
 // single commit in the repo.
 func NewTempRepo(author, email string, files []*File) *TempRepo {
 	r := &TempRepo{}

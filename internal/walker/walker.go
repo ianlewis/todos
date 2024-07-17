@@ -110,7 +110,8 @@ func New(opts *Options) *TODOWalker {
 		}
 	}
 	return &TODOWalker{
-		options: opts,
+		options:  opts,
+		gitRepos: map[string]*git.Repository{},
 	}
 }
 
@@ -124,6 +125,10 @@ type TODOWalker struct {
 
 	// The last error encountered.
 	err error
+
+	// gitRepos is a cache of open git repositories. It is a map of absolute
+	// path to git repository.
+	gitRepos map[string]*git.Repository
 }
 
 // Walk walks the paths and scans files it finds for TODOs. It does not fail
@@ -340,11 +345,20 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	return nil
 }
 
-func (w *TODOWalker) gitBlame(path string, lineNo int) (*GitUser, error) {
-	// Attempt to get the git committer of the change.
+func (w *TODOWalker) gitRepo(path string) (*git.Repository, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errGit, err)
+	}
+
+	uniqPath, err := filepath.EvalSymlinks(absPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errGit, err)
+	}
+
+	// Attempt to use the cache.
+	if r, ok := w.gitRepos[uniqPath]; ok {
+		return r, nil
 	}
 
 	r, err := git.PlainOpenWithOptions(filepath.Dir(absPath), &git.PlainOpenOptions{
@@ -352,6 +366,19 @@ func (w *TODOWalker) gitBlame(path string, lineNo int) (*GitUser, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errGit, err)
+	}
+
+	// Same the repo in the cache.
+	w.gitRepos[uniqPath] = r
+
+	return r, nil
+}
+
+func (w *TODOWalker) gitBlame(path string, lineNo int) (*GitUser, error) {
+	// Attempt to get the git committer of the change.
+	r, err := w.gitRepo(path)
+	if err != nil {
+		return nil, err
 	}
 
 	ref, err := r.Head()
