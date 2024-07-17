@@ -371,12 +371,13 @@ func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult,
 	hash := ref.Hash()
 	c, err := r.CommitObject(hash)
 	if err != nil {
-		return nil, fmt.Errorf("%w: getting commit object for hash %q, %w", errGit, hash, err)
+		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
 
-	br, err := git.Blame(c, path)
+	// NOTE: git.Blame doesn't support windows paths.
+	br, err := git.Blame(c, filepath.ToSlash(path))
 	if err != nil {
-		return nil, fmt.Errorf("%w: getting blame result for commit %v at path %q: %w", errGit, c, path, err)
+		return nil, fmt.Errorf("%w: getting blame result for commit %s at path %q: %w", errGit, hash, path, err)
 	}
 	return br, nil
 }
