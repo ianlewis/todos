@@ -344,19 +344,19 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 func (w *TODOWalker) gitRepo(path string) (*git.Repository, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: getting absolute path %q: %w", errGit, path, err)
 	}
 
 	uniqPath, err := filepath.EvalSymlinks(absPath)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: evaluating symlinks for path %q: %w", errGit, path, err)
 	}
 
 	r, err := git.PlainOpenWithOptions(filepath.Dir(uniqPath), &git.PlainOpenOptions{
 		DetectDotGit: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: opening git repo at path %q: %w", errGit, uniqPath, err)
 	}
 
 	return r, nil
@@ -365,17 +365,18 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, error) {
 func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult, error) {
 	ref, err := r.Head()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: getting HEAD ref: %w", errGit, err)
 	}
 
-	c, err := r.CommitObject(ref.Hash())
+	hash := ref.Hash()
+	c, err := r.CommitObject(hash)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: getting commit object for hash %q, %w", errGit, hash, err)
 	}
 
 	br, err := git.Blame(c, path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errGit, err)
+		return nil, fmt.Errorf("%w: getting blame result for commit %v at path %q: %w", errGit, c, path, err)
 	}
 	return br, nil
 }
