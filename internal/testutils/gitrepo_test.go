@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,15 +22,22 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestTempDir(t *testing.T) {
+func TestTempRepo(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
+		author      string
+		email       string
 		files       []*File
 		expectPanic bool
 	}{
-		"no files": {},
+		"no files": {
+			author: "John Doe",
+			email:  "john@doe.com",
+		},
 		"single file": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "testfile.txt",
@@ -40,6 +47,8 @@ func TestTempDir(t *testing.T) {
 			},
 		},
 		"single file with sub-dir": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "testdir/testfile.txt",
@@ -49,6 +58,8 @@ func TestTempDir(t *testing.T) {
 			},
 		},
 		"bad file": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "../../../../../../../testfile.txt",
@@ -59,6 +70,8 @@ func TestTempDir(t *testing.T) {
 			expectPanic: true,
 		},
 		"multi-file": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "testfile.txt",
@@ -73,6 +86,8 @@ func TestTempDir(t *testing.T) {
 			},
 		},
 		"multi-file with sub-dir": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "testdir/testfile.txt",
@@ -87,6 +102,8 @@ func TestTempDir(t *testing.T) {
 			},
 		},
 		"multi-file with multi-sub-dir": {
+			author: "John Doe",
+			email:  "john@doe.com",
 			files: []*File{
 				{
 					Path:     "testdir/testfile.txt",
@@ -113,7 +130,7 @@ func TestTempDir(t *testing.T) {
 				}
 			}()
 
-			d := NewTempDir(tc.files)
+			d := NewTempRepo(tc.author, tc.email, tc.files)
 			baseDir := d.Dir()
 			defer func() {
 				_ = os.RemoveAll(baseDir)
@@ -126,6 +143,16 @@ func TestTempDir(t *testing.T) {
 			}
 			if !dirStat.IsDir() {
 				t.Fatalf("baseDir %q not a directory", baseDir)
+			}
+
+			// Check the .git/ directory exists.
+			gitDir := filepath.Join(baseDir, ".git")
+			gitDirStat, err := os.Stat(gitDir)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !gitDirStat.IsDir() {
+				t.Fatalf("gitDir %q not a directory", gitDir)
 			}
 
 			for _, f := range tc.files {
