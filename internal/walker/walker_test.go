@@ -924,6 +924,7 @@ type blameTestCase struct {
 
 var blameTestCases = []blameTestCase{}
 
+//nolint:gochecknoinits // init used to initialize test cases.
 func init() {
 	author := "John Doe"
 	email := "john@doe.com"

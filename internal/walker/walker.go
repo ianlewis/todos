@@ -316,30 +316,10 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 		todo := t.Next()
 		if w.options.TODOFunc != nil {
 			var gitUser *GitUser
-			if w.options.Blame {
-				if repo == nil {
-					repo, err = w.gitRepo(f.Name())
-					if err != nil {
-						if herr := w.handleErr(f.Name(), err); herr != nil {
-							return herr
-						}
-					}
-				}
-
-				if br == nil {
-					br, err = w.gitBlame(repo, f.Name())
-					if err != nil {
-						if herr := w.handleErr(f.Name(), err); herr != nil {
-							return herr
-						}
-					}
-				}
-
-				gitUser, err = w.gitUser(repo, br, todo.Line)
-				if err != nil {
-					if herr := w.handleErr(f.Name(), err); herr != nil {
-						return herr
-					}
+			repo, br, gitUser, err = w.gitUser(f.Name(), repo, br, todo.Line)
+			if err != nil {
+				if herr := w.handleErr(f.Name(), err); herr != nil {
+					return herr
 				}
 			}
 
@@ -400,17 +380,36 @@ func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult,
 	return br, nil
 }
 
-func (w *TODOWalker) gitUser(r *git.Repository, br *git.BlameResult, lineNo int) (*GitUser, error) {
-	if r == nil || br == nil {
-		// Do not handle this as an error. Errors will already have been
-		// handled if necessary.
-		return nil, nil
+func (w *TODOWalker) gitUser(
+	path string,
+	r *git.Repository,
+	br *git.BlameResult,
+	lineNo int,
+) (*git.Repository, *git.BlameResult, *GitUser, error) {
+	if !w.options.Blame {
+		return nil, nil, nil, nil
 	}
+
+	var err error
+	if r == nil {
+		r, err = w.gitRepo(path)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	if br == nil {
+		br, err = w.gitBlame(r, path)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
 	if lineNo >= len(br.Lines) {
-		return nil, fmt.Errorf("%w: invalid blame line # for file %q: %d", errGit, br.Path, lineNo)
+		return r, br, nil, fmt.Errorf("%w: invalid blame line # for file %q: %d", errGit, br.Path, lineNo)
 	}
 	blameLine := br.Lines[lineNo-1]
-	return &GitUser{
+	return r, br, &GitUser{
 		Name:  blameLine.AuthorName,
 		Email: blameLine.Author,
 	}, nil
