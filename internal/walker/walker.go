@@ -374,7 +374,6 @@ func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult,
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
 
-	// BUG: Path should be relative to the repository root.
 	// NOTE: Path may have been supplied by the user from outside the repository root.
 	// NOTE: git.Blame doesn't support windows paths.
 	br, err := git.Blame(c, filepath.ToSlash(path))
