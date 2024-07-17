@@ -22,6 +22,18 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func checkDir(t *testing.T, path string) {
+	t.Helper()
+
+	dirStat, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !dirStat.IsDir() {
+		t.Fatalf("baseDir %q not a directory", path)
+	}
+}
+
 func TestTempRepo(t *testing.T) {
 	t.Parallel()
 
@@ -137,23 +149,10 @@ func TestTempRepo(t *testing.T) {
 			}()
 
 			// Check that the temporary directory exists.
-			dirStat, err := os.Stat(baseDir)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if !dirStat.IsDir() {
-				t.Fatalf("baseDir %q not a directory", baseDir)
-			}
+			checkDir(t, baseDir)
 
 			// Check the .git/ directory exists.
-			gitDir := filepath.Join(baseDir, ".git")
-			gitDirStat, err := os.Stat(gitDir)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if !gitDirStat.IsDir() {
-				t.Fatalf("gitDir %q not a directory", gitDir)
-			}
+			checkDir(t, filepath.Join(baseDir, ".git"))
 
 			for _, f := range tc.files {
 				fullPath := filepath.Join(baseDir, f.Path)
