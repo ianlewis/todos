@@ -29,14 +29,17 @@ import (
 	"github.com/ianlewis/todos/internal/todos"
 )
 
-var testCases = []struct {
-	name  string
+type testCase struct {
+	name string
+
 	files []*testutils.File
 	opts  *Options
 
 	expected []*TODORef
 	err      bool
-}{
+}
+
+var testCases = []testCase{
 	{
 		name: "single file traverse path",
 		files: []*testutils.File{
@@ -912,6 +915,53 @@ var testCases = []struct {
 	},
 }
 
+type blameTestCase struct {
+	testCase
+
+	author string
+	email  string
+}
+
+var blameTestCases = []blameTestCase{}
+
+//nolint:gochecknoinits // init used to initialize test cases.
+func init() {
+	author := "John Doe"
+	email := "john@doe.com"
+
+	for _, tc := range testCases {
+		opts := Options{}
+		if tc.opts != nil {
+			opts = *tc.opts
+		}
+		opts.Blame = true
+
+		var expected []*TODORef
+		for _, e := range tc.expected {
+			// Copy
+			e2 := *e
+			e2.GitUser = &GitUser{
+				Name:  author,
+				Email: email,
+			}
+			expected = append(expected, &e2)
+		}
+
+		blameTestCases = append(blameTestCases, blameTestCase{
+			testCase: testCase{
+				name: tc.name,
+
+				files:    tc.files,
+				opts:     &opts,
+				expected: expected,
+			},
+
+			author: author,
+			email:  email,
+		})
+	}
+}
+
 type fixture struct {
 	dir *testutils.TempDir
 	wd  string
@@ -966,6 +1016,62 @@ func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) 
 	return f, New(opts)
 }
 
+type repoFixture struct {
+	repo *testutils.TempRepo
+	wd   string
+	out  []*TODORef
+	err  []error
+}
+
+func (f *repoFixture) cleanup() {
+	testutils.Check(os.Chdir(f.wd))
+	f.repo.Cleanup()
+}
+
+func newRepoFixture(author, email string, files []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
+	repo := testutils.NewTempRepo(author, email, files)
+	cleanup, cancel := testutils.WithCancel(func() {
+		repo.Cleanup()
+	}, nil)
+	defer cleanup()
+
+	wd := testutils.Must(os.Getwd())
+
+	testutils.Check(os.Chdir(repo.Dir()))
+
+	if len(opts.Paths) == 0 {
+		opts.Paths = []string{"."}
+	}
+
+	f := &repoFixture{
+		repo: repo,
+		wd:   wd,
+	}
+
+	todoFunc := opts.TODOFunc
+	opts.TODOFunc = func(r *TODORef) error {
+		f.out = append(f.out, r)
+		if todoFunc != nil {
+			return todoFunc(r)
+		}
+		return nil
+	}
+
+	errFunc := opts.ErrorFunc
+	opts.ErrorFunc = func(err error) error {
+		f.err = append(f.err, err)
+		if errFunc != nil {
+			return errFunc(err)
+		}
+		return nil
+	}
+
+	opts.Blame = true
+
+	cancel()
+	return f, New(opts)
+}
+
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
 func TestTODOWalker(t *testing.T) {
 	for i := range testCases {
@@ -977,6 +1083,32 @@ func TestTODOWalker(t *testing.T) {
 
 			if got, want := w.Walk(), tc.err; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			got, want := f.out, tc.expected
+			if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
+				t.Errorf("unexpected output (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_git(t *testing.T) {
+	for _, tc := range blameTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			f, w := newRepoFixture(tc.author, tc.email, tc.files, tc.opts)
+			defer f.cleanup()
+
+			if got, want := w.Walk(), tc.err; got != want {
+				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			for i := range tc.expected {
+				tc.expected[i].GitUser = &GitUser{
+					Name:  tc.author,
+					Email: tc.email,
+				}
 			}
 
 			got, want := f.out, tc.expected

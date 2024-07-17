@@ -122,6 +122,12 @@ func newTODOsApp() *cli.App {
 				Value:              false,
 				DisableDefaultText: true,
 			},
+			&cli.BoolFlag{
+				Name:               "blame",
+				Usage:              "attempt to find committer info",
+				Value:              false,
+				DisableDefaultText: true,
+			},
 			&cli.StringFlag{
 				Name:  "todo-types",
 				Usage: "comma separated list of TODO `TYPES`",
@@ -205,11 +211,20 @@ func outCLI(w io.Writer) walker.TODOHandler {
 		if o == nil {
 			return nil
 		}
-		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s\n",
+		var blameInfo string
+		if o.GitUser != nil {
+			blameInfo = color.GreenString(o.GitUser.Name)
+			if o.GitUser.Email != "" {
+				blameInfo += color.GreenString(" <" + o.GitUser.Email + ">")
+			}
+			blameInfo += color.CyanString(":")
+		}
+		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
 			color.GreenString(fmt.Sprintf("%d", o.TODO.Line)),
 			color.CyanString(":"),
+			blameInfo,
 			o.TODO.Text,
 		))
 		return nil
@@ -233,6 +248,11 @@ func outGithub(w io.Writer) walker.TODOHandler {
 	}
 }
 
+type outUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type outTODO struct {
 	// Path is the path to the file where the TODO was found.
 	Path string `json:"path"`
@@ -254,6 +274,9 @@ type outTODO struct {
 
 	// CommentLine is the line where the comment starts.
 	CommentLine int `json:"comment_line"`
+
+	// GitUser is the committer of the TODO.
+	GitUser *outUser `json:"git_user,omitempty"`
 }
 
 func outJSON(w io.Writer) walker.TODOHandler {
@@ -262,7 +285,7 @@ func outJSON(w io.Writer) walker.TODOHandler {
 			return nil
 		}
 
-		b := utils.Must(json.Marshal(outTODO{
+		out := outTODO{
 			Path:        o.FileName,
 			Type:        o.TODO.Type,
 			Text:        o.TODO.Text,
@@ -270,7 +293,15 @@ func outJSON(w io.Writer) walker.TODOHandler {
 			Message:     o.TODO.Message,
 			Line:        o.TODO.Line,
 			CommentLine: o.TODO.CommentLine,
-		}))
+		}
+		if o.GitUser != nil {
+			out.GitUser = &outUser{
+				Name:  o.GitUser.Name,
+				Email: o.GitUser.Email,
+			}
+		}
+
+		b := utils.Must(json.Marshal(out))
 
 		_ = utils.Must(w.Write(b))
 		_ = utils.Must(w.Write([]byte("\n")))
@@ -326,6 +357,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 		o.ExcludeDirGlobs = append(o.ExcludeDirGlobs, g)
 	}
 
+	o.Blame = c.Bool("blame")
 	o.IncludeGenerated = c.Bool("include-generated")
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
