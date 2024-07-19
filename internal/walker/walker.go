@@ -341,25 +341,49 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	return nil
 }
 
-func (w *TODOWalker) gitRepo(path string) (*git.Repository, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return nil, fmt.Errorf("%w: getting absolute path %q: %w", errGit, path, err)
+// gitRepo finds the git repository for the given path and returns the
+// *git.Repository, and root path.
+func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
+	var err error
+	if path, err = filepath.Abs(path); err != nil {
+		return nil, "", fmt.Errorf("%w: getting absolute path %q: %w", errGit, path, err)
 	}
 
-	uniqPath, err := filepath.EvalSymlinks(absPath)
+	// If the given path is a file, start at its parent directory.
+	fi, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: evaluating symlinks for path %q: %w", errGit, path, err)
+		return nil, "", fmt.Errorf("%w: stat %q: %w", errGit, path, err)
+	}
+	if !fi.IsDir() {
+		path = filepath.Dir(path)
 	}
 
-	r, err := git.PlainOpenWithOptions(filepath.Dir(uniqPath), &git.PlainOpenOptions{
-		DetectDotGit: true,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: opening git repo at path %q: %w", errGit, uniqPath, err)
+	for {
+		gitPath := filepath.Join(path, ".git")
+		_, err := os.Stat(gitPath)
+		if err == nil {
+			break
+		}
+		if !os.IsNotExist(err) {
+			return nil, "", fmt.Errorf("%w: stat %q: %w", errGit, gitPath, err)
+		}
+
+		// Check if the root directory has been reached.
+		if parent := filepath.Dir(path); parent != path {
+			path = parent
+			continue
+		}
+
+		// No repository found.
+		return nil, "", nil
 	}
 
-	return r, nil
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return nil, "", fmt.Errorf("%w: opening git repo at path %q: %w", errGit, path, err)
+	}
+
+	return r, path, nil
 }
 
 func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult, error) {
@@ -395,13 +419,21 @@ func (w *TODOWalker) gitUser(
 
 	var err error
 	if r == nil {
-		r, err = w.gitRepo(path)
+		r, rootPath, err = w.gitRepo(path)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
 
+	// XXX: relative path handling
+	// 1. get relative path from git repo to working diretory.
+	// 2. join that path with the path from working directory to file to get
+	//    path from git repo root to file.
+	// 3. Pass that path to git.Blame
+
 	if br == nil {
+		filepath.Rel(rootPath, path)
+
 		br, err = w.gitBlame(r, path)
 		if err != nil {
 			return nil, nil, nil, err
