@@ -913,6 +913,40 @@ var testCases = []testCase{
 			},
 		},
 	},
+	{
+		name: "todo last line",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				func TODO() {
+					return // Random comment
+				}
+				// TODO: last line`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("src", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: last line",
+					Message:     "last line",
+					Line:        7,
+					CommentLine: 7,
+				},
+			},
+		},
+	},
 }
 
 type blameTestCase struct {

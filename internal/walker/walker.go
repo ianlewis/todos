@@ -374,6 +374,7 @@ func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult,
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
 
+	// NOTE: Path may have been supplied by the user from outside the repository root.
 	// NOTE: git.Blame doesn't support windows paths.
 	br, err := git.Blame(c, filepath.ToSlash(path))
 	if err != nil {
@@ -407,7 +408,7 @@ func (w *TODOWalker) gitUser(
 		}
 	}
 
-	if lineNo >= len(br.Lines) {
+	if lineNo > len(br.Lines) {
 		return r, br, nil, fmt.Errorf("%w: invalid blame line # for file %q: %d", errGit, br.Path, lineNo)
 	}
 	blameLine := br.Lines[lineNo-1]
