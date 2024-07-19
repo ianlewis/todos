@@ -361,7 +361,7 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
 
 	for {
 		gitPath := filepath.Join(path, ".git")
-		_, err := os.Stat(gitPath)
+		_, err = os.Stat(gitPath)
 		if err == nil {
 			break
 		}
