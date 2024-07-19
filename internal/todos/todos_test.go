@@ -859,6 +859,37 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+		// Regression test for issue #1520
+		// Ensure that the TODOScanner continues scanning after finding a
+		// multi-line comment with no TODOs in it.
+		"regression_1520.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text:      "/**\n no match here\n */",
+						Line:      1,
+						Multiline: true,
+					},
+					{
+						Text: "// TODO: match",
+						Line: 5,
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "// TODO: match",
+					Label:       "",
+					Message:     "match",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
 	}
 
 	for name, tc := range testCases {
