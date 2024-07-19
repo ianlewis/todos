@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-enry/go-enry/v2"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/gobwas/glob"
 
 	"github.com/ianlewis/todos/internal/scanner"
@@ -386,7 +387,19 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
 	return r, path, nil
 }
 
-func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult, error) {
+func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.BlameResult, error) {
+	// NOTE: Path may have been supplied by the user from outside the repository root.
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("%w: getting absolute path: %w", errGit, err)
+	}
+
+	// Get relative path from git repo root to path
+	relPath, err := filepath.Rel(repoRoot, absPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w: getting relative path: %w", errGit, err)
+	}
+
 	ref, err := r.Head()
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting HEAD ref: %w", errGit, err)
@@ -398,10 +411,12 @@ func (w *TODOWalker) gitBlame(r *git.Repository, path string) (*git.BlameResult,
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
 
-	// NOTE: Path may have been supplied by the user from outside the repository root.
-	// NOTE: git.Blame doesn't support windows paths.
-	br, err := git.Blame(c, filepath.ToSlash(path))
+	br, err := git.Blame(c, relPath)
 	if err != nil {
+		// Ignore files that aren't checked in.
+		if errors.Is(err, object.ErrFileNotFound) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("%w: getting blame result for commit %s at path %q: %w", errGit, hash, path, err)
 	}
 	return br, nil
@@ -417,27 +432,25 @@ func (w *TODOWalker) gitUser(
 		return nil, nil, nil, nil
 	}
 
+	var repoRoot string
 	var err error
 	if r == nil {
-		r, rootPath, err = w.gitRepo(path)
+		r, repoRoot, err = w.gitRepo(path)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
 
-	// XXX: relative path handling
-	// 1. get relative path from git repo to working diretory.
-	// 2. join that path with the path from working directory to file to get
-	//    path from git repo root to file.
-	// 3. Pass that path to git.Blame
-
 	if br == nil {
-		filepath.Rel(rootPath, path)
-
-		br, err = w.gitBlame(r, path)
+		br, err = w.gitBlame(r, repoRoot, path)
 		if err != nil {
 			return nil, nil, nil, err
 		}
+	}
+
+	// If there is still no blame result this must not be a committed file.
+	if br == nil {
+		return nil, nil, nil, nil
 	}
 
 	if lineNo > len(br.Lines) {
