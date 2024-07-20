@@ -411,7 +411,8 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
 
-	br, err := git.Blame(c, relPath)
+	// NOTE: git.Blame only supports paths with slash.
+	br, err := git.Blame(c, filepath.ToSlash(relPath))
 	if err != nil {
 		// Ignore files that aren't checked in.
 		if errors.Is(err, object.ErrFileNotFound) {
