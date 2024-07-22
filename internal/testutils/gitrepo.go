@@ -23,17 +23,18 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-// TempRepo is a repo created in a temporary directory.
-type TempRepo struct {
+// TestRepo is a repo created in a temporary directory.
+type TestRepo struct {
 	dir  string
 	repo *git.Repository
 }
 
-// NewTempRepo creates a new TempRepo with the given files committed into a
+// NewTestRepo creates a new TestRepo with the given files committed into a
 // single commit in the repo.
-func NewTempRepo(author, email string, files []*File) *TempRepo {
-	r := &TempRepo{}
-	r.dir = Must(os.MkdirTemp("", "testutils"))
+func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
+	r := &TestRepo{
+		dir: dir,
+	}
 
 	r.repo = Must(git.PlainInit(r.dir, false))
 
@@ -67,16 +68,11 @@ func NewTempRepo(author, email string, files []*File) *TempRepo {
 }
 
 // Dir returns the path to the repo root directory.
-func (r *TempRepo) Dir() string {
+func (r *TestRepo) Dir() string {
 	return r.dir
 }
 
 // Repository returns the git repository.
-func (r *TempRepo) Repository() *git.Repository {
+func (r *TestRepo) Repository() *git.Repository {
 	return r.repo
-}
-
-// Cleanup deletes the test repository.
-func (r *TempRepo) Cleanup() {
-	Check(os.RemoveAll(r.dir))
 }

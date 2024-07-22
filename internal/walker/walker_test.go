@@ -242,7 +242,6 @@ var testCases = []testCase{
 			},
 		},
 	},
-
 	{
 		name: "generated file skipped",
 		files: []*testutils.File{
@@ -1051,35 +1050,57 @@ func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) 
 }
 
 type repoFixture struct {
-	repo *testutils.TempRepo
-	wd   string
-	out  []*TODORef
-	err  []error
+	tmpDir *testutils.TempDir
+	repo   *testutils.TestRepo
+	wd     string
+	out    []*TODORef
+	err    []error
 }
 
 func (f *repoFixture) cleanup() {
 	testutils.Check(os.Chdir(f.wd))
-	f.repo.Cleanup()
+	f.tmpDir.Cleanup()
 }
 
+// newRepoFixture creates a fixture with a temporary directory with a git
+// repository created at the root. Files are created and committed into the git
+// repository.
 func newRepoFixture(author, email string, files []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
-	repo := testutils.NewTempRepo(author, email, files)
+	return newDirRepoFixture(author, email, ".", files, nil, opts)
+}
+
+// newDirRepoFixture creates a fixture with a temporary directory and a git
+// repository inside of it. dirFiles are created relative to the temporary
+// directory root and are not committed to the git repository. repoSubPath
+// specifies the repository's directory relative to the temporary directory root.
+// repoFiles are created relative to the repository root and committed to the
+// repository. The fixture sets the working directory to the temporary
+// directory.
+func newDirRepoFixture(
+	author, email, repoSubPath string,
+	repoFiles, dirFiles []*testutils.File,
+	opts *Options,
+) (*repoFixture, *TODOWalker) {
+	tmpDir := testutils.NewTempDir(dirFiles)
+
+	repo := testutils.NewTestRepo(filepath.Join(tmpDir.Dir(), repoSubPath), author, email, repoFiles)
 	cleanup, cancel := testutils.WithCancel(func() {
-		repo.Cleanup()
+		tmpDir.Cleanup()
 	}, nil)
 	defer cleanup()
 
 	wd := testutils.Must(os.Getwd())
 
-	testutils.Check(os.Chdir(repo.Dir()))
+	testutils.Check(os.Chdir(tmpDir.Dir()))
 
 	if len(opts.Paths) == 0 {
 		opts.Paths = []string{"."}
 	}
 
 	f := &repoFixture{
-		repo: repo,
-		wd:   wd,
+		tmpDir: tmpDir,
+		repo:   repo,
+		wd:     wd,
 	}
 
 	todoFunc := opts.TODOFunc
@@ -1273,6 +1294,88 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected output (-want +got):\n%s", diff)
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_gitSubDir(t *testing.T) {
+	dirFiles := []*testutils.File{
+		{
+			Path: "line_comments.rb",
+			Contents: []byte(`# file comment
+
+			# TODO: some task.
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`),
+			Mode: 0o600,
+		},
+	}
+
+	repoSubPath := "path/to/repo"
+	author := "John Doe"
+	email := "john@doe.com"
+	repoFiles := []*testutils.File{
+		{
+			Path: "repo_file.go",
+			Contents: []byte(`package foo
+			// package comment
+
+			// TODO is a function.
+			// TODO: some task.
+			func TODO() {
+				return // Random comment
+			}`),
+			Mode: 0o600,
+		},
+	}
+
+	opts := &Options{
+		Config: &todos.Config{
+			Types: []string{"TODO"},
+		},
+		Charset: "UTF-8",
+	}
+
+	expected := []*TODORef{
+		{
+			FileName: "line_comments.rb",
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "# TODO: some task.",
+				Message:     "some task.",
+				Line:        3,
+				CommentLine: 3,
+			},
+		},
+		{
+			FileName: filepath.Join("path", "to", "repo", "repo_file.go"),
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "// TODO: some task.",
+				Message:     "some task.",
+				Line:        5,
+				CommentLine: 5,
+			},
+			GitUser: &GitUser{
+				Name:  author,
+				Email: email,
+			},
+		},
+	}
+
+	f, w := newDirRepoFixture(author, email, repoSubPath, repoFiles, dirFiles, opts)
+
+	if got, want := w.Walk(), false; got != want {
+		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+	}
+
+	got, want := f.out, expected
+	if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }

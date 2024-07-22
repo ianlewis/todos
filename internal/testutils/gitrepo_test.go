@@ -142,11 +142,11 @@ func TestTempRepo(t *testing.T) {
 				}
 			}()
 
-			d := NewTempRepo(tc.author, tc.email, tc.files)
+			tmpDir := NewTempDir(nil)
+			defer tmpDir.Cleanup()
+
+			d := NewTestRepo(tmpDir.Dir(), tc.author, tc.email, tc.files)
 			baseDir := d.Dir()
-			defer func() {
-				_ = os.RemoveAll(baseDir)
-			}()
 
 			// Check that the temporary directory exists.
 			checkDir(t, baseDir)
@@ -178,11 +178,6 @@ func TestTempRepo(t *testing.T) {
 				if diff := cmp.Diff(want, got); diff != "" {
 					t.Errorf("unexpected contents: (-want, +got): %s", diff)
 				}
-			}
-
-			d.Cleanup()
-			if _, err := os.Stat(baseDir); !os.IsNotExist(err) {
-				t.Fatalf("expected not exist error: %v", err)
 			}
 		})
 	}
