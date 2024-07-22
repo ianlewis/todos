@@ -1353,7 +1353,7 @@ func TestTODOWalker_gitSubDir(t *testing.T) {
 			},
 		},
 		{
-			FileName: "path/to/repo/repo_file.go",
+			FileName: filepath.Join("path", "to", "repo", "repo_file.go"),
 			TODO: &todos.TODO{
 				Type:        "TODO",
 				Text:        "// TODO: some task.",
