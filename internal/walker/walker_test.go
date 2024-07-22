@@ -242,7 +242,6 @@ var testCases = []testCase{
 			},
 		},
 	},
-
 	{
 		name: "generated file skipped",
 		files: []*testutils.File{
@@ -1051,35 +1050,53 @@ func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) 
 }
 
 type repoFixture struct {
-	repo *testutils.TempRepo
-	wd   string
-	out  []*TODORef
-	err  []error
+	tmpDir *testutils.TempDir
+	repo   *testutils.TestRepo
+	wd     string
+	out    []*TODORef
+	err    []error
 }
 
 func (f *repoFixture) cleanup() {
 	testutils.Check(os.Chdir(f.wd))
-	f.repo.Cleanup()
+	f.tmpDir.Cleanup()
 }
 
+// newRepoFixture creates a fixture with a temporary directory with a git
+// repository created at the root. Files are created and committed into the git
+// repository.
 func newRepoFixture(author, email string, files []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
-	repo := testutils.NewTempRepo(author, email, files)
+	return newDirRepoFixture(author, email, ".", files, nil, opts)
+}
+
+// newDirRepoFixture creates a fixture with a temporary directory and a git
+// repository inside of it. dirFiles are created relative to the temporary
+// directory root and are not committed to the git repository. repoSubPath
+// specifies the repository's directory relative to the temporary directory root.
+// repoFiles are created relative to the repository root and committed to the
+// repository. The fixture sets the working directory to the temporary
+// directory.
+func newDirRepoFixture(author, email, repoSubPath string, repoFiles []*testutils.File, dirFiles []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
+	tmpDir := testutils.NewTempDir(dirFiles)
+
+	repo := testutils.NewTestRepo(filepath.Join(tmpDir.Dir(), repoSubPath), author, email, repoFiles)
 	cleanup, cancel := testutils.WithCancel(func() {
-		repo.Cleanup()
+		tmpDir.Cleanup()
 	}, nil)
 	defer cleanup()
 
 	wd := testutils.Must(os.Getwd())
 
-	testutils.Check(os.Chdir(repo.Dir()))
+	testutils.Check(os.Chdir(tmpDir.Dir()))
 
 	if len(opts.Paths) == 0 {
 		opts.Paths = []string{"."}
 	}
 
 	f := &repoFixture{
-		repo: repo,
-		wd:   wd,
+		tmpDir: tmpDir,
+		repo:   repo,
+		wd:     wd,
 	}
 
 	todoFunc := opts.TODOFunc
