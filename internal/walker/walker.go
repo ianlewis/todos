@@ -433,6 +433,7 @@ func (w *TODOWalker) gitUser(
 		return nil, nil, nil, nil
 	}
 
+	// Attempt to fin the repo.
 	var repoRoot string
 	var err error
 	if r == nil {
@@ -440,6 +441,10 @@ func (w *TODOWalker) gitUser(
 		if err != nil {
 			return nil, nil, nil, err
 		}
+	}
+	// Return early if the file is not in a git repo.
+	if r == nil {
+		return nil, nil, nil, nil
 	}
 
 	if br == nil {

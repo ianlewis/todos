@@ -1076,7 +1076,11 @@ func newRepoFixture(author, email string, files []*testutils.File, opts *Options
 // repoFiles are created relative to the repository root and committed to the
 // repository. The fixture sets the working directory to the temporary
 // directory.
-func newDirRepoFixture(author, email, repoSubPath string, repoFiles []*testutils.File, dirFiles []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
+func newDirRepoFixture(
+	author, email, repoSubPath string,
+	repoFiles, dirFiles []*testutils.File,
+	opts *Options,
+) (*repoFixture, *TODOWalker) {
 	tmpDir := testutils.NewTempDir(dirFiles)
 
 	repo := testutils.NewTestRepo(filepath.Join(tmpDir.Dir(), repoSubPath), author, email, repoFiles)
@@ -1290,6 +1294,88 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		},
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("unexpected output (-want +got):\n%s", diff)
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_gitSubDir(t *testing.T) {
+	dirFiles := []*testutils.File{
+		{
+			Path: "line_comments.rb",
+			Contents: []byte(`# file comment
+
+			# TODO: some task.
+			def foo()
+				# Random comment
+				x = "\"# Random comment x"
+				y = '\'# Random comment y'
+				return x + y
+			end`),
+			Mode: 0o600,
+		},
+	}
+
+	repoSubPath := "path/to/repo"
+	author := "John Doe"
+	email := "john@doe.com"
+	repoFiles := []*testutils.File{
+		{
+			Path: "repo_file.go",
+			Contents: []byte(`package foo
+			// package comment
+
+			// TODO is a function.
+			// TODO: some task.
+			func TODO() {
+				return // Random comment
+			}`),
+			Mode: 0o600,
+		},
+	}
+
+	opts := &Options{
+		Config: &todos.Config{
+			Types: []string{"TODO"},
+		},
+		Charset: "UTF-8",
+	}
+
+	expected := []*TODORef{
+		{
+			FileName: "line_comments.rb",
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "# TODO: some task.",
+				Message:     "some task.",
+				Line:        3,
+				CommentLine: 3,
+			},
+		},
+		{
+			FileName: "path/to/repo/repo_file.go",
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "// TODO: some task.",
+				Message:     "some task.",
+				Line:        5,
+				CommentLine: 5,
+			},
+			GitUser: &GitUser{
+				Name:  author,
+				Email: email,
+			},
+		},
+	}
+
+	f, w := newDirRepoFixture(author, email, repoSubPath, repoFiles, dirFiles, opts)
+
+	if got, want := w.Walk(), false; got != want {
+		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+	}
+
+	got, want := f.out, expected
+	if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
 		t.Errorf("unexpected output (-want +got):\n%s", diff)
 	}
 }
