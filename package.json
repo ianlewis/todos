@@ -7,6 +7,6 @@
     "markdownlint-cli": "0.41.0"
   },
   "dependencies": {
-    "prettier": "^3.3.2"
+    "prettier": "^3.3.3"
   }
 }
