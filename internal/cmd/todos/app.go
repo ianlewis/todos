@@ -124,7 +124,7 @@ func newTODOsApp() *cli.App {
 			},
 			&cli.BoolFlag{
 				Name:               "blame",
-				Usage:              "attempt to find committer info",
+				Usage:              "[BETA] attempt to find committer info",
 				Value:              false,
 				DisableDefaultText: true,
 			},
