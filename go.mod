@@ -15,7 +15,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.3
 	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
-	sigs.k8s.io/release-utils v0.8.3
+	sigs.k8s.io/release-utils v0.8.4
 )
 
 require (
