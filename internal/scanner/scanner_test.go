@@ -22,6 +22,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/text/encoding/ianaindex"
 
 	"github.com/ianlewis/todos/internal/testutils"
@@ -35,9 +36,11 @@ var scannerTestCases = []*struct {
 	src string
 
 	// config is language name of the scanner configuration to use.
+	// TODO(#460): Use a *Config
 	config string
 
 	// comments are the comments expected to be found by the scanner.
+	// TODO(#460): Use []*Comment and go-cmp
 	comments []struct {
 		// Text is the comment text.
 		text string
@@ -2101,63 +2104,96 @@ End Module`,
 		},
 	},
 
-	// TODO(#460): Support Vim Script
-	// {
-	//	name: "line_comments.vim",
-	//	src: `" file comment
+	// Vim Script
+	{
+		name: "line_comments.vim",
+		src: `" file comment
 
-	//		" TODO is a function.
-	//		function TODO()
-	//			return "Hello" " Random comment
-	//		endfunction
-	//		" extra comment`,
-	//	config: "Vim Script",
-	//	comments: []struct {
-	//		text string
-	//		line int
-	//	}{
-	//		{
-	//			text: "\" file comment",
-	//			line: 1,
-	//		},
-	//		{
-	//			text: "\" TODO is a function.",
-	//			line: 3,
-	//		},
-	//		{
-	//			text: "\" Random comment",
-	//			line: 5,
-	//		},
-	//		{
-	//			text: "\" extra comment",
-	//			line: 7,
-	//		},
-	//	},
-	// },
-	// {
-	//	name: "escaped_string.vim",
-	//	src: `" module comment
+			" TODO is a function.
+			function TODO()
+				return "Hello" " Random comment
+			endfunction
+			" extra comment`,
+		config: "Vim Script",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "\" file comment",
+				line: 1,
+			},
+			{
+				text: "\" TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "\" Random comment",
+				line: 5,
+			},
+			{
+				text: "\" extra comment",
+				line: 7,
+			},
+		},
+	},
+	{
+		name: "escaped_string.vim",
+		src: `" module comment
 
-	//		" TODO is a function
-	//		function TODO()
-	//			return "\" Random comment"
-	//		endfunction
-	//		`,
-	//	config: "Vim Script",
-	//	comments: []struct {
-	//		text string
-	//		line int
-	//	}{
-	//		{
-	//			text: "\" module comment",
-	//			line: 1,
-	//		},
-	//		{
-	//			text: "\" TODO is a function",
-	//			line: 3,
-	//		},
-	//	},
-	// },
+			" TODO is a function
+			function TODO()
+				return "\" Random comment"
+			endfunction`,
+		config: "Vim Script",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "\" module comment",
+				line: 1,
+			},
+			{
+				text: "\" TODO is a function",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "closed_string_comment.vim",
+		src: `" file comment
+
+			" TODO is a function."
+			function TODO()
+				return "Hello" " Random comment"
+			endfunction
+			" extra comment`,
+		config: "Vim Script",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "\" file comment",
+				line: 1,
+			},
+			// TODO(#1540): Read this closed string as a comment.
+			// {
+			// 	text: "\" TODO is a function.\"",
+			// 	line: 3,
+			// },
+			// TODO(#1540): Read this closed string as a comment.
+			// {
+			// 	text: "\" Random comment\"",
+			// 	line: 5,
+			// },
+			{
+				text: "\" extra comment",
+				line: 7,
+			},
+		},
+	},
 }
 
 func TestCommentScanner(t *testing.T) {
@@ -2189,6 +2225,78 @@ func TestCommentScanner(t *testing.T) {
 
 				if want, got := tc.comments[i].line, comments[i].Line; want != got {
 					t.Errorf("unexpected line, want: %d, got: %d", want, got)
+				}
+			}
+		})
+	}
+}
+
+var scannerRegressionTestCases = []*struct {
+	name   string
+	src    string
+	config *Config
+
+	expectedComments []*Comment
+	expectedErr      error
+}{
+	{
+		name: "last_line.go",
+		src:  `// last line`,
+		config: &Config{
+			LineCommentStart: []string{"//"},
+		},
+		expectedComments: []*Comment{
+			{
+				Text: "// last line",
+				Line: 1,
+			},
+		},
+	},
+	{
+		name: "double_escape_1538.foo",
+		src:  `x = ''''''  % foo''`,
+		config: &Config{
+			LineCommentStart: []string{"%"},
+			Strings: []StringConfig{
+				{
+					Start:  "''",
+					End:    "''",
+					Escape: "double",
+				},
+			},
+		},
+
+		expectedComments: nil,
+	},
+}
+
+func TestCommentScanner_regression(t *testing.T) {
+	t.Parallel()
+
+	for i := range scannerRegressionTestCases {
+		tc := scannerRegressionTestCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			s := New(strings.NewReader(tc.src), tc.config)
+
+			var comments []*Comment
+			for s.Scan() {
+				comments = append(comments, s.Next())
+			}
+
+			{
+				got, want := s.Err(), tc.expectedErr
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("unexpected error (-want +got):\n%s", diff)
+				}
+			}
+
+			{
+				got, want := comments, tc.expectedComments
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("unexpected comments (-want +got):\n%s", diff)
 				}
 			}
 		})

@@ -446,16 +446,15 @@ Unix Assembly:
     - start: "'"
       end: "'"
       escape: none
-# TODO(#460): Support Vim Script
-# Vim Script:
-#   line_comment_start: ['"']
-#   strings:
-#     - start: '"'
-#       end: '"'
-#       escape: backslash
-#     - start: "'"
-#       end: "'"
-#       escape: backslash
+Vim Script:
+  line_comment_start: ['"']
+  strings:
+    - start: '"'
+      end: '"'
+      escape: backslash
+    - start: "'"
+      end: "'"
+      escape: backslash
 VBA:
   line_comment_start: ["'"]
   strings:

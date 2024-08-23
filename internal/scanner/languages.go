@@ -54,7 +54,7 @@ type Config struct {
 	Strings          []StringConfig         `yaml:"strings,omitempty"`
 }
 
-type escapeFunc func(s *CommentScanner, st *stateString) (bool, error)
+type escapeFunc func(s *CommentScanner, st *stateString) ([]rune, error)
 
 var escapeFuncs = map[string]escapeFunc{
 	BackslashEscape: backslashEscape,
@@ -62,18 +62,33 @@ var escapeFuncs = map[string]escapeFunc{
 	DoubleEscape:    doubleEscape,
 }
 
-func noEscape(_ *CommentScanner, _ *stateString) (bool, error) {
-	return false, nil
+func noEscape(_ *CommentScanner, _ *stateString) ([]rune, error) {
+	return nil, nil
 }
 
-func backslashEscape(s *CommentScanner, st *stateString) (bool, error) {
-	return s.peekEqual(append([]rune{'\\'}, s.config.Strings[st.index].End...))
+func backslashEscape(s *CommentScanner, st *stateString) ([]rune, error) {
+	b := append([]rune{'\\'}, s.config.Strings[st.index].End...)
+	eq, err := s.peekEqual(b)
+	if err != nil {
+		return nil, err
+	}
+	if eq {
+		return b, nil
+	}
+	return nil, nil
 }
 
-func doubleEscape(s *CommentScanner, st *stateString) (bool, error) {
+func doubleEscape(s *CommentScanner, st *stateString) ([]rune, error) {
 	b := append([]rune{}, s.config.Strings[st.index].End...)
 	b = append(b, s.config.Strings[st.index].End...)
-	return s.peekEqual(b)
+	eq, err := s.peekEqual(b)
+	if err != nil {
+		return nil, err
+	}
+	if eq {
+		return b, nil
+	}
+	return nil, nil
 }
 
 // LanguagesConfig is a map of language names to their configuration. Keys are

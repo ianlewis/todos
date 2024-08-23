@@ -207,7 +207,6 @@ func (s *CommentScanner) Scan() bool {
 		if s.err != nil {
 			return false
 		}
-
 		switch st := s.state.(type) {
 		case *stateCode:
 			s.state, s.err = s.processCode(st)
@@ -216,6 +215,12 @@ func (s *CommentScanner) Scan() bool {
 		case *stateLineComment:
 			s.state, s.err = s.processLineComment(st)
 			if _, ok := s.state.(*stateLineComment); !ok {
+				return true
+			}
+		case *stateLineCommentOrString:
+			var hasComment bool
+			hasComment, s.state, s.err = s.processLineCommentOrString(st)
+			if hasComment {
 				return true
 			}
 		case *stateMultilineComment:
@@ -243,14 +248,18 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 
 		if len(m) > 0 || len(mm) > 0 {
 			if len(m) >= len(mm) {
+				for i, stringStart := range s.config.Strings {
+					if string(stringStart.Start) == string(m) {
+						return &stateLineCommentOrString{
+							index: i,
+						}, nil
+					}
+				}
+
 				return &stateLineComment{}, nil
 			}
 
 			if !s.config.MultilineCommentAtLineStart || s.atLineStart {
-				// Discard the opening. It will be added by processMultilineComment.
-				if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
-					return st, fmt.Errorf("parsing code: %w", errDiscard)
-				}
 				return &stateMultilineComment{
 					line: s.line,
 				}, nil
@@ -264,10 +273,6 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 				return st, err
 			}
 			if eq {
-				// Discard the string opening.
-				if _, err := s.reader.Discard(len(strs.Start)); err != nil {
-					return st, fmt.Errorf("parsing code: %w", err)
-				}
 				return &stateString{
 					index: i,
 				}, nil
@@ -309,15 +314,21 @@ func (s *CommentScanner) multiLineMatch() ([]rune, error) {
 
 // processString processes strings and returns the next state.
 func (s *CommentScanner) processString(st *stateString) (state, error) {
+	// Discard the string start characters.
+	if _, err := s.reader.Discard(len(s.config.Strings[st.index].Start)); err != nil {
+		return st, fmt.Errorf("parsing string: %w", err)
+	}
+
 	for {
 		// Handle escaped characters.
 		escaped, err := s.config.Strings[st.index].EscapeFunc(s, st)
-		if err != nil {
+		// There may still be characters to process so continue if we get EOF.
+		if err != nil && !errors.Is(err, io.EOF) {
 			return st, err
 		}
-		if escaped {
-			// Skip the backslash character.
-			if _, err := s.reader.Discard(1); err != nil {
+		if len(escaped) > 0 {
+			// Skip the escaped characters.
+			if _, err := s.reader.Discard(len(escaped)); err != nil {
 				return st, fmt.Errorf("parsing string: %w", err)
 			}
 		} else {
@@ -332,10 +343,10 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 				}
 				return &stateCode{}, nil
 			}
-		}
 
-		if _, err := s.nextRune(); err != nil {
-			return st, fmt.Errorf("parsing string: %w", err)
+			if _, err := s.nextRune(); err != nil {
+				return st, fmt.Errorf("parsing string: %w", err)
+			}
 		}
 	}
 }
@@ -369,9 +380,91 @@ func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error)
 	}
 }
 
+// processLineCommentOrString processes strings or line comments when they have
+// the same start character. e.g. Vim Script.
+func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString) (bool, state, error) {
+	// Discard the string start characters.
+	if _, err := s.reader.Discard(len(s.config.Strings[st.index].Start)); err != nil {
+		return false, st, fmt.Errorf("parsing string: %w", err)
+	}
+
+	// b is used to build the line comment text.
+	var b strings.Builder
+	// Add the opening to the builder since we want it in the output if this is a comment.
+	b.WriteString(string(s.config.Strings[st.index].Start))
+	for {
+		lineEnd, err := s.isLineEnd()
+		if err != nil {
+			return false, st, err
+		}
+
+		// If we get to the end of the line without the string being closed,
+		// then it must be a comment. Languages where line comments and strings
+		// share the same character cannot implement multi-line strings.
+		if lineEnd {
+			s.next = &Comment{
+				Text:      b.String(),
+				Line:      s.line,
+				Multiline: false,
+			}
+			return true, &stateCode{}, nil
+		}
+
+		// Handle escaped characters.
+		escaped, err := s.config.Strings[st.index].EscapeFunc(s, &stateString{
+			index: st.index,
+		})
+		// There may still be characters to process so continue.
+		if err != nil && !errors.Is(err, io.EOF) {
+			return false, st, err
+		}
+		if len(escaped) > 0 {
+			// Skip the escaped characters.
+			if _, discardErr := s.reader.Discard(len(escaped)); discardErr != nil {
+				return false, st, fmt.Errorf("parsing string: %w", discardErr)
+			}
+
+			// Write the escaped characters in case this is a comment.
+			_, err = b.WriteString(string(escaped))
+			if err != nil {
+				return false, st, fmt.Errorf("writing runes %q: %w", escaped, err)
+			}
+			continue
+		}
+
+		// Look for the end of the string.
+		stringEnd, err := s.peekEqual(s.config.Strings[st.index].End)
+		if err != nil {
+			return false, st, fmt.Errorf("parsing string: %w", err)
+		}
+		if stringEnd {
+			if _, discardErr := s.reader.Discard(len(s.config.Strings[st.index].End)); discardErr != nil {
+				return false, st, fmt.Errorf("parsing string: %w", discardErr)
+			}
+			return false, &stateCode{}, nil
+		}
+
+		rn, err := s.nextRune()
+		if err != nil {
+			return false, st, fmt.Errorf("parsing string: %w", err)
+		}
+
+		_, err = b.WriteRune(rn)
+		if err != nil {
+			return false, st, fmt.Errorf("writing rune %q: %w", rn, err)
+		}
+	}
+}
+
 // processMultilineComment processes multi-line comments and returns the next state.
 func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (state, error) {
+	// Discard the opening since we don't want to parse it. It could be the same as the closing.
+	if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
+		return st, fmt.Errorf("parsing code: %w", errDiscard)
+	}
+
 	var b strings.Builder
+	// Add the opening to the builder since we want it in the output.
 	b.WriteString(string(s.config.MultilineCommentStart))
 	for {
 		// Look for the end of the comment.

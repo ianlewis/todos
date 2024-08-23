@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support for [MATLAB](https://www.mathworks.com/products/matlab.html) files
-  was added.
+- Support was added for
+  [MATLAB](https://www.mathworks.com/products/matlab.html) and
+  [Vim Script](https://vimdoc.sourceforge.net/htmldoc/usr_41.html).
 
 ## [0.9.0] - 2024-08-08
 
