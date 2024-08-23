@@ -33,6 +33,15 @@ type stateMultilineComment struct {
 
 func (s *stateMultilineComment) stateMustImplement() {}
 
+// stateLineCommentOrString implements the special case when strings and line
+// comments start with the same character. e.g. Vim Script.
+type stateLineCommentOrString struct {
+	// index is the index for the type of string.
+	index int
+}
+
+func (s *stateLineCommentOrString) stateMustImplement() {}
+
 type stateString struct {
 	// index is the index for the type of string.
 	index int
