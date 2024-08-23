@@ -979,6 +979,117 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// PowerShell
+	{
+		name: "line_comments.ps1",
+		src: `# file comment
+
+			# TODO is a function.
+			function TODO {
+				Write-Output "TODO" # Random comment
+			}`,
+		config: "PowerShell",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.ps1",
+		src: `# file comment
+
+			# TODO is a function.
+			function TODO {
+				Write-Output "# TODO"
+				Write-Output '# TODO'
+			}`,
+		config: "PowerShell",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "escaped_string.ps1",
+		src: `# file comment
+
+			# TODO is a function.
+			function TODO {
+				Write-Output "` + "`" + `"# Random comment"
+				Write-Output '` + "`" + `'# Random comment'
+			}`,
+		config: "PowerShell",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+		},
+	},
+	{
+		name: "multi_line.ps1",
+		src: `# file comment
+
+			<#
+			TODO is a function.
+			#>
+			function TODO {
+				Write-Output "TODO" # Random comment
+			}
+			<# extra comment #>`,
+		config: "PowerShell",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "<#\n\t\t\tTODO is a function.\n\t\t\t#>",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 7,
+			},
+			{
+				text: "<# extra comment #>",
+				line: 9,
+			},
+		},
+	},
+
 	// Puppet
 	{
 		name: "line_comments.pp",
@@ -2180,13 +2291,13 @@ End Module`,
 			},
 			// TODO(#1540): Read this closed string as a comment.
 			// {
-			// 	text: "\" TODO is a function.\"",
-			// 	line: 3,
+			//	text: "\" TODO is a function.\"",
+			//	line: 3,
 			// },
 			// TODO(#1540): Read this closed string as a comment.
 			// {
-			// 	text: "\" Random comment\"",
-			// 	line: 5,
+			//	text: "\" Random comment\"",
+			//	line: 5,
 			// },
 			{
 				text: "\" extra comment",

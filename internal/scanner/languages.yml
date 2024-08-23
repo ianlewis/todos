@@ -33,10 +33,10 @@ C:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 C++:
   line_comment_start: ["//"]
   multiline_comment:
@@ -45,10 +45,10 @@ C++:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 C#:
   line_comment_start: ["//"]
   multiline_comment:
@@ -57,16 +57,16 @@ C#:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Clojure:
   line_comment_start: [";"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
 CoffeeScript:
   line_comment_start: ["#"]
   multiline_comment:
@@ -75,34 +75,34 @@ CoffeeScript:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Dockerfile:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Emacs Lisp:
   line_comment_start: [";"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
 Erlang:
   line_comment_start: ["%"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Fortran:
   line_comment_start: ["!"]
   strings:
@@ -129,11 +129,11 @@ Go:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     # Rune
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
     # Raw strings
     - start: "`"
       end: "`"
@@ -145,7 +145,7 @@ Go Module:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     # Raw strings
     - start: "`"
       end: "`"
@@ -158,13 +158,13 @@ Groovy:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
     - start: "'''"
       end: "'''"
-      escape: backslash
+      escape: character \
 Haskell:
   line_comment_start: ["--"]
   multiline_comment:
@@ -173,10 +173,10 @@ Haskell:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 HTML:
   multiline_comment:
     start: "<!--"
@@ -184,10 +184,10 @@ HTML:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Java:
   line_comment_start: ["//"]
   multiline_comment:
@@ -196,10 +196,10 @@ Java:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 JavaScript:
   line_comment_start: ["//"]
   multiline_comment:
@@ -208,10 +208,10 @@ JavaScript:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 # NOTE: Some JSON files support JS comments (e.g. tsconfig.json)
 # NOTE: HOCON format allows # comments (github.com/lightbend/config/blob/master/HOCON.md)
 JSON:
@@ -222,10 +222,10 @@ JSON:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Kotlin:
   line_comment_start: ["//"]
   multiline_comment:
@@ -234,10 +234,10 @@ Kotlin:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Lua:
   line_comment_start: ["--"]
   multiline_comment:
@@ -246,19 +246,19 @@ Lua:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Makefile:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 MATLAB:
   line_comment_start: ["%"]
   multiline_comment:
@@ -268,11 +268,11 @@ MATLAB:
     # Strings
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     # Character vectors
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Objective-C:
   line_comment_start: ["//"]
   multiline_comment:
@@ -281,10 +281,10 @@ Objective-C:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Perl:
   line_comment_start: ["#"]
   multiline_comment:
@@ -295,10 +295,10 @@ Perl:
     # TODO(#357): Perl supports strings with any delimiter.
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 PHP:
   line_comment_start: ["#", "//"]
   multiline_comment:
@@ -307,19 +307,31 @@ PHP:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
+PowerShell:
+  line_comment_start: ["#"]
+  multiline_comment:
+    start: "<#"
+    end: "#>"
+  strings:
+    - start: '"'
+      end: '"'
+      escape: character `
+    - start: "'"
+      end: "'"
+      escape: character `
 Puppet:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Python:
   line_comment_start: ["#"]
   multiline_comment:
@@ -328,19 +340,19 @@ Python:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 R:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Ruby:
   line_comment_start: ["#"]
   multiline_comment:
@@ -350,13 +362,13 @@ Ruby:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
     - start: "%{"
       end: "}"
-      escape: backslash
+      escape: character \
 Rust:
   line_comment_start: ["//"]
   multiline_comment:
@@ -365,10 +377,10 @@ Rust:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Scala:
   line_comment_start: ["//"]
   multiline_comment:
@@ -377,19 +389,19 @@ Scala:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Shell:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 Swift:
   line_comment_start: ["//"]
   multiline_comment:
@@ -398,7 +410,7 @@ Swift:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
 SQL:
   line_comment_start: ["--"]
   multiline_comment:
@@ -416,10 +428,10 @@ TOML:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 TypeScript:
   line_comment_start: ["//"]
   multiline_comment:
@@ -428,10 +440,10 @@ TypeScript:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 TeX:
   line_comment_start: ["%"]
 Unix Assembly:
@@ -451,22 +463,22 @@ Vim Script:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 VBA:
   line_comment_start: ["'"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
 Visual Basic .NET:
   line_comment_start: ["'"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
 XML:
   multiline_comment:
     start: "<!--"
@@ -474,16 +486,16 @@ XML:
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
 YAML:
   line_comment_start: ["#"]
   strings:
     - start: '"'
       end: '"'
-      escape: backslash
+      escape: character \
     - start: "'"
       end: "'"
-      escape: backslash
+      escape: character \
