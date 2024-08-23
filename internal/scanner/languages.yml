@@ -259,6 +259,20 @@ Makefile:
     - start: "'"
       end: "'"
       escape: backslash
+MATLAB:
+  line_comment_start: ["%"]
+  multiline_comment:
+    start: "%{"
+    end: "}%"
+  strings:
+    # Strings
+    - start: '"'
+      end: '"'
+      escape: backslash
+    # Character vectors
+    - start: "'"
+      end: "'"
+      escape: backslash
 Objective-C:
   line_comment_start: ["//"]
   multiline_comment:
