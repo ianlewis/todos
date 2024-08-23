@@ -28,11 +28,21 @@ import (
 )
 
 var scannerTestCases = []*struct {
-	name     string
-	src      string
-	config   string
+	// name is the test name. it is also the file name.
+	name string
+
+	// src is the source code.
+	src string
+
+	// config is language name of the scanner configuration to use.
+	config string
+
+	// comments are the comments expected to be found by the scanner.
 	comments []struct {
+		// Text is the comment text.
 		text string
+
+		// line is the starting line where the comment is found.
 		line int
 	}
 }{
@@ -1302,6 +1312,114 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// MATLAB
+	{
+		name: "line_comments.m",
+		src: `% file comment
+
+			% TODO is an array.
+			TODO = [1, 2, 3, 4]
+			% end of file`,
+		config: "MATLAB",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% file comment",
+				line: 1,
+			},
+			{
+				text: "% TODO is an array.",
+				line: 3,
+			},
+			{
+				text: "% end of file",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.m",
+		src: `% file comment
+
+			% TODO is a string.
+			TODO = "-- Random comment"
+			% end of file`,
+		config: "MATLAB",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% file comment",
+				line: 1,
+			},
+			{
+				text: "% TODO is a string.",
+				line: 3,
+			},
+			{
+				text: "% end of file",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "escaped_string.m",
+		src: `% file comment
+
+			% TODO is a string.
+			TODO = "\"% Random comment"
+			% end of file`,
+		config: "MATLAB",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% file comment",
+				line: 1,
+			},
+			{
+				text: "% TODO is a string.",
+				line: 3,
+			},
+			{
+				text: "% end of file",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "multi_line.m",
+		src: `% file comment
+
+			%{
+			TODO is a string.
+			}%
+			TODO = "% Random comment"
+			% end of file`,
+		config: "MATLAB",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "% file comment",
+				line: 1,
+			},
+			{
+				text: "%{\n\t\t\tTODO is a string.\n\t\t\t}%",
+				line: 3,
+			},
+			{
+				text: "% end of file",
+				line: 7,
+			},
+		},
+	},
+
 	// Python
 	{
 		name: "raw_string.py",
@@ -2173,16 +2291,16 @@ var loaderTestCases = []struct {
 	},
 	// TODO: enry doesn't do a good job with it's classifier.
 	// {
-	// 	name: "detect_by_contents.foo",
-	// 	src: []byte(`package foo
-	// 		// package comment
+	//	name: "detect_by_contents.foo",
+	//	src: []byte(`package foo
+	//		// package comment
 
-	// 		// TODO is a function.
-	// 		func TODO() {
-	// 			return // Random comment
-	// 		}`),
-	// 	scanCharset:    "UTF-8",
-	// 	expectedConfig: "Go",
+	//		// TODO is a function.
+	//		func TODO() {
+	//			return // Random comment
+	//		}`),
+	//	scanCharset:    "UTF-8",
+	//	expectedConfig: "Go",
 	// },
 	{
 		name: "binary.exe",
