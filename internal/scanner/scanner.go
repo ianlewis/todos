@@ -61,10 +61,11 @@ func convertConfig(c *Config) *config {
 	c2.MultilineCommentEnd = []rune(c.MultilineComment.End)
 	c2.MultilineCommentAtLineStart = c.MultilineComment.AtLineStart
 
+	// TODO(#460): Generate code for language support.
 	for i := range c.Strings {
 		var eFunc escapeFunc
 		switch {
-		case strings.HasPrefix(c.Strings[i].Escape, "character "):
+		case strings.HasPrefix(c.Strings[i].Escape, CharEscape):
 			parts := strings.Split(c.Strings[i].Escape, " ")
 			if len(parts[1]) != 1 {
 				panic(fmt.Sprintf("invalid escape character %q", parts[1]))
@@ -73,9 +74,9 @@ func convertConfig(c *Config) *config {
 			eFunc = func(s *CommentScanner, st *stateString) ([]rune, error) {
 				return charEscape(eRune, s, st)
 			}
-		case c.Strings[i].Escape == "double":
+		case c.Strings[i].Escape == DoubleEscape:
 			eFunc = doubleEscape
-		case c.Strings[i].Escape == "" || c.Strings[i].Escape == "none":
+		case c.Strings[i].Escape == "" || c.Strings[i].Escape == NoEscape:
 			eFunc = noEscape
 		default:
 			panic(fmt.Sprintf("invalid escape %q", c.Strings[i].Escape))
