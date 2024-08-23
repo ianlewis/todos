@@ -446,7 +446,6 @@ Unix Assembly:
     - start: "'"
       end: "'"
       escape: none
-# TODO(#460): Support Vim Script
 Vim Script:
   line_comment_start: ['"']
   strings:
