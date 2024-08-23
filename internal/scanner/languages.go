@@ -32,10 +32,12 @@ type MultilineCommentConfig struct {
 }
 
 var (
-	// BackslashEscape indicates characters can be escaped by a backslash.
-	BackslashEscape = "backslash"
-	// NoEscape indicates characters cannot be escaped.
+	// CharEscape indicates the following character is the escape character.
+	CharEscape = "character"
+
+	// NoEscape indicates characters cannot be escaped. This is the default.
 	NoEscape = "none"
+
 	// DoubleEscape indicates that strings can be escaped with double characters.
 	DoubleEscape = "double"
 )
@@ -56,18 +58,12 @@ type Config struct {
 
 type escapeFunc func(s *CommentScanner, st *stateString) ([]rune, error)
 
-var escapeFuncs = map[string]escapeFunc{
-	BackslashEscape: backslashEscape,
-	NoEscape:        noEscape,
-	DoubleEscape:    doubleEscape,
-}
-
 func noEscape(_ *CommentScanner, _ *stateString) ([]rune, error) {
 	return nil, nil
 }
 
-func backslashEscape(s *CommentScanner, st *stateString) ([]rune, error) {
-	b := append([]rune{'\\'}, s.config.Strings[st.index].End...)
+func charEscape(c rune, s *CommentScanner, st *stateString) ([]rune, error) {
+	b := append([]rune{c}, s.config.Strings[st.index].End...)
 	eq, err := s.peekEqual(b)
 	if err != nil {
 		return nil, err

@@ -10,8 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support was added for
-  [MATLAB](https://www.mathworks.com/products/matlab.html) and
+  [MATLAB](https://www.mathworks.com/products/matlab.html)
+- Support was added for
   [Vim Script](https://vimdoc.sourceforge.net/htmldoc/usr_41.html).
+- Support was added for
+  [Powershell](https://learn.microsoft.com/en-us/powershell/).
 
 ## [0.9.0] - 2024-08-08
 
