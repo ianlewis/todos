@@ -2354,7 +2354,7 @@ var scannerRegressionTestCases = []*struct {
 		name: "last_line.go",
 		src:  `// last line`,
 		config: &Config{
-			LineCommentStart: []string{"//"},
+			LineCommentStart: [][]rune{[]rune("//")},
 		},
 		expectedComments: []*Comment{
 			{
@@ -2367,12 +2367,12 @@ var scannerRegressionTestCases = []*struct {
 		name: "double_escape_1538.foo",
 		src:  `x = ''''''  % foo''`,
 		config: &Config{
-			LineCommentStart: []string{"%"},
+			LineCommentStart: [][]rune{[]rune("%")},
 			Strings: []StringConfig{
 				{
-					Start:  "''",
-					End:    "''",
-					Escape: "double",
+					Start:      []rune("''"),
+					End:        []rune("''"),
+					EscapeFunc: DoubleEscape,
 				},
 			},
 		},

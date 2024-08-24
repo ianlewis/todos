@@ -39,64 +39,19 @@ var (
 	errDecodeCharset = errors.New("decoding charset")
 )
 
-type stringConfig struct {
+type StringConfig struct {
 	Start      []rune
 	End        []rune
-	EscapeFunc escapeFunc
+	EscapeFunc EscapeFunc
 }
 
-// config is configuration for a generic comment scanner.
-type config struct {
+// Config is configuration for a generic comment scanner.
+type Config struct {
 	LineCommentStart            [][]rune
 	MultilineCommentStart       []rune
 	MultilineCommentEnd         []rune
 	MultilineCommentAtLineStart bool
-	Strings                     []stringConfig
-}
-
-func convertConfig(c *Config) *config {
-	var c2 config
-	c2.LineCommentStart = stringsToRunes(c.LineCommentStart)
-	c2.MultilineCommentStart = []rune(c.MultilineComment.Start)
-	c2.MultilineCommentEnd = []rune(c.MultilineComment.End)
-	c2.MultilineCommentAtLineStart = c.MultilineComment.AtLineStart
-
-	// TODO(#460): Generate code for language support.
-	for i := range c.Strings {
-		var eFunc escapeFunc
-		switch {
-		case strings.HasPrefix(c.Strings[i].Escape, CharEscape):
-			parts := strings.Split(c.Strings[i].Escape, " ")
-			if len(parts[1]) != 1 {
-				panic(fmt.Sprintf("invalid escape character %q", parts[1]))
-			}
-			eRune := []rune(parts[1])[0]
-			eFunc = func(s *CommentScanner, st *stateString) ([]rune, error) {
-				return charEscape(eRune, s, st)
-			}
-		case c.Strings[i].Escape == DoubleEscape:
-			eFunc = doubleEscape
-		case c.Strings[i].Escape == "" || c.Strings[i].Escape == NoEscape:
-			eFunc = noEscape
-		default:
-			panic(fmt.Sprintf("invalid escape %q", c.Strings[i].Escape))
-		}
-
-		c2.Strings = append(c2.Strings, stringConfig{
-			Start:      []rune(c.Strings[i].Start),
-			End:        []rune(c.Strings[i].End),
-			EscapeFunc: eFunc,
-		})
-	}
-	return &c2
-}
-
-func stringsToRunes(s []string) [][]rune {
-	var r [][]rune
-	for i := range s {
-		r = append(r, []rune(s[i]))
-	}
-	return r
+	Strings                     []StringConfig
 }
 
 // FromFile returns an appropriate CommentScanner for the given file. The
@@ -170,9 +125,8 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 // New returns a new CommentScanner that scans code returned by r with the given Config.
 func New(r io.Reader, c *Config) *CommentScanner {
 	return &CommentScanner{
-		originalConfig: c,
-		config:         convertConfig(c),
-		reader:         runeio.NewReader(bufio.NewReader(r)),
+		config: c,
+		reader: runeio.NewReader(bufio.NewReader(r)),
 
 		// Starting state
 		state: &stateCode{},
@@ -182,9 +136,8 @@ func New(r io.Reader, c *Config) *CommentScanner {
 
 // CommentScanner is a generic code comment scanner.
 type CommentScanner struct {
-	reader         *runeio.RuneReader
-	originalConfig *Config
-	config         *config
+	reader *runeio.RuneReader
+	config *Config
 
 	// state is the current state-machine state.
 	state state
@@ -205,7 +158,7 @@ type CommentScanner struct {
 
 // Config returns the scanners configuration.
 func (s *CommentScanner) Config() *Config {
-	return s.originalConfig
+	return s.config
 }
 
 // Next returns the next Comment.
@@ -342,7 +295,7 @@ func (s *CommentScanner) processString(st *stateString) (state, error) {
 
 	for {
 		// Handle escaped characters.
-		escaped, err := s.config.Strings[st.index].EscapeFunc(s, st)
+		escaped, err := s.config.Strings[st.index].EscapeFunc(s, s.config.Strings[st.index].End)
 		// There may still be characters to process so continue if we get EOF.
 		if err != nil && !errors.Is(err, io.EOF) {
 			return st, err
@@ -432,9 +385,7 @@ func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString
 		}
 
 		// Handle escaped characters.
-		escaped, err := s.config.Strings[st.index].EscapeFunc(s, &stateString{
-			index: st.index,
-		})
+		escaped, err := s.config.Strings[st.index].EscapeFunc(s, s.config.Strings[st.index].End)
 		// There may still be characters to process so continue.
 		if err != nil && !errors.Is(err, io.EOF) {
 			return false, st, err
