@@ -156,7 +156,7 @@ yamllint: ## Runs the yamllint linter.
 ## Documentation
 #####################################################################
 
-SUPPORTED_LANGUAGES.md: node_modules/.installed ## Supported languages documentation.
+SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.go ## Supported languages documentation.
 	@set -e;\
 		go mod vendor; \
 		go run -mod=vendor ./internal/cmd/genlangdocs | ./node_modules/.bin/prettier --parser markdown > $@
