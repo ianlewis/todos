@@ -30,10 +30,8 @@ type testScanner struct {
 
 func (s *testScanner) Config() *scanner.Config {
 	return &scanner.Config{
-		LineCommentStart: []string{"//"},
-		MultilineComment: scanner.MultilineCommentConfig{
-			Start: "/*",
-		},
+		LineCommentStart:      [][]rune{[]rune("//")},
+		MultilineCommentStart: []rune("/*"),
 	}
 }
 

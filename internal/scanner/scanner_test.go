@@ -36,11 +36,11 @@ var scannerTestCases = []*struct {
 	src string
 
 	// config is language name of the scanner configuration to use.
-	// TODO(#460): Use a *Config
+	// TODO(#96): Use a *Config
 	config string
 
 	// comments are the comments expected to be found by the scanner.
-	// TODO(#460): Use []*Comment and go-cmp
+	// TODO(#96): Use []*Comment and go-cmp
 	comments []struct {
 		// Text is the comment text.
 		text string
@@ -2354,7 +2354,7 @@ var scannerRegressionTestCases = []*struct {
 		name: "last_line.go",
 		src:  `// last line`,
 		config: &Config{
-			LineCommentStart: []string{"//"},
+			LineCommentStart: [][]rune{[]rune("//")},
 		},
 		expectedComments: []*Comment{
 			{
@@ -2367,12 +2367,12 @@ var scannerRegressionTestCases = []*struct {
 		name: "double_escape_1538.foo",
 		src:  `x = ''''''  % foo''`,
 		config: &Config{
-			LineCommentStart: []string{"%"},
+			LineCommentStart: [][]rune{[]rune("%")},
 			Strings: []StringConfig{
 				{
-					Start:  "''",
-					End:    "''",
-					Escape: "double",
+					Start:      []rune("''"),
+					End:        []rune("''"),
+					EscapeFunc: DoubleEscape,
 				},
 			},
 		},

@@ -39,7 +39,7 @@ func IsVendor(path string) bool {
 
 //nolint:gochecknoinits // init needed to load embedded config.
 func init() {
-	// TODO(#460): Generate Go code rather than loading YAML at runtime.
+	// TODO(#1545): Generate Go code rather than loading YAML at runtime.
 	var rawRegex []string
 	utils.Check(yaml.Unmarshal(vendorRaw, &rawRegex))
 

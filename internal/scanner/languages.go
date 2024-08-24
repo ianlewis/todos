@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,88 +14,758 @@
 
 package scanner
 
-import (
-	// embed is required to be imported to use go:embed.
-	_ "embed"
-
-	"gopkg.in/yaml.v1"
-)
-
-//go:embed languages.yml
-var languagesRaw []byte
-
-// MultilineCommentConfig describes multi-line comments.
-type MultilineCommentConfig struct {
-	Start       string `yaml:"start,omitempty"`
-	End         string `yaml:"end,omitempty"`
-	AtLineStart bool   `yaml:"at_line_start,omitempty"`
-}
-
-var (
-	// CharEscape indicates the following character is the escape character.
-	CharEscape = "character"
-
-	// NoEscape indicates characters cannot be escaped. This is the default.
-	NoEscape = "none"
-
-	// DoubleEscape indicates that strings can be escaped with double characters.
-	DoubleEscape = "double"
-)
-
-// StringConfig is config describing types of string.
-type StringConfig struct {
-	Start  string `yaml:"start,omitempty"`
-	End    string `yaml:"end,omitempty"`
-	Escape string `yaml:"escape,omitempty"`
-}
-
-// Config is configuration for a language comment scanner.
-type Config struct {
-	LineCommentStart []string               `yaml:"line_comment_start,omitempty"`
-	MultilineComment MultilineCommentConfig `yaml:"multiline_comment,omitempty"`
-	Strings          []StringConfig         `yaml:"strings,omitempty"`
-}
-
-type escapeFunc func(s *CommentScanner, st *stateString) ([]rune, error)
-
-func noEscape(_ *CommentScanner, _ *stateString) ([]rune, error) {
-	return nil, nil
-}
-
-func charEscape(c rune, s *CommentScanner, st *stateString) ([]rune, error) {
-	b := append([]rune{c}, s.config.Strings[st.index].End...)
-	eq, err := s.peekEqual(b)
-	if err != nil {
-		return nil, err
-	}
-	if eq {
-		return b, nil
-	}
-	return nil, nil
-}
-
-func doubleEscape(s *CommentScanner, st *stateString) ([]rune, error) {
-	b := append([]rune{}, s.config.Strings[st.index].End...)
-	b = append(b, s.config.Strings[st.index].End...)
-	eq, err := s.peekEqual(b)
-	if err != nil {
-		return nil, err
-	}
-	if eq {
-		return b, nil
-	}
-	return nil, nil
-}
-
-// LanguagesConfig is a map of language names to their configuration. Keys are
-// language names defined in the linguist library.
-var LanguagesConfig map[string]*Config
-
-//nolint:gochecknoinits // init needed to load embedded config.
-func init() {
-	// TODO(#460): Generate Go code rather than loading YAML at runtime.
-	if err := yaml.Unmarshal(languagesRaw, &LanguagesConfig); err != nil {
-		// NOTE: This shouldn't happen.
-		panic(err)
-	}
+var LanguagesConfig = map[string]*Config{
+	"Assembly": {
+		LineCommentStart:            [][]rune{{';'}},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: NoEscape,
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"C": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"C#": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"C++": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Clojure": {
+		LineCommentStart:            [][]rune{{';'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"CoffeeScript": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       []rune("###"),
+		MultilineCommentEnd:         []rune("###"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Dockerfile": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Emacs Lisp": {
+		LineCommentStart:            [][]rune{{';'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Erlang": {
+		LineCommentStart:            [][]rune{{'%'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Fortran": {
+		LineCommentStart:            [][]rune{{'!'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: NoEscape,
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"Fortran Free Form": {
+		LineCommentStart:            [][]rune{{'!'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: NoEscape,
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"Go": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'`'},
+				End:        []rune{'`'},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"Go Module": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'`'},
+				End:        []rune{'`'},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"Groovy": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune("'''"),
+				End:        []rune("'''"),
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"HTML": {
+		LineCommentStart:            nil,
+		MultilineCommentStart:       []rune("<!--"),
+		MultilineCommentEnd:         []rune("--!>"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Haskell": {
+		LineCommentStart:            [][]rune{[]rune("--")},
+		MultilineCommentStart:       []rune("{-"),
+		MultilineCommentEnd:         []rune("-}"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"JSON": {
+		LineCommentStart: [][]rune{
+			[]rune("//"),
+			{'#'},
+		},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Java": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"JavaScript": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Kotlin": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Lua": {
+		LineCommentStart:            [][]rune{[]rune("--")},
+		MultilineCommentStart:       []rune("--[["),
+		MultilineCommentEnd:         []rune("--]]"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"MATLAB": {
+		LineCommentStart:            [][]rune{{'%'}},
+		MultilineCommentStart:       []rune("%{"),
+		MultilineCommentEnd:         []rune("}%"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Makefile": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Objective-C": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"PHP": {
+		LineCommentStart: [][]rune{
+			{'#'},
+			[]rune("//"),
+		},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Perl": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       []rune{'='},
+		MultilineCommentEnd:         []rune("=cut"),
+		MultilineCommentAtLineStart: true,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"PowerShell": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       []rune("<#"),
+		MultilineCommentEnd:         []rune("#>"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('`'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('`'),
+			},
+		},
+	},
+	"Puppet": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Python": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       []rune("\"\"\""),
+		MultilineCommentEnd:         []rune("\"\"\""),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"R": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Ruby": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       []rune("=begin"),
+		MultilineCommentEnd:         []rune("=end"),
+		MultilineCommentAtLineStart: true,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune("%{"),
+				End:        []rune{'}'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Rust": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"SQL": {
+		LineCommentStart:            [][]rune{[]rune("--")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: DoubleEscape,
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: DoubleEscape,
+			},
+		},
+	},
+	"Scala": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Shell": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Swift": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"TOML": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"TeX": {
+		LineCommentStart:            [][]rune{{'%'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings:                     nil,
+	},
+	"TypeScript": {
+		LineCommentStart:            [][]rune{[]rune("//")},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Unix Assembly": {
+		LineCommentStart:            [][]rune{{';'}},
+		MultilineCommentStart:       []rune("/*"),
+		MultilineCommentEnd:         []rune("*/"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: NoEscape,
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
+	"VBA": {
+		LineCommentStart:            [][]rune{{'\''}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Vim Script": {
+		LineCommentStart:            [][]rune{{'"'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"Visual Basic .NET": {
+		LineCommentStart:            [][]rune{{'\''}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"XML": {
+		LineCommentStart:            nil,
+		MultilineCommentStart:       []rune("<!--"),
+		MultilineCommentEnd:         []rune("--!>"),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
+	"YAML": {
+		LineCommentStart:            [][]rune{{'#'}},
+		MultilineCommentStart:       nil,
+		MultilineCommentEnd:         nil,
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
 }

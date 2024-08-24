@@ -65,7 +65,7 @@ go-benchmark: ## Runs Go benchmarks.
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
 			extraargs="-v"; \
 		fi; \
-		go test $$extraargs -bench=. -count=$(TESTCOUNT) -benchtime=$(BENCHTIME) -run='^#' ./...
+		go test $$extraargs -mod=vendor -bench=. -count=$(TESTCOUNT) -benchtime=$(BENCHTIME) -run='^#' ./...
 
 ## Tools
 #####################################################################
@@ -156,10 +156,10 @@ yamllint: ## Runs the yamllint linter.
 ## Documentation
 #####################################################################
 
-SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.yml ## Supported languages documentation.
+SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.go ## Supported languages documentation.
 	@set -e;\
 		go mod vendor; \
-		go run ./internal/cmd/genlangdocs | ./node_modules/.bin/prettier --parser markdown > $@
+		go run -mod=vendor ./internal/cmd/genlangdocs | ./node_modules/.bin/prettier --parser markdown > $@
 
 ## Maintenance
 #####################################################################
