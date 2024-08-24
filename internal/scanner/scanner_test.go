@@ -325,6 +325,15 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Elixir
+	// FIXME: Elixir line comment test
+	// FIXME: Elixir line comment in string test
+	// FIXME: Elixir @doc test
+	// FIXME: Elixir string test
+	// FIXME: Elixir charlist test
+	// FIXME: Elixir multi-line string test
+	// FIXME: Elixir multi-line charlist test
+
 	// Emacs Lisp
 	{
 		name: "line_comments.el",

@@ -130,6 +130,33 @@ var LanguagesConfig = map[string]*Config{
 			},
 		},
 	},
+	"Elixir": {
+		LineCommentStart: [][]rune{{'#'}},
+		// Support function documentation.
+		// TODO(#1546): Support @moduledoc
+		MultilineCommentStart:       []rune("@doc \"\"\""),
+		MultilineCommentEnd:         []rune("\"\"\""),
+		MultilineCommentAtLineStart: false,
+		Strings: []StringConfig{
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune("\"\"\""),
+				End:        []rune("\"\"\""),
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: CharEscape('\\'),
+			}, {
+				Start:      []rune("'''"),
+				End:        []rune("'''"),
+				EscapeFunc: CharEscape('\\'),
+			},
+		},
+	},
 	"Emacs Lisp": {
 		LineCommentStart:            [][]rune{{';'}},
 		MultilineCommentStart:       nil,
