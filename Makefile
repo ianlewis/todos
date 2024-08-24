@@ -45,7 +45,7 @@ node_modules/.installed: package.json package-lock.json
 unit-test: go-test ## Runs all unit tests.
 
 .PHONY: go-test
-go-test: generate ## Runs Go unit tests.
+go-test: ## Runs Go unit tests.
 	@set -e;\
 		go mod vendor; \
 		extraargs=""; \
@@ -58,7 +58,7 @@ go-test: generate ## Runs Go unit tests.
 #####################################################################
 
 .PHONY: go-benchmark
-go-benchmark: generate ## Runs Go benchmarks.
+go-benchmark: ## Runs Go benchmarks.
 	@set -e;\
 		go mod vendor; \
 		extraargs=""; \
@@ -71,7 +71,7 @@ go-benchmark: generate ## Runs Go benchmarks.
 #####################################################################
 
 .PHONY: autogen
-autogen: generate ## Runs autogen on code files.
+autogen: ## Runs autogen on code files.
 	@set -euo pipefail; \
 		md_files=$$( \
 			find . -type f \
@@ -136,7 +136,7 @@ markdownlint: node_modules/.installed ## Runs the markdownlint linter.
 		fi
 
 .PHONY: golangci-lint
-golangci-lint: generate ## Runs the golangci-lint linter.
+golangci-lint: ## Runs the golangci-lint linter.
 	@set -e;\
 		extraargs=""; \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
@@ -152,17 +152,6 @@ yamllint: ## Runs the yamllint linter.
 			extraargs="-f github"; \
 		fi; \
 		yamllint --strict -c .yamllint.yaml . $$extraargs
-
-## Code Generation
-#####################################################################
-
-.PHONY: generate
-generate: internal/scanner/langconfig.go ## Generate all code
-
-internal/scanner/langconfig.go: internal/scanner/langconfig.yml $(wildcard internal/cmd/genlanguages/**/*)
-	@set -e;\
-		go mod vendor; \
-		go run -mod=vendor ./internal/cmd/genlanguages scanner internal/scanner/langconfig.yml | gofumpt > internal/scanner/langconfig.go
 
 ## Documentation
 #####################################################################
