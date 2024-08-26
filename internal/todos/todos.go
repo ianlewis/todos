@@ -99,12 +99,16 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 
 	sConfig := s.Config()
 	var commentStarts []string
-	for _, lineCommentStart := range sConfig.LineCommentStart {
-		commentStarts = append(commentStarts, "(?:"+regexp.QuoteMeta(string(lineCommentStart))+")+")
+	for _, c := range sConfig.LineComments {
+		commentStarts = append(commentStarts, "(?:"+regexp.QuoteMeta(string(c.Start))+")+")
 	}
 	commentStartMatch := strings.Join(commentStarts, "|")
 
-	multiStartMatch := regexp.QuoteMeta(string(sConfig.MultilineCommentStart))
+	var multilineStarts []string
+	for _, c := range sConfig.MultilineComments {
+		multilineStarts = append(multilineStarts, "(?:"+regexp.QuoteMeta(string(c.Start))+")+")
+	}
+	multiStartMatch := strings.Join(multilineStarts, "|")
 
 	if config == nil {
 		config = &Config{

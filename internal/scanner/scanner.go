@@ -45,13 +45,28 @@ type StringConfig struct {
 	EscapeFunc EscapeFunc
 }
 
+type LineCommentConfig struct {
+	// Start is the starting sequence for the line comment.
+	Start []rune
+}
+
+type MultilineCommentConfig struct {
+	// Start is the starting sequence for the multiline comment.
+	Start []rune
+
+	// End is the ending sequence for the multiline comment.
+	End []rune
+
+	// AtLineStart indicates that the multiline comment must start at the
+	// beginning of a line.
+	AtLineStart bool
+}
+
 // Config is configuration for a generic comment scanner.
 type Config struct {
-	LineCommentStart            [][]rune
-	MultilineCommentStart       []rune
-	MultilineCommentEnd         []rune
-	MultilineCommentAtLineStart bool
-	Strings                     []StringConfig
+	LineComments      []LineCommentConfig
+	MultilineComments []MultilineCommentConfig
+	Strings           []StringConfig
 }
 
 // FromFile returns an appropriate CommentScanner for the given file. The
@@ -215,15 +230,18 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 			return st, err
 		}
 
-		mm, err := s.multiLineMatch()
+		mmIndex, mm, err := s.multiLineMatch()
 		if err != nil {
 			return st, err
 		}
 
-		if len(m) > 0 || len(mm) > 0 {
-			if len(m) >= len(mm) {
+		// Check for line comments.
+		if m != nil {
+			// If both line comments and multi-line comments match, chose the
+			// one with the longest start sequence.
+			if mm == nil || len(m.Start) >= len(mm.Start) {
 				for i, stringStart := range s.config.Strings {
-					if string(stringStart.Start) == string(m) {
+					if string(stringStart.Start) == string(m.Start) {
 						return &stateLineCommentOrString{
 							index: i,
 						}, nil
@@ -232,15 +250,19 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 
 				return &stateLineComment{}, nil
 			}
+		}
 
-			if !s.config.MultilineCommentAtLineStart || s.atLineStart {
+		// Check for multi-line comments.
+		if mm != nil {
+			if !mm.AtLineStart || s.atLineStart {
 				return &stateMultilineComment{
-					line: s.line,
+					line:  s.line,
+					index: mmIndex,
 				}, nil
 			}
 		}
 
-		// Check for string
+		// Check for strings.
 		for i, strs := range s.config.Strings {
 			eq, err := s.peekEqual(strs.Start)
 			if err != nil {
@@ -260,30 +282,30 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 	}
 }
 
-func (s *CommentScanner) lineMatch() ([]rune, error) {
+func (s *CommentScanner) lineMatch() (*LineCommentConfig, error) {
 	// Check for line comment
-	for _, start := range s.config.LineCommentStart {
-		eq, err := s.peekEqual(start)
+	for _, m := range s.config.LineComments {
+		eq, err := s.peekEqual(m.Start)
 		if err != nil {
 			return nil, err
 		}
 		if eq {
-			return start, nil
+			return &m, nil
 		}
 	}
 	return nil, nil
 }
 
-func (s *CommentScanner) multiLineMatch() ([]rune, error) {
-	// Check for line comment
-	if len(s.config.MultilineCommentStart) != 0 {
-		if eq, err := s.peekEqual(s.config.MultilineCommentStart); err == nil && eq {
-			return s.config.MultilineCommentStart, nil
+func (s *CommentScanner) multiLineMatch() (int, *MultilineCommentConfig, error) {
+	// Check for multiline comment
+	for i, mlConfig := range s.config.MultilineComments {
+		if eq, err := s.peekEqual(mlConfig.Start); err == nil && eq {
+			return i, &mlConfig, nil
 		} else if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 	}
-	return nil, nil
+	return 0, nil, nil
 }
 
 // processString processes strings and returns the next state.
@@ -430,26 +452,29 @@ func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString
 
 // processMultilineComment processes multi-line comments and returns the next state.
 func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (state, error) {
+	mm := s.config.MultilineComments[st.index]
+
 	// Discard the opening since we don't want to parse it. It could be the same as the closing.
-	if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentStart)); errDiscard != nil {
+	if _, errDiscard := s.reader.Discard(len(mm.Start)); errDiscard != nil {
 		return st, fmt.Errorf("parsing code: %w", errDiscard)
 	}
 
 	var b strings.Builder
+
 	// Add the opening to the builder since we want it in the output.
-	b.WriteString(string(s.config.MultilineCommentStart))
+	b.WriteString(string(mm.Start))
 	for {
 		// Look for the end of the comment.
-		mlEnd, err := s.peekEqual(s.config.MultilineCommentEnd)
+		mlEnd, err := s.peekEqual(mm.End)
 		if err != nil {
 			return st, err
 		}
-		if mlEnd && (!s.config.MultilineCommentAtLineStart || s.atLineStart) {
-			if _, errDiscard := s.reader.Discard(len(s.config.MultilineCommentEnd)); errDiscard != nil {
+		if mlEnd && (!mm.AtLineStart || s.atLineStart) {
+			if _, errDiscard := s.reader.Discard(len(mm.End)); errDiscard != nil {
 				return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 			}
 			// Add the ending to the builder.
-			b.WriteString(string(s.config.MultilineCommentEnd))
+			b.WriteString(string(mm.End))
 			s.next = &Comment{
 				Text:      b.String(),
 				Line:      st.line,

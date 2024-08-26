@@ -29,6 +29,9 @@ func (s *stateLineComment) stateMustImplement() {}
 type stateMultilineComment struct {
 	// line is the line of the start of the multi-line comment.
 	line int
+
+	// index is the index for the type of multiline comment.
+	index int
 }
 
 func (s *stateMultilineComment) stateMustImplement() {}

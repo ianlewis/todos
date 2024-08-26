@@ -14,12 +14,79 @@
 
 package scanner
 
+// Common config.
+
+var (
+	// sh-style languages.
+
+	// hashLineComments are sh-style line comments.
+	hashLineComments = []LineCommentConfig{
+		{
+			Start: []rune("#"),
+		},
+	}
+
+	// C-style languages.
+
+	// cLineComments are C-style line comments.
+	cLineComments = []LineCommentConfig{
+		{
+			Start: []rune("//"),
+		},
+	}
+
+	// cBlockComments are C-style block comments.
+	cBlockComments = []MultilineCommentConfig{
+		{
+			Start:       []rune("/*"),
+			End:         []rune("*/"),
+			AtLineStart: false,
+		},
+	}
+
+	// cStrings are C-style strings.
+	cStrings = []StringConfig{
+		// Strings
+		{
+			Start:      []rune{'"'},
+			End:        []rune{'"'},
+			EscapeFunc: CharEscape('\\'),
+		},
+		// Characters
+		{
+			Start:      []rune{'\''},
+			End:        []rune{'\''},
+			EscapeFunc: CharEscape('\\'),
+		},
+	}
+
+	// XML-style languages.
+
+	// xmlBlockComments are XML-style block comments.
+	xmlBlockComments = []MultilineCommentConfig{
+		{
+			Start:       []rune("<!--"),
+			End:         []rune("--!>"),
+			AtLineStart: false,
+		},
+	}
+)
+
 var LanguagesConfig = map[string]*Config{
 	"Assembly": {
-		LineCommentStart:            [][]rune{{';'}},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{
+				Start: []rune{';'},
+			},
+		},
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("/*"),
+				End:         []rune("*/"),
+				AtLineStart: false,
+			},
+		},
+		// NOTE: Assembly doesn't have string escape characters.
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -33,61 +100,25 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"C": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"C#": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"C++": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Clojure": {
-		LineCommentStart:            [][]rune{{';'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{Start: []rune{';'}},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -97,46 +128,33 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"CoffeeScript": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       []rune("###"),
-		MultilineCommentEnd:         []rune("###"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
+		LineComments: hashLineComments,
+		MultilineComments: []MultilineCommentConfig{
+			{Start: []rune("###"), End: []rune("###"), AtLineStart: false},
 		},
+		Strings: cStrings,
 	},
 	"Dockerfile": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Elixir": {
-		LineCommentStart: [][]rune{{'#'}},
+		LineComments: hashLineComments,
 		// Support function documentation.
 		// TODO(#1546): Support @moduledoc
-		MultilineCommentStart:       []rune("@doc \"\"\""),
-		MultilineCommentEnd:         []rune("\"\"\""),
-		MultilineCommentAtLineStart: false,
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("@moduledoc \"\"\""),
+				End:         []rune("\"\"\""),
+				AtLineStart: false,
+			},
+			{
+				Start:       []rune("@doc \"\"\""),
+				End:         []rune("\"\"\""),
+				AtLineStart: false,
+			},
+		},
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -158,10 +176,10 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Emacs Lisp": {
-		LineCommentStart:            [][]rune{{';'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{Start: []rune{';'}},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -171,27 +189,17 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Erlang": {
-		LineCommentStart:            [][]rune{{'%'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
+		LineComments: []LineCommentConfig{
+			{Start: []rune{'%'}},
 		},
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Fortran": {
-		LineCommentStart:            [][]rune{{'!'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{Start: []rune{'!'}},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -205,10 +213,10 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Fortran Free Form": {
-		LineCommentStart:            [][]rune{{'!'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{Start: []rune{'!'}},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -222,20 +230,21 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Go": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
 				End:        []rune{'"'},
 				EscapeFunc: CharEscape('\\'),
-			}, {
+			},
+			{
 				Start:      []rune{'\''},
 				End:        []rune{'\''},
 				EscapeFunc: CharEscape('\\'),
-			}, {
+			},
+			// Go raw strings
+			{
 				Start:      []rune{'`'},
 				End:        []rune{'`'},
 				EscapeFunc: NoEscape,
@@ -243,16 +252,17 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Go Module": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments:      cLineComments,
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
 				End:        []rune{'"'},
 				EscapeFunc: CharEscape('\\'),
-			}, {
+			},
+			// NOTE: Characters are not supported.
+			// Go raw strings
+			{
 				Start:      []rune{'`'},
 				End:        []rune{'`'},
 				EscapeFunc: NoEscape,
@@ -260,10 +270,8 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Groovy": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -281,220 +289,126 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"HTML": {
-		LineCommentStart:            nil,
-		MultilineCommentStart:       []rune("<!--"),
-		MultilineCommentEnd:         []rune("--!>"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      nil,
+		MultilineComments: xmlBlockComments,
+		Strings:           cStrings,
 	},
 	"Haskell": {
-		LineCommentStart:            [][]rune{[]rune("--")},
-		MultilineCommentStart:       []rune("{-"),
-		MultilineCommentEnd:         []rune("-}"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune("--"),
 			},
 		},
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("{-"),
+				End:         []rune("-}"),
+				AtLineStart: false,
+			},
+		},
+		Strings: cStrings,
 	},
 	"JSON": {
-		LineCommentStart: [][]rune{
-			[]rune("//"),
-			{'#'},
-		},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		// NOTE: Some JSON parsers support comments.
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune("//"),
+			},
+			{
+				Start: []rune{'#'},
 			},
 		},
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Java": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"JavaScript": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Kotlin": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Lua": {
-		LineCommentStart:            [][]rune{[]rune("--")},
-		MultilineCommentStart:       []rune("--[["),
-		MultilineCommentEnd:         []rune("--]]"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune("--"),
 			},
 		},
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("--[["),
+				End:         []rune("--]]"),
+				AtLineStart: false,
+			},
+		},
+		Strings: cStrings,
 	},
 	"MATLAB": {
-		LineCommentStart:            [][]rune{{'%'}},
-		MultilineCommentStart:       []rune("%{"),
-		MultilineCommentEnd:         []rune("}%"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune{'%'},
 			},
 		},
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("%{"),
+				End:         []rune("}%"),
+				AtLineStart: false,
+			},
+		},
+		Strings: cStrings,
 	},
 	"Makefile": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Objective-C": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"PHP": {
-		LineCommentStart: [][]rune{
-			{'#'},
-			[]rune("//"),
-		},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune{'#'},
+			},
+			{
+				Start: []rune("//"),
 			},
 		},
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Perl": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       []rune{'='},
-		MultilineCommentEnd:         []rune("=cut"),
-		MultilineCommentAtLineStart: true,
-		Strings: []StringConfig{
+		LineComments: hashLineComments,
+		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start:       []rune{'='},
+				End:         []rune("=cut"),
+				AtLineStart: true,
 			},
 		},
+		Strings: cStrings,
 	},
 	"PowerShell": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       []rune("<#"),
-		MultilineCommentEnd:         []rune("#>"),
-		MultilineCommentAtLineStart: false,
+		LineComments: hashLineComments,
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("<#"),
+				End:         []rune("#>"),
+				AtLineStart: false,
+			},
+		},
+		// NOTE:  Powershell escape character is the grave character (`)
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -508,61 +422,35 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Puppet": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Python": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       []rune("\"\"\""),
-		MultilineCommentEnd:         []rune("\"\"\""),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: hashLineComments,
+		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start:       []rune("\"\"\""),
+				End:         []rune("\"\"\""),
+				AtLineStart: false,
 			},
 		},
+		Strings: cStrings,
 	},
 	"R": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Ruby": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       []rune("=begin"),
-		MultilineCommentEnd:         []rune("=end"),
-		MultilineCommentAtLineStart: true,
+		LineComments: hashLineComments,
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("=begin"),
+				End:         []rune("=end"),
+				AtLineStart: true,
+			},
+		},
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -580,27 +468,17 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Rust": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"SQL": {
-		LineCommentStart:            [][]rune{[]rune("--")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{
+				Start: []rune("--"),
+			},
+		},
+		MultilineComments: cBlockComments,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -614,44 +492,18 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Scala": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Shell": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Swift": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -661,51 +513,32 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"TOML": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"TeX": {
-		LineCommentStart:            [][]rune{{'%'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings:                     nil,
-	},
-	"TypeScript": {
-		LineCommentStart:            [][]rune{[]rune("//")},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune{'%'},
 			},
 		},
+		MultilineComments: nil,
+		Strings:           nil,
+	},
+	"TypeScript": {
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
 	},
 	"Unix Assembly": {
-		LineCommentStart:            [][]rune{{';'}},
-		MultilineCommentStart:       []rune("/*"),
-		MultilineCommentEnd:         []rune("*/"),
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{
+				Start: []rune{';'},
+			},
+		},
+		MultilineComments: cBlockComments,
+		// NOTE: Assembly doesn't have string escape characters.
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -719,10 +552,12 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"VBA": {
-		LineCommentStart:            [][]rune{{'\''}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{
+				Start: []rune{'\''},
+			},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -732,27 +567,21 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"Vim Script": {
-		LineCommentStart:            [][]rune{{'"'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
+		LineComments: []LineCommentConfig{
 			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
+				Start: []rune{'"'},
 			},
 		},
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 	"Visual Basic .NET": {
-		LineCommentStart:            [][]rune{{'\''}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
+		LineComments: []LineCommentConfig{
+			{
+				Start: []rune{'\''},
+			},
+		},
+		MultilineComments: nil,
 		Strings: []StringConfig{
 			{
 				Start:      []rune{'"'},
@@ -762,37 +591,13 @@ var LanguagesConfig = map[string]*Config{
 		},
 	},
 	"XML": {
-		LineCommentStart:            nil,
-		MultilineCommentStart:       []rune("<!--"),
-		MultilineCommentEnd:         []rune("--!>"),
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      nil,
+		MultilineComments: xmlBlockComments,
+		Strings:           cStrings,
 	},
 	"YAML": {
-		LineCommentStart:            [][]rune{{'#'}},
-		MultilineCommentStart:       nil,
-		MultilineCommentEnd:         nil,
-		MultilineCommentAtLineStart: false,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           cStrings,
 	},
 }
