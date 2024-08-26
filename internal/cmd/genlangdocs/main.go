@@ -71,11 +71,11 @@ func main() {
 
 	for _, l := range langs {
 		var supported []string
-		for _, c := range l.config.LineCommentStart {
-			supported = append(supported, fmt.Sprintf("`%s`", string(c)))
+		for _, c := range l.config.LineComments {
+			supported = append(supported, fmt.Sprintf("`%s`", string(c.Start)))
 		}
-		if string(l.config.MultilineCommentStart) != "" {
-			s := fmt.Sprintf("`%s %s`", string(l.config.MultilineCommentStart), string(l.config.MultilineCommentEnd))
+		for _, c := range l.config.MultilineComments {
+			s := fmt.Sprintf("`%s %s`", string(c.Start), string(c.End))
 			supported = append(supported, s)
 		}
 

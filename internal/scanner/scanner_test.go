@@ -459,6 +459,27 @@ var scannerTestCases = []*struct {
 		},
 	},
 	{
+		name: "moduledoc_comment.ex",
+		src: `@moduledoc """
+			module comment
+			"""
+			defmodule Math do
+				def TODO(a, b) do
+					a + b
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "@moduledoc \"\"\"\n\t\t\tmodule comment\n\t\t\t\"\"\"",
+				line: 1,
+			},
+		},
+	},
+	{
 		name: "doc_comment.ex",
 		src: `# module comment
 			defmodule Math do
@@ -2514,7 +2535,7 @@ var scannerRegressionTestCases = []*struct {
 		name: "last_line.go",
 		src:  `// last line`,
 		config: &Config{
-			LineCommentStart: [][]rune{[]rune("//")},
+			LineComments: cLineComments,
 		},
 		expectedComments: []*Comment{
 			{
@@ -2527,7 +2548,11 @@ var scannerRegressionTestCases = []*struct {
 		name: "double_escape_1538.foo",
 		src:  `x = ''''''  % foo''`,
 		config: &Config{
-			LineCommentStart: [][]rune{[]rune("%")},
+			LineComments: []LineCommentConfig{
+				{
+					Start: []rune("%"),
+				},
+			},
 			Strings: []StringConfig{
 				{
 					Start:      []rune("''"),
