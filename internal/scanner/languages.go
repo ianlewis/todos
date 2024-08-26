@@ -14,10 +14,10 @@
 
 package scanner
 
-// Common config
+// Common config.
+
 var (
-	// sh-style languages
-	//////////////////////////////////////////////////////
+	// sh-style languages.
 
 	// hashLineComments are sh-style line comments.
 	hashLineComments = []LineCommentConfig{
@@ -27,7 +27,6 @@ var (
 	}
 
 	// C-style languages.
-	//////////////////////////////////////////////////////
 
 	// cLineComments are C-style line comments.
 	cLineComments = []LineCommentConfig{
@@ -62,7 +61,6 @@ var (
 	}
 
 	// XML-style languages.
-	//////////////////////////////////////////////////////
 
 	// xmlBlockComments are XML-style block comments.
 	xmlBlockComments = []MultilineCommentConfig{
