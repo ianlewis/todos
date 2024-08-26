@@ -326,13 +326,164 @@ var scannerTestCases = []*struct {
 	},
 
 	// Elixir
-	// FIXME: Elixir line comment test
-	// FIXME: Elixir line comment in string test
-	// FIXME: Elixir @doc test
-	// FIXME: Elixir string test
-	// FIXME: Elixir charlist test
-	// FIXME: Elixir multi-line string test
-	// FIXME: Elixir multi-line charlist test
+	{
+		name: "line_comments.ex",
+		src: `# module comment
+			defmodule Math do
+				# TODO is a function.
+				def TODO(a, b) do
+					a + b # Random comment
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "# Random comment",
+				line: 5,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.ex",
+		src: `# module comment
+			defmodule Math do
+				# TODO is a function.
+				def TODO(a, b) do
+					"# Random comment"
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			// NOTE: No '# Random comment'
+		},
+	},
+	{
+		name: "comments_in_multiline_string.ex",
+		src: `# module comment
+			defmodule Math do
+				# TODO is a function.
+				def TODO(a, b) do
+					"""
+					# Random comment
+					"""
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			// NOTE: No '# Random comment'
+		},
+	},
+	{
+		name: "comments_in_charlist.ex",
+		src: `# module comment
+			defmodule Math do
+				# TODO is a function.
+				def TODO(a, b) do
+					'# Random comment'
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			// NOTE: No '# Random comment'
+		},
+	},
+	{
+		name: "comments_in_multiline_charlist.ex",
+		src: `# module comment
+			defmodule Math do
+				# TODO is a function.
+				def TODO(a, b) do
+					'''
+					# Random comment
+					'''
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# TODO is a function.",
+				line: 3,
+			},
+			// NOTE: No '# Random comment'
+		},
+	},
+	{
+		name: "doc_comment.ex",
+		src: `# module comment
+			defmodule Math do
+				@doc """
+				TODO is a function.
+				"""
+				def TODO(a, b) do
+					a + b
+				end
+			end`,
+		config: "Elixir",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "@doc \"\"\"\n\t\t\t\tTODO is a function.\n\t\t\t\t\"\"\"",
+				line: 3,
+			},
+		},
+	},
 
 	// Emacs Lisp
 	{
