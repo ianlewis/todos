@@ -1017,6 +1017,64 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// HTML
+	{
+		name: "multi_line.html",
+		src: `<!-- file comment -->
+		<html attribute="<!-- not a comment -->">
+			<body attribute='<!-- also not a comment -->'>
+				<div>Hello World!</div>
+			</body>
+		</html>
+		<!-- extra comment -->`,
+		config: "HTML",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- file comment -->",
+				line: 1,
+			},
+			{
+				text: "<!-- extra comment -->",
+				line: 7,
+			},
+		},
+	},
+
+	// HTML+ERB
+	{
+		name: "multi_line.erb",
+		src: `<!-- file comment -->
+		<html attribute="<!-- not a comment -->">
+			<%# erb comment %>
+			<body attribute='<!-- also not a comment -->'>
+				<% message = "Hello World!" %>
+				<div><%= message %></div>
+			</body>
+		</html>
+		<!-- extra comment -->`,
+		config: "HTML+ERB",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- file comment -->",
+				line: 1,
+			},
+			{
+				text: "<%# erb comment %>",
+				line: 3,
+			},
+			{
+				text: "<!-- extra comment -->",
+				line: 9,
+			},
+		},
+	},
+
 	// Kotlin
 	{
 		name: "line_comments.kt",
