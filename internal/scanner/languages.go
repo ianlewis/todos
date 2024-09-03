@@ -66,7 +66,7 @@ var (
 	xmlBlockComments = []MultilineCommentConfig{
 		{
 			Start:       []rune("<!--"),
-			End:         []rune("--!>"),
+			End:         []rune("-->"),
 			AtLineStart: false,
 		},
 	}
@@ -292,6 +292,22 @@ var LanguagesConfig = map[string]*Config{
 		LineComments:      nil,
 		MultilineComments: xmlBlockComments,
 		Strings:           cStrings,
+	},
+	"HTML+ERB": {
+		LineComments: nil,
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("<!--"),
+				End:         []rune("-->"),
+				AtLineStart: false,
+			},
+			{
+				Start:       []rune("<%#"),
+				End:         []rune("%>"),
+				AtLineStart: false,
+			},
+		},
+		Strings: cStrings,
 	},
 	"Haskell": {
 		LineComments: []LineCommentConfig{

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support was added for
   [Powershell](https://learn.microsoft.com/en-us/powershell/).
 - Support was added for [Elixir](https://elixir-lang.org/).
+- Support was added for [ERB templates](https://github.com/ruby/erb).
 
 ## [0.9.0] - 2024-08-08
 
