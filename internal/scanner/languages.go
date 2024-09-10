@@ -392,6 +392,35 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: cBlockComments,
 		Strings:           cStrings,
 	},
+	"Pascal": {
+		LineComments: cLineComments, // Delphi comments
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start:       []rune("(*"),
+				End:         []rune("*)"),
+				AtLineStart: false,
+			},
+			{
+				Start:       []rune("{"),
+				End:         []rune("}"),
+				AtLineStart: false,
+			},
+		},
+		Strings: []StringConfig{
+			// Strings
+			{
+				Start:      []rune{'"'},
+				End:        []rune{'"'},
+				EscapeFunc: DoubleEscape,
+			},
+			// Characters
+			{
+				Start:      []rune{'\''},
+				End:        []rune{'\''},
+				EscapeFunc: DoubleEscape,
+			},
+		},
+	},
 	"PHP": {
 		LineComments: []LineCommentConfig{
 			{

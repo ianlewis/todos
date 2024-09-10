@@ -1189,6 +1189,155 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Pascal
+	{
+		name: "line_comments.pas",
+		src: `// file comment
+
+			// TODO is a function.
+			function TODO(num1, num2: integer): integer;
+			var
+				result: integer;
+
+			begin
+				if (num1 > num2) then
+					result := num1
+				else
+					result := num2;
+				max := result;
+			end; // Random comment`,
+		config: "Pascal",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// TODO is a function.",
+				line: 3,
+			},
+			{
+				text: "// Random comment",
+				line: 14,
+			},
+		},
+	},
+	{
+		name: "multi_line.pas",
+		src: `(* file comment *)
+
+			{
+			TODO is a function.
+			}
+			function TODO(num1, num2: integer): integer;
+			var
+				result: integer;
+
+			begin
+				if (num1 > num2) then
+					result := num1
+				else
+					result := num2;
+				max := result;
+			end; (* Random comment *)`,
+		config: "Pascal",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "(* file comment *)",
+				line: 1,
+			},
+			{
+				text: "{\n\t\t\tTODO is a function.\n\t\t\t}",
+				line: 3,
+			},
+			{
+				text: "(* Random comment *)",
+				line: 16,
+			},
+		},
+	},
+	{
+		name: "comments_in_string.pas",
+		src: `(* file comment *)
+
+			{
+			TODO is a function.
+			}
+			function TODO(num1, num2: integer): integer;
+			var
+				result: integer;
+
+			begin
+				if (num1 > num2) then
+					result := 'num1 (* Not a comment *)'
+				else
+					result := "num2 { Also not a comment }";
+				max := result;
+			end; (* Random comment *)`,
+		config: "Pascal",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "(* file comment *)",
+				line: 1,
+			},
+			{
+				text: "{\n\t\t\tTODO is a function.\n\t\t\t}",
+				line: 3,
+			},
+			{
+				text: "(* Random comment *)",
+				line: 16,
+			},
+		},
+	},
+	{
+		name: "escaped_string.pas",
+		src: `(* file comment *)
+
+			{
+			TODO is a function.
+			}
+			function TODO(num1, num2: integer): integer;
+			var
+				result: integer;
+
+			begin
+				unused := '''(* not a comment *)'''
+				if (num1 > num2) then
+					result := 'num1 ''(* Not a comment *)'' { not a comment here either}'
+				else
+					result := "num2 ""{ Also not a comment }"" (* this is also not a comment *)";
+				max := result;
+			end; (* Random comment *)`,
+		config: "Pascal",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "(* file comment *)",
+				line: 1,
+			},
+			{
+				text: "{\n\t\t\tTODO is a function.\n\t\t\t}",
+				line: 3,
+			},
+			{
+				text: "(* Random comment *)",
+				line: 17,
+			},
+		},
+	},
+
 	// PHP
 	{
 		name: "line_comments.php",
