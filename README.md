@@ -133,19 +133,19 @@ Download the [`slsa-verifier`](https://github.com/slsa-framework/slsa-verifier)
 and verify it's checksum:
 
 ```shell
-curl -sSLo slsa-verifier https://github.com/slsa-framework/slsa-verifier/releases/download/v2.3.0/slsa-verifier-linux-amd64 && \
-echo "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d  slsa-verifier" | sha256sum -c - && \
+curl -sSLo slsa-verifier https://github.com/slsa-framework/slsa-verifier/releases/download/v2.6.0/slsa-verifier-linux-amd64 && \
+echo "1c9c0d6a272063f3def6d233fa3372adbaff1f5a3480611a07c744e73246b62d  slsa-verifier" | sha256sum -c - && \
 chmod +x slsa-verifier
 ```
 
 Download and verify the `todos` CLI binary and verify it's provenance:
 
 ```shell
-curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.8.0/todos-linux-amd64 && \
-curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.8.0/todos-linux-amd64.intoto.jsonl && \
-./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.8.0 && \
+curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64 && \
+curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64.intoto.jsonl && \
+./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.9.0 && \
 chmod +x todos && \
-sudo cp todos /usr/local/bin
+cp todos ~/bin/
 ```
 
 #### Install `todos` from source
@@ -241,9 +241,9 @@ jobs:
           echo "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d  slsa-verifier" | sha256sum -c - && \
           chmod +x slsa-verifier
 
-          curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.8.0/todos-linux-amd64 && \
-          curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.8.0/todos-linux-amd64.intoto.jsonl && \
-          ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.8.0 && \
+          curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64 && \
+          curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64.intoto.jsonl && \
+          ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.9.0 && \
           rm -f slsa-verifier && \
           chmod +x todos
 
