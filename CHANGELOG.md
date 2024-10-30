@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A new `--label` flag was added to support filtering TODOs by label
+  ([#1562](https://github.com/ianlewis/todos/issues/1562)).
 - Support was added for
   [MATLAB](https://www.mathworks.com/products/matlab.html)
 - Support was added for
@@ -33,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a bug where TODOs were not being reported if they were located after a
   multi-line comment with no TODOs in the same file
-  ([#1520](https://github.com/ianlewis/todos/issues/1520))
+  ([#1520](https://github.com/ianlewis/todos/issues/1520)).
 
 ## [0.8.0] - 2024-02-21
 
