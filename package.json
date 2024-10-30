@@ -4,7 +4,7 @@
     "format": "markdownlint --dot --fix ."
   },
   "devDependencies": {
-    "markdownlint-cli": "0.41.0"
+    "markdownlint-cli": "0.42.0"
   },
   "dependencies": {
     "prettier": "^3.3.3"
