@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/go-enry/go-enry/v2 v2.8.9
+	github.com/go-enry/go-enry/v2 v2.9.1
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
