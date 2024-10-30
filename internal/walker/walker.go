@@ -65,6 +65,10 @@ type Options struct {
 	// ErrorFunc handles when errors are found.
 	ErrorFunc ErrorHandler
 
+	// Blame indicates that the walker should attempt to find the git committer
+	// that committed each TODO.
+	Blame bool
+
 	// Config is the config for scanning todos.
 	Config *todos.Config
 
@@ -93,9 +97,8 @@ type Options struct {
 	// IncludeVCS indicates that VCS paths (.git, .hg, .svn, etc.) should be included.
 	IncludeVCS bool
 
-	// Blame indicates that the walker should attempt to find the git committer
-	// that committed each TODO.
-	Blame bool
+	// LabelGlobs is a list of Glob to filter TODOs by label.
+	LabelGlobs []glob.Glob
 
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
@@ -313,8 +316,24 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 		return nil
 	}
 	t := todos.NewTODOScanner(s, w.options.Config)
+scanL:
 	for t.Scan() {
 		todo := t.Next()
+
+		// Check the label globs to see if any match.
+		if len(w.options.LabelGlobs) > 0 {
+			labelMatch := false
+			for _, g := range w.options.LabelGlobs {
+				if g.Match(todo.Label) {
+					labelMatch = true
+					break
+				}
+			}
+			if !labelMatch {
+				continue scanL
+			}
+		}
+
 		if w.options.TODOFunc != nil {
 			var gitUser *GitUser
 			repo, br, gitUser, err = w.gitUser(f.Name(), repo, br, todo.Line)
