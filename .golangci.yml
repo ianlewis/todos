@@ -37,13 +37,14 @@ linters:
     # Some linters have been removed because of the go 1.18 issues.
     # https://github.com/golangci/golangci-lint/issues/2649
     - asciicheck
+    - contextcheck
+    - copyloopvar
     - depguard
     - dogsled
     - err113
     - errcheck
     - errorlint
     - exhaustive
-    - exportloopref
     - gci
     - gochecknoinits
     - gocognit
