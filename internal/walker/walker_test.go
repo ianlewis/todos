@@ -946,6 +946,60 @@ var testCases = []testCase{
 			},
 		},
 	},
+	{
+		name: "label glob filter",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO: no label
+				// TODO(no-match): no match
+
+				// TODO is a function.
+				// TODO(todo-label): some task.
+				func TODO() {
+					return // TODO(other-label): Return comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			LabelGlobs: []glob.Glob{
+				glob.MustCompile("todo-*"),
+				glob.MustCompile("other-*"),
+			},
+			Charset: "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO(todo-label): some task.",
+					Message:     "some task.",
+					Label:       "todo-label",
+					Line:        8,
+					CommentLine: 8,
+				},
+			},
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO(other-label): Return comment",
+					Message:     "Return comment",
+					Label:       "other-label",
+					Line:        10,
+					CommentLine: 10,
+				},
+			},
+		},
+	},
 }
 
 type blameTestCase struct {

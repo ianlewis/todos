@@ -86,9 +86,11 @@ func newTODOsApp() *cli.App {
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
 		Flags: []cli.Flag{
+			// Flags for functionality are in alphabetical order.
 			&cli.BoolFlag{
-				Name:               "exclude-hidden",
-				Usage:              "exclude hidden files and directories",
+				Name:               "blame",
+				Usage:              "[BETA] attempt to find committer info",
+				Value:              false,
 				DisableDefaultText: true,
 			},
 			&cli.StringFlag{
@@ -104,6 +106,11 @@ func newTODOsApp() *cli.App {
 			&cli.StringSliceFlag{
 				Name:  "exclude-dir",
 				Usage: "exclude directories that match `GLOB`",
+			},
+			&cli.BoolFlag{
+				Name:               "exclude-hidden",
+				Usage:              "exclude hidden files and directories",
+				DisableDefaultText: true,
 			},
 			&cli.BoolFlag{
 				Name:               "include-vcs",
@@ -122,16 +129,10 @@ func newTODOsApp() *cli.App {
 				Value:              false,
 				DisableDefaultText: true,
 			},
-			&cli.BoolFlag{
-				Name:               "blame",
-				Usage:              "[BETA] attempt to find committer info",
-				Value:              false,
-				DisableDefaultText: true,
-			},
-			&cli.StringFlag{
-				Name:  "todo-types",
-				Usage: "comma separated list of TODO `TYPES`",
-				Value: strings.Join(todos.DefaultTypes, ","),
+			&cli.StringSliceFlag{
+				Name:    "label",
+				Usage:   "only output TODOs that match `GLOB`",
+				Aliases: []string{"l"},
 			},
 			&cli.StringFlag{
 				Name:    "output",
@@ -139,6 +140,13 @@ func newTODOsApp() *cli.App {
 				Value:   defaultOutput,
 				Aliases: []string{"o"},
 			},
+			&cli.StringFlag{
+				Name:  "todo-types",
+				Usage: "comma separated list of TODO `TYPES`",
+				Value: strings.Join(todos.DefaultTypes, ","),
+			},
+
+			// Special flags are shown at the end.
 			&cli.BoolFlag{
 				Name:               "help",
 				Usage:              "print this help text and exit",
@@ -358,10 +366,21 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	}
 
 	o.Blame = c.Bool("blame")
+
+	// File Includes
 	o.IncludeGenerated = c.Bool("include-generated")
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
 	o.IncludeVendored = c.Bool("include-vendored")
+
+	// Filters
+	for _, label := range c.StringSlice("label") {
+		g, err := glob.Compile(label)
+		if err != nil {
+			return nil, fmt.Errorf("%w: label: %w", ErrFlagParse, err)
+		}
+		o.LabelGlobs = append(o.LabelGlobs, g)
+	}
 
 	outType := c.String("output")
 	outFunc, ok := outTypes[outType]

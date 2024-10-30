@@ -531,6 +531,18 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 			args: []string{"--charset=invalid"},
 			err:  ErrFlagParse,
 		},
+		"label": {
+			args: []string{"--label=foo", "--label=bar-*"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				LabelGlobs:    []glob.Glob{glob.MustCompile("foo"), glob.MustCompile("bar-*")},
+				Charset:       defaultCharset,
+				IncludeHidden: true,
+				Paths:         []string{"."},
+			},
+		},
 	}
 
 	for name, tc := range testCases {
