@@ -316,7 +316,6 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 		return nil
 	}
 	t := todos.NewTODOScanner(s, w.options.Config)
-scanL:
 	for t.Scan() {
 		todo := t.Next()
 
@@ -330,7 +329,7 @@ scanL:
 				}
 			}
 			if !labelMatch {
-				continue scanL
+				continue
 			}
 		}
 
