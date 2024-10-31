@@ -140,7 +140,7 @@ golangci-lint: ## Runs the golangci-lint linter.
 	@set -e;\
 		extraargs=""; \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-			extraargs="--out-format github-actions"; \
+			extraargs="--out-format colored-line-number"; \
 		fi; \
 		golangci-lint run -c .golangci.yml ./... $$extraargs
 

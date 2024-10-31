@@ -77,7 +77,6 @@ func TestSliceEqual_int(t *testing.T) {
 	}
 
 	for name, tc := range cases {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			if got, want := SliceEqual(tc.l, tc.r), tc.equal; got != want {
@@ -148,7 +147,6 @@ func TestSliceEqual_rune(t *testing.T) {
 	}
 
 	for name, tc := range cases {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			if got, want := SliceEqual(tc.l, tc.r), tc.equal; got != want {
