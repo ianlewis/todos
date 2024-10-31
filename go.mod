@@ -1,8 +1,7 @@
 module github.com/ianlewis/todos
 
 go 1.21
-
-toolchain go1.22.5
+toolchain go1.23.2
 
 require (
 	github.com/fatih/color v1.17.0
@@ -15,7 +14,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.4
 	golang.org/x/text v0.19.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
-	sigs.k8s.io/release-utils v0.8.4
+	sigs.k8s.io/release-utils v0.8.5
 )
 
 require (
