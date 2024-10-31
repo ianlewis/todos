@@ -137,12 +137,7 @@ markdownlint: node_modules/.installed ## Runs the markdownlint linter.
 
 .PHONY: golangci-lint
 golangci-lint: ## Runs the golangci-lint linter.
-	@set -e;\
-		extraargs=""; \
-		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-			extraargs="--out-format colored-line-number"; \
-		fi; \
-		golangci-lint run -c .golangci.yml ./... $$extraargs
+	@golangci-lint run -c .golangci.yml ./...
 
 .PHONY: yamllint
 yamllint: ## Runs the yamllint linter.
