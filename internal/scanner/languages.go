@@ -16,6 +16,19 @@ package scanner
 
 // Common config.
 
+func concat[T any](slices ...[]T) []T {
+	var tLen int
+	for _, s := range slices {
+		tLen += len(s)
+	}
+	newS := make([]T, tLen)
+	var i int
+	for _, s := range slices {
+		i += copy(newS[i:], s)
+	}
+	return newS
+}
+
 var (
 	// sh-style languages.
 
@@ -44,21 +57,52 @@ var (
 		},
 	}
 
-	// cStrings are C-style strings.
-	cStrings = []StringConfig{
-		// Strings
-		{
-			Start:      []rune{'"'},
-			End:        []rune{'"'},
-			EscapeFunc: CharEscape('\\'),
-		},
-		// Characters
+	singleQuoteString = []StringConfig{
 		{
 			Start:      []rune{'\''},
 			End:        []rune{'\''},
 			EscapeFunc: CharEscape('\\'),
 		},
 	}
+
+	doubleQuoteString = []StringConfig{
+		{
+			Start:      []rune{'"'},
+			End:        []rune{'"'},
+			EscapeFunc: CharEscape('\\'),
+		},
+	}
+
+	// cStrings are C-style strings.
+	cStrings = concat(
+		// Strings
+		doubleQuoteString,
+		// Characters
+		singleQuoteString,
+	)
+
+	singleQuoteStringNoEscape = []StringConfig{
+		{
+			Start:      []rune{'\''},
+			End:        []rune{'\''},
+			EscapeFunc: NoEscape,
+		},
+	}
+
+	doubleQuoteStringNoEscape = []StringConfig{
+		{
+			Start:      []rune{'"'},
+			End:        []rune{'"'},
+			EscapeFunc: NoEscape,
+		},
+	}
+
+	fortranStrings = concat(
+		// Strings
+		doubleQuoteStringNoEscape,
+		// Characters
+		singleQuoteStringNoEscape,
+	)
 
 	// XML-style languages.
 
@@ -79,13 +123,7 @@ var LanguagesConfig = map[string]*Config{
 				Start: []rune{';'},
 			},
 		},
-		MultilineComments: []MultilineCommentConfig{
-			{
-				Start:       []rune("/*"),
-				End:         []rune("*/"),
-				AtLineStart: false,
-			},
-		},
+		MultilineComments: cBlockComments,
 		// NOTE: Assembly doesn't have string escape characters.
 		Strings: []StringConfig{
 			{
@@ -119,13 +157,7 @@ var LanguagesConfig = map[string]*Config{
 			{Start: []rune{';'}},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		Strings:           doubleQuoteString,
 	},
 	"CoffeeScript": {
 		LineComments: hashLineComments,
@@ -155,38 +187,29 @@ var LanguagesConfig = map[string]*Config{
 				AtLineStart: false,
 			},
 		},
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune("\"\"\""),
-				End:        []rune("\"\"\""),
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune("'''"),
-				End:        []rune("'''"),
-				EscapeFunc: CharEscape('\\'),
+		Strings: concat(
+			singleQuoteString,
+			doubleQuoteString,
+			[]StringConfig{
+				{
+					Start:      []rune("\"\"\""),
+					End:        []rune("\"\"\""),
+					EscapeFunc: CharEscape('\\'),
+				},
+				{
+					Start:      []rune("'''"),
+					End:        []rune("'''"),
+					EscapeFunc: CharEscape('\\'),
+				},
 			},
-		},
+		),
 	},
 	"Emacs Lisp": {
 		LineComments: []LineCommentConfig{
 			{Start: []rune{';'}},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		Strings:           doubleQuoteString,
 	},
 	"Erlang": {
 		LineComments: []LineCommentConfig{
@@ -200,93 +223,66 @@ var LanguagesConfig = map[string]*Config{
 			{Start: []rune{'!'}},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: NoEscape,
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: NoEscape,
-			},
-		},
+		Strings:           fortranStrings,
 	},
 	"Fortran Free Form": {
 		LineComments: []LineCommentConfig{
 			{Start: []rune{'!'}},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: NoEscape,
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: NoEscape,
-			},
-		},
+		Strings:           fortranStrings,
 	},
 	"Go": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
+		Strings: concat(
+			cStrings,
+			[]StringConfig{
+				// Go raw strings
+				{
+					Start:      []rune{'`'},
+					End:        []rune{'`'},
+					EscapeFunc: NoEscape,
+				},
 			},
-			{
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			},
-			// Go raw strings
-			{
-				Start:      []rune{'`'},
-				End:        []rune{'`'},
-				EscapeFunc: NoEscape,
-			},
-		},
+		),
 	},
 	"Go Module": {
 		LineComments:      cLineComments,
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
+		Strings: concat(
+			doubleQuoteString,
+			[]StringConfig{
+				// NOTE: Characters are not supported.
+				// Go raw strings
+				{
+					Start:      []rune{'`'},
+					End:        []rune{'`'},
+					EscapeFunc: NoEscape,
+				},
 			},
-			// NOTE: Characters are not supported.
-			// Go raw strings
-			{
-				Start:      []rune{'`'},
-				End:        []rune{'`'},
-				EscapeFunc: NoEscape,
-			},
-		},
+		),
 	},
 	"Groovy": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune("'''"),
-				End:        []rune("'''"),
-				EscapeFunc: CharEscape('\\'),
+		Strings: concat(
+			cStrings,
+			[]StringConfig{
+				{
+					Start:      []rune("'''"),
+					End:        []rune("'''"),
+					EscapeFunc: CharEscape('\\'),
+				},
 			},
-		},
+		),
+	},
+	"HCL": {
+		LineComments: concat(
+			hashLineComments,
+			cLineComments,
+		),
+		Strings: doubleQuoteString,
 	},
 	"HTML": {
 		LineComments:      nil,
@@ -295,18 +291,16 @@ var LanguagesConfig = map[string]*Config{
 	},
 	"HTML+ERB": {
 		LineComments: nil,
-		MultilineComments: []MultilineCommentConfig{
-			{
-				Start:       []rune("<!--"),
-				End:         []rune("-->"),
-				AtLineStart: false,
+		MultilineComments: concat(
+			xmlBlockComments,
+			[]MultilineCommentConfig{
+				{
+					Start:       []rune("<%#"),
+					End:         []rune("%>"),
+					AtLineStart: false,
+				},
 			},
-			{
-				Start:       []rune("<%#"),
-				End:         []rune("%>"),
-				AtLineStart: false,
-			},
-		},
+		),
 		Strings: cStrings,
 	},
 	"Haskell": {
@@ -496,21 +490,16 @@ var LanguagesConfig = map[string]*Config{
 				AtLineStart: true,
 			},
 		},
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: CharEscape('\\'),
-			}, {
-				Start:      []rune("%{"),
-				End:        []rune{'}'},
-				EscapeFunc: CharEscape('\\'),
+		Strings: concat(
+			cStrings,
+			[]StringConfig{
+				{
+					Start:      []rune("%{"),
+					End:        []rune{'}'},
+					EscapeFunc: CharEscape('\\'),
+				},
 			},
-		},
+		),
 	},
 	"Rust": {
 		LineComments:      cLineComments,
@@ -549,13 +538,7 @@ var LanguagesConfig = map[string]*Config{
 	"Swift": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		Strings:           doubleQuoteString,
 	},
 	"TOML": {
 		LineComments:      hashLineComments,
@@ -584,17 +567,7 @@ var LanguagesConfig = map[string]*Config{
 		},
 		MultilineComments: cBlockComments,
 		// NOTE: Assembly doesn't have string escape characters.
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: NoEscape,
-			}, {
-				Start:      []rune{'\''},
-				End:        []rune{'\''},
-				EscapeFunc: NoEscape,
-			},
-		},
+		Strings: fortranStrings,
 	},
 	"VBA": {
 		LineComments: []LineCommentConfig{
@@ -603,13 +576,7 @@ var LanguagesConfig = map[string]*Config{
 			},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		Strings:           doubleQuoteString,
 	},
 	"Vim Script": {
 		LineComments: []LineCommentConfig{
@@ -627,13 +594,7 @@ var LanguagesConfig = map[string]*Config{
 			},
 		},
 		MultilineComments: nil,
-		Strings: []StringConfig{
-			{
-				Start:      []rune{'"'},
-				End:        []rune{'"'},
-				EscapeFunc: CharEscape('\\'),
-			},
-		},
+		Strings:           doubleQuoteString,
 	},
 	"XML": {
 		LineComments:      nil,

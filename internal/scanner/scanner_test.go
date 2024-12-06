@@ -1017,6 +1017,40 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// HCL
+	{
+		name: "line_comments.tf",
+		src: `# file comment
+         
+        # vm instance
+        resource "aws_instance" "example" {
+            ami = "abc123 # comment in string"
+
+            network_interface {
+              // network interface options
+            }
+        }`,
+		config: "HCL",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# vm instance",
+				line: 3,
+			},
+			// NOTE: Comment in string not included
+			{
+				text: "// network interface options",
+				line: 8,
+			},
+		},
+	},
+
 	// HTML
 	{
 		name: "multi_line.html",
