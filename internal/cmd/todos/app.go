@@ -82,7 +82,7 @@ func newTODOsApp() *cli.App {
 		defaultOutput = "github"
 	}
 
-	return &cli.App{
+	app := &cli.App{
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
 		Flags: []cli.Flag{
@@ -212,6 +212,10 @@ Copyright (c) Google LLC
 			cli.OsExiter(ExitCodeUnknownError)
 		},
 	}
+
+	setupProfiling(app)
+
+	return app
 }
 
 func outCLI(w io.Writer) walker.TODOHandler {
