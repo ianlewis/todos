@@ -14,6 +14,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Go pprof files
+*.prof
+
 # Dependency directories (remove the comment below to include it)
 vendor/
 node_modules/
@@ -21,3 +24,6 @@ node_modules/
 
 # JetBrains IDEs
 .idea
+
+# binary names
+/todos

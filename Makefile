@@ -61,6 +61,17 @@ node_modules/.installed: package.json package-lock.json
 	./.venv/bin/pip install -r requirements.txt --require-hashes
 	touch .venv/.installed
 
+## Build
+#####################################################################
+
+.PHONY: build
+build: ## Build todos app.
+	go build github.com/ianlewis/todos/internal/cmd/todos
+
+.PHONY: build
+build-profile: ## Build todos app with profiling.
+	go build -tags profile github.com/ianlewis/todos/internal/cmd/todos
+
 ## Testing
 #####################################################################
 
@@ -69,7 +80,7 @@ unit-test: go-test ## Runs all unit tests.
 
 .PHONY: go-test
 go-test: ## Runs Go unit tests.
-	@set -e;\
+	@set -euo pipefail; \
 		go mod vendor; \
 		extraargs=""; \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
@@ -82,7 +93,7 @@ go-test: ## Runs Go unit tests.
 
 .PHONY: go-benchmark
 go-benchmark: ## Runs Go benchmarks.
-	@set -e;\
+	@set -euo pipefail; \
 		go mod vendor; \
 		extraargs=""; \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
