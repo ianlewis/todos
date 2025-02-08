@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.2
 
 require (
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/go-enry/go-enry/v2 v2.9.1
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/gobwas/glob v0.2.3
