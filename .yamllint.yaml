@@ -1,4 +1,5 @@
 # Copyright 2023 Google LLC
+# Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +16,7 @@
 ---
 extends: default
 
-ignore: |
-  node_modules/
-  vendor/
+ignore-from-file: [.gitignore]
 
 rules:
   comments:

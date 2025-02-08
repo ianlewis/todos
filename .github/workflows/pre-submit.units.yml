@@ -1,4 +1,5 @@
 # Copyright 2023 Google LLC
+# Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,32 +30,45 @@ jobs:
   # Unit tests for Go code
   ######################################
 
-  unit-tests:
+  unit-tests-matrix:
     name: unit tests
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     runs-on: ${{ matrix.os }}
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
         with:
           go-version-file: "go.mod"
       - name: unit tests
-        run: |
-          make go-test
+        run: make go-test
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out
           fail_ci_if_error: true
 
-  # autogen for license headers
+  # NOTE: needed for protected branch checks.
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests-matrix]
+    if: ${{ always() }}
+    env:
+      UNIT_TESTS_RESULT: ${{ needs.unit-tests-matrix.result }}
+    steps:
+      - run: |
+          [ "${UNIT_TESTS_RESULT}" == "success" ]
+
+  # Check license headers
   ###############################
 
-  autogen:
+  license-headers:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -65,12 +79,39 @@ jobs:
           path: autogen
       - run: |
           echo "${GITHUB_WORKSPACE}/autogen" >> "${GITHUB_PATH}"
-      - run: make autogen
+      - run: |
+          git config user.name "Unknown"
+          make license-headers
       - name: check diff
         run: |
           set -euo pipefail
           if [ "$(GIT_PAGER="cat" git diff --ignore-space-at-eol | wc -l)" -gt "0" ]; then
               echo "Detected license header changes.  See status below:"
+              GIT_PAGER="cat" git diff
+              exit 1
+          fi
+
+  # formatting
+  ###############################
+
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version-file: "package.json"
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        with:
+          go-version-file: "go.mod"
+      - run: go install mvdan.cc/gofumpt@v0.7.0
+      - run: go install github.com/daixiang0/gci@v0.13.5
+      - run: make format
+      - name: check diff
+        run: |
+          set -euo pipefail
+          if [ "$(GIT_PAGER="cat" git diff --ignore-space-at-eol | wc -l)" -gt "0" ]; then
+              echo "Detected formatting changes.  See status below:"
               GIT_PAGER="cat" git diff
               exit 1
           fi
@@ -84,10 +125,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: actionlint
         env:
-          SHELLCHECK_VERSION: "0.8.0"
-          SHELLCHECK_CHECKSUM: "ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a"
-          ACTIONLINT_VERSION: "1.6.24"
-          ACTIONLINT_CHECKSUM: "3c5818744143a5d6754edd3dcc4c2b32c9dfcdd3bb30e0e108fb5e5c505262d4"
+          SHELLCHECK_VERSION: "0.10.0"
+          SHELLCHECK_CHECKSUM: "6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87"
+          ACTIONLINT_VERSION: "1.7.3"
+          ACTIONLINT_CHECKSUM: "37252b4d440b56374b0fc1726e05fd7452d30d6d774f6e9b52e65bb64475f9db"
         run: |
           set -euo pipefail
 
@@ -115,16 +156,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 16
+          node-version-file: "package.json"
       - run: make markdownlint
+
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: make yamllint
 
   golangci-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version-file: "go.mod"
       - env:
@@ -143,21 +190,6 @@ jobs:
 
           # Run golangci-lint
           make golangci-lint
-
-  yamllint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - env:
-          YAMLLINT_VERSION: "1.26.3"
-        run: |
-          set -euo pipefail
-
-          # Install yamllint
-          pip install -r requirements.txt --require-hashes
-
-          # Run yamllint
-          make yamllint
 
   SUPPORTED_LANGUAGES:
     runs-on: ubuntu-latest

@@ -3,8 +3,16 @@
 yamllint==1.35.1 \
     --hash=sha256:2e16e504bb129ff515b37823b472750b36b6de07963bd74b307341ef5ad8bdc3 \
     --hash=sha256:7a003809f88324fd2c877734f2d575ee7881dd9043360657cc8049c809eba6cd
-# NOTE: pathspec is included because it is not pinned using '==' by yamllint. So
-# we need to include the exact version and hash here.
+
+# NOTE: The following dependencies are included because it is not pinned using
+# '==' by yamllint and this is required by pip --require-hashes.
+#
+# Hashes for packages can be obtained with:
+#    pip download <package>
+#    pip hash <file>
 pathspec==0.12.1 \
     --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 \
     --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
+pyyaml==6.0.2 \
+    --hash=sha256:ec031d5d2feb36d1d1a24380e4db6d43695f3748343d99434e6f5f9156aaa2ed \
+    --hash=sha256:80bab7bfc629882493af4aa31a4cfa43a4c57c83813253626916b8c7ada83476

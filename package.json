@@ -1,12 +1,9 @@
 {
-  "scripts": {
-    "lint": "markdownlint --dot .",
-    "format": "markdownlint --dot --fix ."
+  "engines": {
+    "node": ">=22.0.0 <23"
   },
   "devDependencies": {
-    "markdownlint-cli": "0.42.0"
-  },
-  "dependencies": {
-    "prettier": "^3.3.3"
+    "markdownlint-cli": "0.44.0",
+    "prettier": "3.4.2"
   }
 }
