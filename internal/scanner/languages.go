@@ -601,6 +601,11 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: xmlBlockComments,
 		Strings:           cStrings,
 	},
+	"XSLT": {
+		LineComments:      nil,
+		MultilineComments: xmlBlockComments,
+		Strings:           cStrings,
+	},
 	"YAML": {
 		LineComments:      hashLineComments,
 		MultilineComments: nil,

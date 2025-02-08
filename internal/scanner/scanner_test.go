@@ -2727,6 +2727,75 @@ End Module`,
 			},
 		},
 	},
+
+	{
+		name: "block_comments.xml",
+		src: `<?xml version="1.0" encoding="UTF-8"?>
+			<message>
+				<to>Joe</to><!-- To: header -->
+				<from>Susan</from><!-- From: header -->
+				<body attr="<!-- comment in string -->">Hello World</body>
+			</message>`,
+		config: "XML",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- To: header -->",
+				line: 3,
+			},
+			{
+				text: "<!-- From: header -->",
+				line: 4,
+			},
+		},
+	},
+	{
+		name: "block_comments.xslt",
+		src: `<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0"
+			xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+			<xsl:template match="/">
+			  <html>
+			  <body attr="<!-- comment in string -->">
+				<h2>CD Collection</h2>
+				<table border="1">
+				  <tr bgcolor="#9acd32">
+				  <th>Title</th>
+				  <th>Artist</th>
+				  <th>Price</th>
+				</tr>
+				<!-- for each CD -->
+				<xsl:for-each select="catalog/cd">
+				<xsl:if test="price>10"><!-- if price greater than 10 -->
+				  <tr>
+					<td><xsl:value-of select="title"/></td>
+					<td><xsl:value-of select="artist"/></td>
+					<td><xsl:value-of select="price"/></td>        
+				  </tr>
+				</xsl:if>
+				</xsl:for-each>
+				</table>
+			  </body>
+			  </html>
+			</xsl:template>
+			</xsl:stylesheet>`,
+		config: "XSLT",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- for each CD -->",
+				line: 14,
+			},
+			{
+				text: "<!-- if price greater than 10 -->",
+				line: 16,
+			},
+		},
+	},
 }
 
 func TestCommentScanner(t *testing.T) {
@@ -2934,6 +3003,55 @@ var loaderTestCases = []struct {
 		scanCharset:    "UTF-8",
 		expectedConfig: "Go",
 	},
+
+	// XML
+	{
+		name: "block_comments.xml",
+		src: []byte(`
+			<?xml version="1.0" encoding="UTF-8"?>
+			<message>
+				<to>Joe</to><!-- To: header -->
+				<from>Susan</from><!-- From: header -->
+				<body attr="<!-- comment in string -->">Hello World</body>
+			</message>`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "XML",
+	},
+
+	{
+		name: "block_comments.xslt",
+		src: []byte(`
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0"
+			xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+			<xsl:template match="/">
+			  <html>
+			  <body>
+				<h2>CD Collection</h2>
+				<table border="1">
+				  <tr bgcolor="#9acd32">
+				  <th>Title</th>
+				  <th>Artist</th>
+				  <th>Price</th>      
+				</tr>
+				<xsl:for-each select="catalog/cd">
+				<xsl:if test="price>10">
+				  <tr>
+					<td><xsl:value-of select="title"/></td>
+					<td><xsl:value-of select="artist"/></td>
+					<td><xsl:value-of select="price"/></td>        
+				  </tr>
+				</xsl:if>
+				</xsl:for-each>
+				</table>
+			  </body>
+			  </html>
+			</xsl:template>
+			</xsl:stylesheet>`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "XSLT",
+	},
+
 	// TODO: enry doesn't do a good job with it's classifier.
 	// {
 	//	name: "detect_by_contents.foo",
