@@ -219,7 +219,7 @@ golangci-lint: ## Runs the golangci-lint linter.
 #####################################################################
 
 SUPPORTED_LANGUAGES.md: node_modules/.installed internal/scanner/languages.go ## Supported languages documentation.
-	@set -e;\
+	@set -euo pipefail;\
 		go mod vendor; \
 		go run -mod=vendor ./internal/cmd/genlangdocs | ./node_modules/.bin/prettier --parser markdown > $@
 
