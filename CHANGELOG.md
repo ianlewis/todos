@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [Powershell](https://learn.microsoft.com/en-us/powershell/).
 - Support was added for [Elixir](https://elixir-lang.org/).
 - Support was added for [ERB templates](https://github.com/ruby/erb).
-- Support was added for [Pascal](https://en.wikipedia.org/wiki/Pascal_(programming_language)).
+- Support was added for [Pascal](<https://en.wikipedia.org/wiki/Pascal_(programming_language)>).
 
 ## [0.9.0] - 2024-08-08
 
@@ -196,7 +196,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of `todos` CLI application.
 - Simple support for scanning directories for TODO/FIXME/BUG/HACK/XXX comments.
 
-[Unreleased]: https://github.com/ianlewis/todos/compare/v0.10.0...HEAD
 [0.0.1]: https://github.com/ianlewis/todos/releases/tag/v0.0.1
 [0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0
 [0.2.0]: https://github.com/ianlewis/todos/releases/tag/v0.2.0
@@ -206,8 +205,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.6.0]: https://github.com/ianlewis/todos/releases/tag/v0.6.0
 [0.7.0]: https://github.com/ianlewis/todos/releases/tag/v0.7.0
 [0.8.0]: https://github.com/ianlewis/todos/releases/tag/v0.8.0
-[0.9.0-rc.1]: https://github.com/ianlewis/todos/releases/tag/v0.9.0-rc.1
-[0.9.0-rc.2]: https://github.com/ianlewis/todos/releases/tag/v0.9.0-rc.2
-[0.9.0-rc.3]: https://github.com/ianlewis/todos/releases/tag/v0.9.0-rc.3
 [0.9.0]: https://github.com/ianlewis/todos/releases/tag/v0.9.0
 [0.10.0]: https://github.com/ianlewis/todos/releases/tag/v0.10.0

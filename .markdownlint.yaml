@@ -1,4 +1,5 @@
 # Copyright 2023 Google LLC
+# Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,9 +64,3 @@ MD047: true
 # MD048/code-fence-style - Code fence style
 MD048:
   style: "backtick"
-
-# Disable checks that currently have bugs:
-# TODO(github.com/DavidAnson/markdownlint/issues/538): Re-enable when fixed.
-MD051: false
-# TODO(github.com/DavidAnson/markdownlint/issues/537): Re-enable when fixed.
-MD053: false

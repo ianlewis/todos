@@ -1,4 +1,5 @@
 # Copyright 2023 Google LLC
+# Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +26,10 @@ jobs:
   issue-reopener:
     runs-on: ubuntu-latest
     permissions:
+      # NOTE: contents: read is necessary for private repositories.
+      contents: read
       issues: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Issue Reopener
-        uses: ianlewis/todo-issue-reopener@9adf81abbaeceed8d6c90c106cc2a965797963cf # v1.3.0
+        uses: ianlewis/todo-issue-reopener@1a99cfd93fb95eb4f212a1ebaf3e9ef8ba4c46f8 # v1.4.0

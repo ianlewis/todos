@@ -1,4 +1,4 @@
-# For markdownlint.
+# For markdownlint
 .git
 
 # Binaries for programs and plugins
@@ -17,6 +17,7 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 node_modules/
+.venv
 
 # JetBrains IDEs
 .idea
