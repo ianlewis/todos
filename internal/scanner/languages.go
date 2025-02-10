@@ -381,6 +381,23 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: nil,
 		Strings:           cStrings,
 	},
+	"Markdown": {
+		MultilineComments: xmlBlockComments,
+		Strings: []StringConfig{
+			// Inline code
+			{
+				Start:      []rune{'`'},
+				End:        []rune{'`'},
+				EscapeFunc: NoEscape,
+			},
+			// Code block
+			{
+				Start:      []rune("```"),
+				End:        []rune("```"),
+				EscapeFunc: NoEscape,
+			},
+		},
+	},
 	"Objective-C": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
