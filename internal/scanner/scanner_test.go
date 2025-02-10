@@ -1956,6 +1956,40 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Markdown
+	{
+		name: "block_comments.md",
+		src: `# Title
+
+## Header
+
+This is some text
+
+<!-- this is a comment -->
+
+This is more text.<!-- this is another comment -->
+
+` + "```" + `
+<!-- comments in code blocks don't count -->
+` + "```" + `
+
+` + "`" + `<!-- comments in inline code doesn't count -->` + "`",
+		config: "Markdown",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- this is a comment -->",
+				line: 7,
+			},
+			{
+				text: "<!-- this is another comment -->",
+				line: 9,
+			},
+		},
+	},
+
 	// Python
 	{
 		name: "raw_string.py",
@@ -2728,6 +2762,7 @@ End Module`,
 		},
 	},
 
+	// XML
 	{
 		name: "block_comments.xml",
 		src: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2751,6 +2786,8 @@ End Module`,
 			},
 		},
 	},
+
+	// XSLT
 	{
 		name: "block_comments.xslt",
 		src: `<?xml version="1.0" encoding="UTF-8"?>

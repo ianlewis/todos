@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#1586](https://github.com/ianlewis/todos/issues/1586)).
 - Support was added for [XSLT](https://www.w3.org/TR/xslt-30/)
   ([#1613](https://github.com/ianlewis/todos/issues/1613)).
+- Support was added for [Markdown](https://en.wikipedia.org/wiki/Markdown)
+  ([#1608](https://github.com/ianlewis/todos/issues/1608)).
 
 ## [0.10.0] - 2024-10-31
 
