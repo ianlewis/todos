@@ -870,6 +870,54 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// GraphQL
+	{
+		name: "multi_line.graphql",
+		src: `"""
+Author of questions and answers in a website
+"""
+type Author {
+  # ... username is the author name , this is an example of a dropped comment
+  username: String! @id
+  """
+  The questions submitted by this author
+  """
+  questions: [Question] @hasInverse(field: author)
+  """
+  The answers submitted by this author
+  """
+  answers: [Answer] @hasInverse(field: author)
+}`,
+		config: "GraphQL",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: `"""
+Author of questions and answers in a website
+"""`,
+				line: 1,
+			},
+			{
+				text: "# ... username is the author name , this is an example of a dropped comment",
+				line: 5,
+			},
+			{
+				text: `"""
+  The questions submitted by this author
+  """`,
+				line: 7,
+			},
+			{
+				text: `"""
+  The answers submitted by this author
+  """`,
+				line: 11,
+			},
+		},
+	},
+
 	// Groovy
 	{
 		name: "line_comments.groovy",
