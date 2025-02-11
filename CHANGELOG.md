@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#1608](https://github.com/ianlewis/todos/issues/1608)).
 - Support was added for [GraphQL](https://graphql.org/)
   ([#1609](https://github.com/ianlewis/todos/issues/1609)).
+- Support was added for [Dart](https://dart.dev/)
+  ([#1612](https://github.com/ianlewis/todos/issues/1612)).
 
 ## [0.10.0] - 2024-10-31
 

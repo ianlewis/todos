@@ -174,6 +174,17 @@ var LanguagesConfig = map[string]*Config{
 		},
 		Strings: cStrings,
 	},
+	"Dart": {
+		LineComments: concat(
+			cLineComments,
+			[]LineCommentConfig{
+				// Dart documentation comments.
+				{Start: []rune("///")},
+			},
+		),
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
+	},
 	"Dockerfile": {
 		LineComments:      hashLineComments,
 		MultilineComments: nil,
