@@ -114,6 +114,14 @@ var (
 			AtLineStart: false,
 		},
 	}
+
+	tripleDoubleQuoteComments = []MultilineCommentConfig{
+		{
+			Start:       []rune("\"\"\""),
+			End:         []rune("\"\"\""),
+			AtLineStart: false,
+		},
+	}
 )
 
 var LanguagesConfig = map[string]*Config{
@@ -262,6 +270,11 @@ var LanguagesConfig = map[string]*Config{
 				},
 			},
 		),
+	},
+	"GraphQL": {
+		LineComments:      hashLineComments,
+		MultilineComments: tripleDoubleQuoteComments,
+		Strings:           doubleQuoteString,
 	},
 	"Groovy": {
 		LineComments:      cLineComments,
@@ -483,15 +496,9 @@ var LanguagesConfig = map[string]*Config{
 		Strings:           cStrings,
 	},
 	"Python": {
-		LineComments: hashLineComments,
-		MultilineComments: []MultilineCommentConfig{
-			{
-				Start:       []rune("\"\"\""),
-				End:         []rune("\"\"\""),
-				AtLineStart: false,
-			},
-		},
-		Strings: cStrings,
+		LineComments:      hashLineComments,
+		MultilineComments: tripleDoubleQuoteComments,
+		Strings:           cStrings,
 	},
 	"R": {
 		LineComments:      hashLineComments,

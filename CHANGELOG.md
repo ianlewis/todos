@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#1613](https://github.com/ianlewis/todos/issues/1613)).
 - Support was added for [Markdown](https://en.wikipedia.org/wiki/Markdown)
   ([#1608](https://github.com/ianlewis/todos/issues/1608)).
+- Support was added for [GraphQL](https://graphql.org/)
+  ([#1609](https://github.com/ianlewis/todos/issues/1609)).
 
 ## [0.10.0] - 2024-10-31
 
