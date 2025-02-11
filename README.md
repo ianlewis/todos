@@ -104,19 +104,43 @@ In order for the comments to be more easily parsed keep in mind the following:
 
 See the [`todos` CLI] documentation for more info.
 
+### Documenting tasks
+
+You can use the output of `todos` to create documentation of tasks.
+
+For example, this creates a simple markdown document:
+
+```shell
+$ (
+    echo "# TODOs" && \
+    echo && \
+    todos --exclude-dir .venv --output json | \
+        jq -r 'if (.label | startswith("#")) then "- [ ] \(.label) \(.message)" else empty end' | \
+        uniq
+) > todos.md
+
+$ cat todos.md
+# TODOs
+
+- [ ] #1546 Support @moduledoc
+- [ ] #96 Use a *Config
+- [ ] #96 Use []*Comment and go-cmp
+- [ ] #1627 Support OCaml nested comments.
+- [ ] #1540 Read this closed string as a comment.
+- [ ] #1545 Generate Go code rather than loading YAML at runtime.
+```
+
 ### Re-open prematurely closed issues
 
 Sometimes issues get closed before all of the relevant code is updated. You can
 use `todos` to re-open issues where TODO comments that reference the issue
-still exist in the code with the
-[`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener)
-action.
+still exist in the code.
 
 ```golang
 // TODO(#123): Still needs work.
 ```
 
-See [`ianlewis/todo-issue-reopener`](https://github.com/ianlewis/todo-issue-reopener) for more information.
+See [`ianlewis/todo-issue-reopener`] for more information.
 
 ## `todos` CLI tool
 
@@ -292,7 +316,7 @@ See [SUPPORTED_LANGUAGES.md].
 Tracking TODOs in code can help you have a cleaner and heathier code base.
 
 1. It can help you realize when issues you thought were complete actually
-   require some additional work (See [`actions/issue-reopener`]).
+   require some additional work (See [`ianlewis/todo-issue-reopener`]).
 2. It makes it easier for contributors to find areas of the code that need work.
 3. It makes it easier for contributors to find the relevant code for an issue.
 
@@ -317,7 +341,7 @@ why you might use `todos`.
 See [CONTRIBUTING.md] for contributor documentation.
 
 [`todos` CLI]: #todos-cli-tool
-[`actions/issue-reopener`]: actions/issue-reopener/README.md
+[`ianlewis/todo-issue-reopener`]: https://github.com/ianlewis/todo-issue-reopener
 [FAQ]: #faq
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [SUPPORTED_LANGUAGES.md]: SUPPORTED_LANGUAGES.md
