@@ -1,4 +1,5 @@
 // Copyright 2023 Google LLC
+// Copyright 2025 Ian Lewis
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +61,9 @@ type MultilineCommentConfig struct {
 	// AtLineStart indicates that the multiline comment must start at the
 	// beginning of a line.
 	AtLineStart bool
+
+	// Nested indicates that the multi-line comment can be nested.
+	Nested bool
 }
 
 // Config is configuration for a generic comment scanner.
@@ -460,10 +464,28 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 	}
 
 	var b strings.Builder
+	var nestingDepth int
 
 	// Add the opening to the builder since we want it in the output.
 	b.WriteString(string(mm.Start))
 	for {
+		if mm.Nested {
+			// Look for a nested comment start.
+			mlStart, err := s.peekEqual(mm.Start)
+			if err != nil {
+				return st, err
+			}
+			if mlStart && (!mm.AtLineStart || s.atLineStart) {
+				if _, errDiscard := s.reader.Discard(len(mm.Start)); errDiscard != nil {
+					return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
+				}
+				// Add the start to the builder.
+				b.WriteString(string(mm.Start))
+				nestingDepth++
+				continue
+			}
+		}
+
 		// Look for the end of the comment.
 		mlEnd, err := s.peekEqual(mm.End)
 		if err != nil {
@@ -475,12 +497,17 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			}
 			// Add the ending to the builder.
 			b.WriteString(string(mm.End))
-			s.next = &Comment{
-				Text:      b.String(),
-				Line:      st.line,
-				Multiline: true,
+			if nestingDepth == 0 {
+				s.next = &Comment{
+					Text:      b.String(),
+					Line:      st.line,
+					Multiline: true,
+				}
+				return &stateCode{}, nil
 			}
-			return &stateCode{}, nil
+			if mm.Nested {
+				nestingDepth--
+			}
 		}
 
 		rn, err := s.nextRune()

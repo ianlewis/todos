@@ -1,4 +1,5 @@
 // Copyright 2024 Google LLC
+// Copyright 2025 Ian Lewis
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -428,11 +429,12 @@ var LanguagesConfig = map[string]*Config{
 		Strings:           cStrings,
 	},
 	"OCaml": {
-		// TODO(#1627): Support OCaml nested comments.
 		MultilineComments: []MultilineCommentConfig{
 			{
 				Start: []rune("(*"),
 				End:   []rune("*)"),
+				// OCaml supports nested block comments.
+				Nested: true,
 			},
 		},
 		// TODO(#1627): Support OCaml quoted string literals.
