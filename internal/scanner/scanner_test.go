@@ -2085,8 +2085,7 @@ This is more text.<!-- this is another comment -->
 		name: "comments.ml",
 		src: `(* single line comment *)
 
-(* multiple line comment, commenting out part of a program, and containing a
-nested comment:
+(* multiple line comment, commenting out part of a program:
 let f = function
   | 'A'..'Z' -> "Uppercase"
 *)`,
@@ -2100,8 +2099,7 @@ let f = function
 				line: 1,
 			},
 			{
-				text: `(* multiple line comment, commenting out part of a program, and containing a
-nested comment:
+				text: `(* multiple line comment, commenting out part of a program:
 let f = function
   | 'A'..'Z' -> "Uppercase"
 *)`,
@@ -2109,32 +2107,30 @@ let f = function
 			},
 		},
 	},
-
-	// TODO(#1627): Support OCaml nested comments.
-	// {
-	// 	name: "nested_comments.ml",
-	// 	src: `(* multiple line comment, commenting out part of a program, and containing a
-	// nested comment:
-	// let f = function
-	// | 'A'..'Z' -> "Uppercase"
-	// (* Add other cases later... *)
-	// *)`,
-	// 	config: "OCaml",
-	// 	comments: []struct {
-	// 		text string
-	// 		line int
-	// 	}{
-	// 		{
-	// 			text: `(* multiple line comment, commenting out part of a program, and containing a
-	// nested comment:
-	// let f = function
-	// | 'A'..'Z' -> "Uppercase"
-	// (* Add other cases later... *)
-	// *)`,
-	// 			line: 1,
-	// 		},
-	// 	},
-	// },
+	{
+		name: "nested_comments.ml",
+		src: `(* multiple line comment, commenting out part of a program, and containing a
+nested comment:
+let f = function
+  | 'A'..'Z' -> "Uppercase"
+(* Add other cases later... (* more nesting *) *)
+*)`,
+		config: "OCaml",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: `(* multiple line comment, commenting out part of a program, and containing a
+nested comment:
+let f = function
+  | 'A'..'Z' -> "Uppercase"
+(* Add other cases later... (* more nesting *) *)
+*)`,
+				line: 1,
+			},
+		},
+	},
 
 	// Python
 	{
