@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#1609](https://github.com/ianlewis/todos/issues/1609)).
 - Support was added for [Dart](https://dart.dev/)
   ([#1612](https://github.com/ianlewis/todos/issues/1612)).
+- Support was added for [OCaml](https://ocaml.org/)
+  ([#1610](https://github.com/ianlewis/todos/issues/1610)).
 
 ## [0.10.0] - 2024-10-31
 
