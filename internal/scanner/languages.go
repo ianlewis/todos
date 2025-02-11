@@ -427,6 +427,17 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: cBlockComments,
 		Strings:           cStrings,
 	},
+	"OCaml": {
+		// TODO(#1627): Support OCaml nested comments.
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start: []rune("(*"),
+				End:   []rune("*)"),
+			},
+		},
+		// TODO(#1627): Support OCaml quoted string literals.
+		Strings: cStrings,
+	},
 	"Pascal": {
 		LineComments: cLineComments, // Delphi comments
 		MultilineComments: []MultilineCommentConfig{
