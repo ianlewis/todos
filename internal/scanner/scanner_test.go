@@ -325,6 +325,48 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Dart
+	{
+		name: "line_comments.dart",
+		src: `/// Module documentation
+
+            /* block comment */
+
+            /// Function documentation
+            int fibonacci(int n) {
+                if (n == 0 || n == 1) return n;
+                // fibonacci is recursive.
+                return fibonacci(n - 1) + fibonacci(n - 2);
+            }
+
+            var block_comment = "/* block comment in string */ is a block comment";
+            var line_comment = "line comment: // line comment in string";
+            var doc_comment = "doc comment: /// doc comment in string";
+            var result = fibonacci(20);`,
+		config: "Dart",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "/// Module documentation",
+				line: 1,
+			},
+			{
+				text: "/* block comment */",
+				line: 3,
+			},
+			{
+				text: "/// Function documentation",
+				line: 5,
+			},
+			{
+				text: "// fibonacci is recursive.",
+				line: 8,
+			},
+		},
+	},
+
 	// Elixir
 	{
 		name: "line_comments.ex",
@@ -3016,6 +3058,28 @@ var loaderTestCases = []struct {
 	expectedConfig string
 	err            error
 }{
+	// Dart
+	{
+		name: "dart_detection.dart",
+		src: []byte(`/// Module documentation
+
+            /* block comment */
+
+            /// Function documentation
+            int fibonacci(int n) {
+                if (n == 0 || n == 1) return n;
+                // fibonacci is recursive.
+                return fibonacci(n - 1) + fibonacci(n - 2);
+            }
+
+            var block_comment = "/* block comment in string */ is a block comment";
+            var line_comment = "line comment: // line comment in string";
+            var doc_comment = "doc comment: /// doc comment in string";
+            var result = fibonacci(20);`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "Dart",
+	},
+
 	// Emacs Lisp
 	{
 		name:        "line_comments.el",
