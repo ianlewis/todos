@@ -52,9 +52,8 @@ var (
 	// cBlockComments are C-style block comments.
 	cBlockComments = []MultilineCommentConfig{
 		{
-			Start:       []rune("/*"),
-			End:         []rune("*/"),
-			AtLineStart: false,
+			Start: []rune("/*"),
+			End:   []rune("*/"),
 		},
 	}
 
@@ -70,6 +69,14 @@ var (
 		{
 			Start:      []rune{'"'},
 			End:        []rune{'"'},
+			EscapeFunc: CharEscape('\\'),
+		},
+	}
+
+	tripleDoubleQuoteString = []StringConfig{
+		{
+			Start:      []rune(`"""`),
+			End:        []rune(`"""`),
 			EscapeFunc: CharEscape('\\'),
 		},
 	}
@@ -110,17 +117,15 @@ var (
 	// xmlBlockComments are XML-style block comments.
 	xmlBlockComments = []MultilineCommentConfig{
 		{
-			Start:       []rune("<!--"),
-			End:         []rune("-->"),
-			AtLineStart: false,
+			Start: []rune("<!--"),
+			End:   []rune("-->"),
 		},
 	}
 
 	tripleDoubleQuoteComments = []MultilineCommentConfig{
 		{
-			Start:       []rune("\"\"\""),
-			End:         []rune("\"\"\""),
-			AtLineStart: false,
+			Start: []rune(`"""`),
+			End:   []rune(`"""`),
 		},
 	}
 )
@@ -171,7 +176,10 @@ var LanguagesConfig = map[string]*Config{
 	"CoffeeScript": {
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
-			{Start: []rune("###"), End: []rune("###"), AtLineStart: false},
+			{
+				Start: []rune("###"),
+				End:   []rune("###"),
+			},
 		},
 		Strings: cStrings,
 	},
@@ -197,25 +205,19 @@ var LanguagesConfig = map[string]*Config{
 		// TODO(#1546): Support @moduledoc
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("@moduledoc \"\"\""),
-				End:         []rune("\"\"\""),
-				AtLineStart: false,
+				Start: []rune(`@moduledoc """`),
+				End:   []rune(`"""`),
 			},
 			{
-				Start:       []rune("@doc \"\"\""),
-				End:         []rune("\"\"\""),
-				AtLineStart: false,
+				Start: []rune(`@doc """`),
+				End:   []rune(`"""`),
 			},
 		},
 		Strings: concat(
 			singleQuoteString,
 			doubleQuoteString,
+			tripleDoubleQuoteString,
 			[]StringConfig{
-				{
-					Start:      []rune("\"\"\""),
-					End:        []rune("\"\"\""),
-					EscapeFunc: CharEscape('\\'),
-				},
 				{
 					Start:      []rune("'''"),
 					End:        []rune("'''"),
@@ -320,9 +322,8 @@ var LanguagesConfig = map[string]*Config{
 			xmlBlockComments,
 			[]MultilineCommentConfig{
 				{
-					Start:       []rune("<%#"),
-					End:         []rune("%>"),
-					AtLineStart: false,
+					Start: []rune("<%#"),
+					End:   []rune("%>"),
 				},
 			},
 		),
@@ -336,9 +337,8 @@ var LanguagesConfig = map[string]*Config{
 		},
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("{-"),
-				End:         []rune("-}"),
-				AtLineStart: false,
+				Start: []rune("{-"),
+				End:   []rune("-}"),
 			},
 		},
 		Strings: cStrings,
@@ -366,6 +366,41 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: cBlockComments,
 		Strings:           cStrings,
 	},
+	"Julia": {
+		LineComments: concat(
+			hashLineComments,
+		),
+		MultilineComments: []MultilineCommentConfig{
+			{
+				Start: []rune("#="),
+				End:   []rune("=#"),
+				// Julia supports nested block comments.
+				Nested: true,
+			},
+		},
+		Strings: concat(
+			// Raw strings
+			// https://docs.julialang.org/en/v1/manual/strings/#man-raw-string-literals
+			[]StringConfig{
+				{
+					Start:      []rune(`raw"`),
+					End:        []rune(`"`),
+					EscapeFunc: NoEscape,
+				},
+			},
+			cStrings,
+			// Raw doc strings
+			// https://docs.julialang.org/en/v1/manual/documentation/#Advanced-Usage
+			[]StringConfig{
+				{
+					Start:      []rune(`raw"""`),
+					End:        []rune(`"""`),
+					EscapeFunc: NoEscape,
+				},
+			},
+			tripleDoubleQuoteString,
+		),
+	},
 	"Kotlin": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
@@ -379,9 +414,8 @@ var LanguagesConfig = map[string]*Config{
 		},
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("--[["),
-				End:         []rune("--]]"),
-				AtLineStart: false,
+				Start: []rune("--[["),
+				End:   []rune("--]]"),
 			},
 		},
 		Strings: cStrings,
@@ -394,9 +428,8 @@ var LanguagesConfig = map[string]*Config{
 		},
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("%{"),
-				End:         []rune("}%"),
-				AtLineStart: false,
+				Start: []rune("%{"),
+				End:   []rune("}%"),
 			},
 		},
 		Strings: cStrings,
@@ -444,14 +477,12 @@ var LanguagesConfig = map[string]*Config{
 		LineComments: cLineComments, // Delphi comments
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("(*"),
-				End:         []rune("*)"),
-				AtLineStart: false,
+				Start: []rune("(*"),
+				End:   []rune("*)"),
 			},
 			{
-				Start:       []rune("{"),
-				End:         []rune("}"),
-				AtLineStart: false,
+				Start: []rune("{"),
+				End:   []rune("}"),
 			},
 		},
 		Strings: []StringConfig{
@@ -496,9 +527,8 @@ var LanguagesConfig = map[string]*Config{
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("<#"),
-				End:         []rune("#>"),
-				AtLineStart: false,
+				Start: []rune("<#"),
+				End:   []rune("#>"),
 			},
 		},
 		// NOTE:  Powershell escape character is the grave character (`)
