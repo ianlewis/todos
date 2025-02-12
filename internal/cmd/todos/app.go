@@ -82,6 +82,11 @@ func newTODOsApp() *cli.App {
 		defaultOutput = "github"
 	}
 
+	copyrightNames := []string{
+		"Google LLC",
+		"Ian Lewis",
+	}
+
 	app := &cli.App{
 		Name:  filepath.Base(os.Args[0]),
 		Usage: "Search for TODOS in code.",
@@ -161,7 +166,7 @@ func newTODOsApp() *cli.App {
 			},
 		},
 		ArgsUsage:       "[PATH]...",
-		Copyright:       "Google LLC",
+		Copyright:       strings.Join(copyrightNames, "\n"),
 		HideHelp:        true,
 		HideHelpCommand: true,
 		Action: func(c *cli.Context) error {
@@ -172,10 +177,15 @@ func newTODOsApp() *cli.App {
 
 			if c.Bool("version") {
 				versionInfo := version.GetVersionInfo()
-				_ = utils.Must(fmt.Fprintf(c.App.Writer, `%s %s
-Copyright (c) Google LLC
+				copyright := ""
+				for _, name := range copyrightNames {
+					copyright += "Copyright (c) " + name + "\n"
+				}
 
-%s`, c.App.Name, versionInfo.GitVersion, versionInfo.String()))
+				_ = utils.Must(fmt.Fprintf(c.App.Writer, `%s %s
+%s
+
+%s`, c.App.Name, versionInfo.GitVersion, copyright, versionInfo.String()))
 				return nil
 			}
 
