@@ -19,6 +19,9 @@ type Comment struct {
 	Text      string
 	Line      int
 	Multiline bool
+
+	LineConfig      *LineCommentConfig
+	MultilineConfig *MultilineCommentConfig
 }
 
 // String implements fmt.Stringer.String.

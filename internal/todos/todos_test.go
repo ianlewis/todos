@@ -77,18 +77,39 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
-						Text: "// godoc ",
+						Text:      "/* TODO */",
+						Line:      6,
+						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
+					},
+					{
+						Text: "// godoc",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// FIXME",
 						Line: 10,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -98,6 +119,12 @@ func TestTODOScanner(t *testing.T) {
 					Text:        "// TODO",
 					Line:        5,
 					CommentLine: 5,
+				},
+				{
+					Type:        "TODO",
+					Text:        "/* TODO */",
+					Line:        6,
+					CommentLine: 6,
 				},
 				{
 					Type:        "FIXME",
@@ -114,14 +141,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -143,14 +179,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO: foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -173,14 +218,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1)",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -204,14 +258,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1): foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -236,14 +299,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO - foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -268,14 +340,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1) - foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -300,14 +381,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1) / foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -332,14 +422,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1) // foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -364,14 +463,23 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO(github.com/foo/bar/issues/1) foo",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -396,15 +504,25 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nTODO\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -420,21 +538,72 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+		"multiline_comments_single_line_message.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// package comment",
+						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
+					},
+					{
+						Text:      "/* TODO: foo */",
+						Line:      5,
+						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
+					},
+					{
+						Text: "// godoc ",
+						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"TODO"},
+			},
+			expected: []*TODO{
+				{
+					Type:        "TODO",
+					Text:        "/* TODO: foo */",
+					Message:     "foo",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
 		"multiline_comments_message.go": {
 			s: &testScanner{
 				comments: []*scanner.Comment{
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nTODO: foo\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -457,15 +626,25 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1)\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -488,15 +667,25 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 9,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -520,15 +709,25 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nfoo\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 9,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -544,23 +743,39 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO: before",
 						Line: 2,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\nTODO(github.com/foo/bar/issues1): foo\nTODO: second task\n */",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 9,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text: "// TODO: after",
 						Line: 10,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -608,15 +823,26 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/**\n * foo\n * TODO(github.com/foo/bar/issues1): foo\n */",
 						Line:      5,
 						Multiline: true,
+
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// javadoc ",
 						Line: 9,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -640,6 +866,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment, TODO",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -654,6 +883,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//TODO",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -677,6 +909,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//TODO Add some useful code here.",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -700,6 +935,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//TODO(github.com/foo/bar/issues/1) Add some useful code here.",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -723,6 +961,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//TODO(github.com/foo/bar/issues/1)",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -746,15 +987,25 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// package comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 					{
 						Text:      "/*\nfoo\n\t\t\tTODO(github.com/foo/bar/issues1): foo\n*/",
 						Line:      5,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// godoc ",
 						Line: 7,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -778,6 +1029,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//// TODO: comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -801,6 +1055,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "// @TODO: comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -824,6 +1081,9 @@ func TestTODOScanner(t *testing.T) {
 					{
 						Text: "//@TODO comment",
 						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},
@@ -848,6 +1108,10 @@ func TestTODOScanner(t *testing.T) {
 						Text:      "/**\n * @TODO: comment\n */",
 						Line:      1,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 				},
 			},
@@ -875,10 +1139,17 @@ func TestTODOScanner(t *testing.T) {
 						Text:      "/**\n no match here\n */",
 						Line:      1,
 						Multiline: true,
+						MultilineConfig: &scanner.MultilineCommentConfig{
+							Start: []rune("/*"),
+							End:   []rune("*/"),
+						},
 					},
 					{
 						Text: "// TODO: match",
 						Line: 5,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
 					},
 				},
 			},

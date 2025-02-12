@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Simple TODO block comments (e.g. `/* TODO */`) are now shown
+  ([#1631](https://github.com/ianlewis/todos/issues/1631)).
+
 ### Added
 
 - Support was added for [HCL](https://github.com/hashicorp/hcl)
