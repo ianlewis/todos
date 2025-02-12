@@ -1199,6 +1199,66 @@ Author of questions and answers in a website
 		},
 	},
 
+	// Julia
+	{
+		name: "comments.jl",
+		src: `# module comment
+
+"""
+TODOs in doc comments are not currently included 
+TODO: foo
+"""
+function mandelbrot(a)
+    z = 0
+    for i=1:50
+        z = z^2 + a
+    end
+    return z # this is another comment
+end
+
+#=
+This is a comment.
+#=
+This is a nested comment.
+=#
+for y=1.0:-0.05:-1.0
+    for x=-2.0:0.0315:0.5
+        abs(mandelbrot(complex(x, y))) < 2 ? print("*") : print(" ")
+    end
+    println()
+end
+=#`,
+		config: "Julia",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# module comment",
+				line: 1,
+			},
+			{
+				text: "# this is another comment",
+				line: 12,
+			},
+			{
+				text: `#=
+This is a comment.
+#=
+This is a nested comment.
+=#
+for y=1.0:-0.05:-1.0
+    for x=-2.0:0.0315:0.5
+        abs(mandelbrot(complex(x, y))) < 2 ? print("*") : print(" ")
+    end
+    println()
+end
+=#`,
+				line: 15,
+			},
+		},
+	},
+
 	// Kotlin
 	{
 		name: "line_comments.kt",
@@ -3204,6 +3264,22 @@ var loaderTestCases = []struct {
 		src:            []byte{},
 		scanCharset:    "UTF-8",
 		expectedConfig: "Go",
+	},
+
+	// Julia
+	{
+		name: "mandelbrot.jl",
+		src: []byte(`
+function mandelbrot(a)
+    z = 0
+    for i=1:50
+        z = z^2 + a
+    end
+    return z # this is another comment
+end
+`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "Julia",
 	},
 
 	// OCaml
