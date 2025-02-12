@@ -3028,8 +3028,9 @@ var scannerRegressionTestCases = []*struct {
 		},
 		expectedComments: []*Comment{
 			{
-				Text: "// last line",
-				Line: 1,
+				Text:       "// last line",
+				Line:       1,
+				LineConfig: &cLineComments[0],
 			},
 		},
 	},

@@ -22,7 +22,10 @@ type stateCode struct{}
 
 func (s *stateCode) stateMustImplement() {}
 
-type stateLineComment struct{}
+type stateLineComment struct {
+	// index is the index for the type of line comment.
+	index int
+}
 
 func (s *stateLineComment) stateMustImplement() {}
 

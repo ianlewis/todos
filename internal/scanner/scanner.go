@@ -229,7 +229,7 @@ func (s *CommentScanner) Scan() bool {
 func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 	for {
 		// Check for line comment
-		m, err := s.lineMatch()
+		lcIndex, m, err := s.lineMatch()
 		if err != nil {
 			return st, err
 		}
@@ -252,7 +252,9 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 					}
 				}
 
-				return &stateLineComment{}, nil
+				return &stateLineComment{
+					index: lcIndex,
+				}, nil
 			}
 		}
 
@@ -286,18 +288,18 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 	}
 }
 
-func (s *CommentScanner) lineMatch() (*LineCommentConfig, error) {
+func (s *CommentScanner) lineMatch() (int, *LineCommentConfig, error) {
 	// Check for line comment
-	for _, m := range s.config.LineComments {
+	for i, m := range s.config.LineComments {
 		eq, err := s.peekEqual(m.Start)
 		if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 		if eq {
-			return &m, nil
+			return i, &m, nil
 		}
 	}
-	return nil, nil
+	return 0, nil, nil
 }
 
 func (s *CommentScanner) multiLineMatch() (int, *MultilineCommentConfig, error) {
@@ -361,9 +363,10 @@ func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error)
 		}
 		if lineEnd {
 			s.next = &Comment{
-				Text:      b.String(),
-				Line:      s.line,
-				Multiline: false,
+				Text:       b.String(),
+				Line:       s.line,
+				Multiline:  false,
+				LineConfig: &s.config.LineComments[st.index],
 			}
 			return &stateCode{}, nil
 		}
@@ -403,9 +406,10 @@ func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString
 		// share the same character cannot implement multi-line strings.
 		if lineEnd {
 			s.next = &Comment{
-				Text:      b.String(),
-				Line:      s.line,
-				Multiline: false,
+				Text:       b.String(),
+				Line:       s.line,
+				Multiline:  false,
+				LineConfig: &s.config.LineComments[st.index],
 			}
 			return true, &stateCode{}, nil
 		}
@@ -499,9 +503,10 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			b.WriteString(string(mm.End))
 			if nestingDepth == 0 {
 				s.next = &Comment{
-					Text:      b.String(),
-					Line:      st.line,
-					Multiline: true,
+					Text:            b.String(),
+					Line:            st.line,
+					Multiline:       true,
+					MultilineConfig: &s.config.MultilineComments[st.index],
 				}
 				return &stateCode{}, nil
 			}

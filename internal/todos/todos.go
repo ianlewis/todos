@@ -97,19 +97,6 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 		s: s,
 	}
 
-	sConfig := s.Config()
-	var commentStarts []string
-	for _, c := range sConfig.LineComments {
-		commentStarts = append(commentStarts, "(?:"+regexp.QuoteMeta(string(c.Start))+")+")
-	}
-	commentStartMatch := strings.Join(commentStarts, "|")
-
-	var multilineStarts []string
-	for _, c := range sConfig.MultilineComments {
-		multilineStarts = append(multilineStarts, "(?:"+regexp.QuoteMeta(string(c.Start))+")+")
-	}
-	multiStartMatch := strings.Join(multilineStarts, "|")
-
 	if config == nil {
 		config = &Config{
 			Types: DefaultTypes,
@@ -120,29 +107,29 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	for _, tp := range config.Types {
 		quotedTypes = append(quotedTypes, regexp.QuoteMeta(tp))
 	}
-	// match[0][2]
+	// match[0][1]
 	typesMatch := strings.Join(quotedTypes, "|")
 
 	msgMatch := strings.Join([]string{
 		`\s*`,                       // Naked
-		`\s*[:\-/]+\s*(.*)`,         // With message (match[0][4])
-		`\((.*)\)\s*`,               // Naked w/ label (match[0][5])
-		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][6]) and message (match[0][7])
+		`\s*[:\-/]+\s*(.*)`,         // With message (match[0][3])
+		`\((.*)\)\s*`,               // Naked w/ label (match[0][4])
+		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][5]) and message (match[0][6])
 	}, "|")
 
 	msgMatch2 := strings.Join([]string{
 		`\s*`,                       // Naked
-		`\s*[:\-/]*\s*(.*)`,         // With message (match[0][4])
-		`\((.*)\)\s*`,               // Naked w/ label (match[0][5])
-		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][6]) and message (match[0][7])
+		`\s*[:\-/]*\s*(.*)`,         // With message (match[0][3])
+		`\((.*)\)\s*`,               // Naked w/ label (match[0][4])
+		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][5]) and message (match[0][6])
 	}, "|")
 
 	snr.lineMatch = []*regexp.Regexp{
-		regexp.MustCompile(`^\s*(` + commentStartMatch + `)\s*@?(` + typesMatch + `)(` + msgMatch + `)$`),
-		regexp.MustCompile(`^\s*(` + commentStartMatch + `)@?(` + typesMatch + `)(` + msgMatch2 + `)$`),
+		regexp.MustCompile(`^\s*@?(` + typesMatch + `)(` + msgMatch + `)$`),
+		regexp.MustCompile(`^@?(` + typesMatch + `)(` + msgMatch2 + `)$`),
 	}
 	snr.multilineMatch = regexp.MustCompile(
-		`^(` + multiStartMatch + `\s*|\s*\*?\s*)?@?(` + typesMatch + `)(` + msgMatch + `)$`)
+		`^\s*\*?\s*@?(` + typesMatch + `)(` + msgMatch + `)$`)
 
 	return snr
 }
@@ -179,21 +166,24 @@ func (t *TODOScanner) Scan() bool {
 // findMultilineMatch returns the TODO for the comment if it was found.
 func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
 	var matches []*TODO
-	for i, line := range strings.Split(c.Text, "\n") {
-		match := t.multilineMatch.FindAllStringSubmatch(line, 1)
-		if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-			label := match[0][5]
+	for i, line := range strings.Split(strings.TrimSpace(c.Text), "\n") {
+		lineText := strings.TrimLeft(line, string(c.MultilineConfig.Start))
+		lineText = strings.TrimRight(lineText, string(c.MultilineConfig.End))
+
+		match := t.multilineMatch.FindAllStringSubmatch(lineText, 1)
+		if len(match) != 0 && len(match[0]) > 2 && match[0][1] != "" {
+			label := match[0][4]
 			if label == "" {
-				label = match[0][6]
+				label = match[0][5]
 			}
 
-			message := match[0][4]
+			message := match[0][3]
 			if message == "" {
-				message = match[0][7]
+				message = match[0][6]
 			}
 
 			matches = append(matches, &TODO{
-				Type:    match[0][2],
+				Type:    strings.TrimSpace(match[0][1]),
 				Text:    strings.TrimSpace(line),
 				Label:   strings.TrimSpace(label),
 				Message: strings.TrimSpace(message),
@@ -208,22 +198,24 @@ func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
 
 // findLineMatch returns the TODO for the comment if it was found.
 func (t *TODOScanner) findLineMatch(c *scanner.Comment) *TODO {
+	trimmedText := strings.TrimSpace(c.Text)
+	commentText := strings.TrimLeft(trimmedText, string(c.LineConfig.Start))
 	for _, lnMatch := range t.lineMatch {
-		match := lnMatch.FindAllStringSubmatch(c.Text, 1)
-		if len(match) != 0 && len(match[0]) > 2 && match[0][2] != "" {
-			label := match[0][5]
+		match := lnMatch.FindAllStringSubmatch(commentText, 1)
+		if len(match) != 0 && len(match[0]) > 2 && match[0][1] != "" {
+			label := match[0][4]
 			if label == "" {
-				label = match[0][6]
+				label = match[0][5]
 			}
 
-			message := match[0][4]
+			message := match[0][3]
 			if message == "" {
-				message = match[0][7]
+				message = match[0][6]
 			}
 
 			return &TODO{
-				Type:    match[0][2],
-				Text:    strings.TrimSpace(c.Text),
+				Type:    match[0][1],
+				Text:    trimmedText,
 				Label:   strings.TrimSpace(label),
 				Message: strings.TrimSpace(message),
 				// Add the line relative to the file.
