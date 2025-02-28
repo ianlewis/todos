@@ -15,6 +15,7 @@
 package walker
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/go-enry/go-enry/v2"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/gobwas/glob"
 
@@ -82,6 +84,10 @@ type Options struct {
 	// ExcludeDirGlobs is a list of Glob that matches excluded dirs.
 	ExcludeDirGlobs []glob.Glob
 
+	// IgnoreFileNames is the name of files that, if present in each directory,
+	// will be read for ignore patterns.
+	IgnoreFileNames []string
+
 	// IncludeGenerated indicates whether generated files should be processed. Generated
 	// paths are always processed if there are specified explicitly in `paths`.
 	IncludeGenerated bool
@@ -114,7 +120,8 @@ func New(opts *Options) *TODOWalker {
 		}
 	}
 	return &TODOWalker{
-		options: opts,
+		options:        opts,
+		ignorePatterns: make(map[string][]gitignore.Pattern),
 	}
 }
 
@@ -122,6 +129,9 @@ func New(opts *Options) *TODOWalker {
 type TODOWalker struct {
 	// options are the walker's options.
 	options *Options
+
+	// ignorePatterns is the current list of ignore file patterns.
+	ignorePatterns map[string][]gitignore.Pattern
 
 	// path is the currently walked path.
 	path string
@@ -135,7 +145,14 @@ type TODOWalker struct {
 // if errors were encountered.
 func (w *TODOWalker) Walk() bool {
 	for _, path := range w.options.Paths {
-		w.path = path
+		var err error
+		w.path, err = filepath.EvalSymlinks(path)
+		if err != nil {
+			if herr := w.handleErr(path, err); herr != nil {
+				break
+			}
+			continue
+		}
 
 		f, err := os.Open(path)
 		if err != nil {
@@ -144,6 +161,7 @@ func (w *TODOWalker) Walk() bool {
 			}
 			continue
 		}
+		defer f.Close()
 
 		fInfo, err := f.Stat()
 		if err != nil {
@@ -164,8 +182,6 @@ func (w *TODOWalker) Walk() bool {
 				}
 			}
 		}
-
-		f.Close()
 	}
 
 	return w.err != nil
@@ -265,6 +281,11 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 	if !w.options.IncludeVendored && vendoring.IsVendor(basePath) {
 		return fs.SkipDir
 	}
+
+	if w.ignorePath(path, true) {
+		return fs.SkipDir
+	}
+
 	return nil
 }
 
@@ -284,6 +305,10 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 
 	if hdn && !w.options.IncludeHidden {
 		// Skip hidden files.
+		return nil
+	}
+
+	if w.ignorePath(path, false) {
 		return nil
 	}
 
@@ -487,6 +512,86 @@ func (w *TODOWalker) gitUser(
 	}, nil
 }
 
+// ignorePath returns true if the path matches ignore files.
+func (w *TODOWalker) ignorePath(path string, isDir bool) bool {
+	var include, exclude bool
+	patterns := w.getIgnorePatterns(path)
+	for _, p := range patterns {
+		switch m := p.Match(pathSplit(path), isDir); m {
+		case gitignore.Exclude:
+			exclude = true
+		case gitignore.Include:
+			include = true
+		case gitignore.NoMatch:
+			// Ok
+		default:
+			panic(fmt.Sprintf("invalid match: %v", m))
+		}
+	}
+
+	return exclude && !include
+}
+
+// getIgnorePatterns returns the ignore patterns that apply to the file at path.
+func (w *TODOWalker) getIgnorePatterns(path string) []gitignore.Pattern {
+	dirPath := filepath.Dir(path)
+	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, dirPath))
+	if err != nil {
+		if herr := w.handleErr(path, err); herr != nil {
+			return nil
+		}
+	}
+
+	if patterns, ok := w.ignorePatterns[fullPath]; ok {
+		return patterns
+	}
+
+	var patterns []gitignore.Pattern
+
+	// load ignore patterns for parents.
+	parent := filepath.Dir(dirPath)
+	if parent != dirPath {
+		patterns = w.getIgnorePatterns(parent)
+	}
+
+	// load patterns for current directory.
+	for _, ignoreName := range w.options.IgnoreFileNames {
+		f, err := os.Open(filepath.Join(fullPath, ignoreName))
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				if herr := w.handleErr(path, err); herr != nil {
+					return nil
+				}
+			}
+			continue
+		}
+		defer f.Close()
+
+		// Scan the patterns from the ignore file.
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			t := s.Text()
+
+			if !strings.HasPrefix(t, "#") && strings.TrimSpace(t) != "" {
+				var domain []string
+				if dirPath != "." {
+					domain = pathSplit(dirPath)
+				}
+				patterns = append(patterns, gitignore.ParsePattern(t, domain))
+			}
+		}
+		if err := s.Err(); err != nil {
+			if herr := w.handleErr(path, err); herr != nil {
+				return nil
+			}
+		}
+	}
+
+	w.ignorePatterns[fullPath] = patterns
+
+	return patterns
+}
+
 func (w *TODOWalker) handleErr(prefix string, err error) error {
 	// If it's a skip error then just return it.
 	if errors.Is(err, fs.SkipDir) || errors.Is(err, fs.SkipAll) {
@@ -509,4 +614,17 @@ func (w *TODOWalker) handleErr(prefix string, err error) error {
 func isVCS(path string) bool {
 	basePath := filepath.Base(path)
 	return basePath == ".git" || basePath == ".hg" || basePath == ".svn"
+}
+
+func pathSplit(path string) []string {
+	dir, file := filepath.Split(path)
+	if dir == path {
+		return nil
+	}
+	if dir == "" {
+		return []string{file}
+	}
+	parts := pathSplit(filepath.Clean(dir))
+	parts = append(parts, file)
+	return parts
 }
