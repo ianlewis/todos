@@ -66,11 +66,11 @@ node_modules/.installed: package.json package-lock.json
 
 .PHONY: build
 build: ## Build todos app.
-	go build github.com/ianlewis/todos/internal/cmd/todos
+	go build -mod=vendor github.com/ianlewis/todos/internal/cmd/todos
 
 .PHONY: build
 build-profile: ## Build todos app with profiling.
-	go build -tags profile github.com/ianlewis/todos/internal/cmd/todos
+	go build -mod=vendor -tags profile github.com/ianlewis/todos/internal/cmd/todos
 
 ## Testing
 #####################################################################
