@@ -50,6 +50,8 @@ const (
 
 const defaultCharset = "UTF-8"
 
+var defaultIgnoreFilenames = []string{".gitignore", ".todosignore"}
+
 var (
 	// ErrFlagParse is a flag parsing error.
 	ErrFlagParse = errors.New("parsing flags")
@@ -116,6 +118,11 @@ func newTODOsApp() *cli.App {
 				Name:               "exclude-hidden",
 				Usage:              "exclude hidden files and directories",
 				DisableDefaultText: true,
+			},
+			&cli.StringSliceFlag{
+				Name:  "ignore-file-name",
+				Usage: "name of files with ignore patterns (.gitignore format)",
+				Value: cli.NewStringSlice(defaultIgnoreFilenames...),
 			},
 			&cli.BoolFlag{
 				Name:               "include-vcs",
@@ -386,6 +393,8 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 	o.IncludeHidden = !c.Bool("exclude-hidden")
 	o.IncludeVCS = c.Bool("include-vcs")
 	o.IncludeVendored = c.Bool("include-vendored")
+
+	o.IgnoreFileNames = c.StringSlice("ignore-file-name")
 
 	// Filters
 	for _, label := range c.StringSlice("label") {

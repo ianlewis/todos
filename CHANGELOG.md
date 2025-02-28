@@ -5,6 +5,13 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- `todos` now parses `.gitignore` and `.todosignore` files and ignores those
+  files. ([#125](https://github.com/ianlewis/todos/issues/125)).
+
 ## [0.11.0] - 2025-02-12
 
 ### Fixed in 0.11.0

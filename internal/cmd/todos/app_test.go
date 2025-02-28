@@ -377,9 +377,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 		"output github": {
@@ -389,9 +390,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 		"invalid output": {
@@ -404,9 +406,34 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: []string{"TODO", "FIXME"},
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
+			},
+		},
+		"ignore filename": {
+			args: []string{"--ignore-file-name=todo.ignore"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:         defaultCharset,
+				IgnoreFileNames: []string{"todo.ignore"},
+				IncludeHidden:   true,
+				Paths:           []string{"."},
+			},
+		},
+		"ignore filename multiple": {
+			args: []string{"--ignore-file-name=todo.ignore", "--ignore-file-name=.todo.ignore"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:         defaultCharset,
+				IgnoreFileNames: []string{"todo.ignore", ".todo.ignore"},
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 		"exclude-hidden": {
@@ -415,9 +442,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: false,
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   false,
+				Paths:           []string{"."},
 			},
 		},
 		"include-vcs": {
@@ -426,10 +454,11 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				IncludeVCS:    true,
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				IncludeVCS:      true,
+				Paths:           []string{"."},
 			},
 		},
 		"include-vendored": {
@@ -439,6 +468,7 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 					Types: todos.DefaultTypes,
 				},
 				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
 				IncludeHidden:   true,
 				IncludeVendored: true,
 				Paths:           []string{"."},
@@ -450,9 +480,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"/path/to/code"},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"/path/to/code"},
 			},
 		},
 		"multiple-paths": {
@@ -461,9 +492,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"/path/to/code", "/other/path"},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"/path/to/code", "/other/path"},
 			},
 		},
 		"exclude-multiple": {
@@ -472,10 +504,11 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				ExcludeGlobs:  []glob.Glob{glob.MustCompile("exclude.*"), glob.MustCompile("foo")},
-				Paths:         []string{"."},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				ExcludeGlobs:    []glob.Glob{glob.MustCompile("exclude.*"), glob.MustCompile("foo")},
+				Paths:           []string{"."},
 			},
 		},
 		"exclude-dir-multiple": {
@@ -485,6 +518,7 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 					Types: todos.DefaultTypes,
 				},
 				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
 				IncludeHidden:   true,
 				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude?"), glob.MustCompile("foo")},
 				Paths:           []string{"."},
@@ -497,6 +531,7 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 					Types: todos.DefaultTypes,
 				},
 				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
 				IncludeHidden:   true,
 				ExcludeDirGlobs: []glob.Glob{glob.MustCompile("exclude")},
 				Paths:           []string{"."},
@@ -508,9 +543,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       "UTF-16",
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				Charset:         "UTF-16",
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 		"detect charset": {
@@ -519,9 +555,10 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				Charset:       "detect",
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				Charset:         "detect",
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 		"invalid charset": {
@@ -534,10 +571,11 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Config: &todos.Config{
 					Types: todos.DefaultTypes,
 				},
-				LabelGlobs:    []glob.Glob{glob.MustCompile("foo"), glob.MustCompile("bar-*")},
-				Charset:       defaultCharset,
-				IncludeHidden: true,
-				Paths:         []string{"."},
+				LabelGlobs:      []glob.Glob{glob.MustCompile("foo"), glob.MustCompile("bar-*")},
+				Charset:         defaultCharset,
+				IgnoreFileNames: defaultIgnoreFilenames,
+				IncludeHidden:   true,
+				Paths:           []string{"."},
 			},
 		},
 	}

@@ -20,6 +20,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gobwas/glob"
@@ -769,7 +770,6 @@ var testCases = []testCase{
 			},
 		},
 	},
-
 	{
 		name: "single file traverse path multiple todos",
 		files: []*testutils.File{
@@ -999,6 +999,226 @@ var testCases = []testCase{
 				},
 			},
 		},
+	},
+	{
+		name: "gitignore file skipped",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path:     ".gitignore",
+				Contents: []byte(`line_comments.go`),
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			IgnoreFileNames: []string{".gitignore"},
+			Charset:         "UTF-8",
+		},
+		expected: nil,
+	},
+	{
+		name: "gitignore file specified",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path:     ".gitignore",
+				Contents: []byte(`line_comments.go`),
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:         "UTF-8",
+			IgnoreFileNames: []string{".gitignore"},
+			Paths:           []string{"line_comments.go"},
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "gitignore file included",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path: ".gitignore",
+				Contents: []byte(
+					strings.Join([]string{
+						`*.go`,
+						`!line_comments.go`,
+					}, "\n")),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:         "UTF-8",
+			IgnoreFileNames: []string{".gitignore"},
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "gitignore dir skipped",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path:     ".gitignore",
+				Contents: []byte(`src`),
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			IgnoreFileNames: []string{".gitignore"},
+			Charset:         "UTF-8",
+		},
+		expected: nil,
+	},
+	{
+		name: "gitignore dir specified",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path:     ".gitignore",
+				Contents: []byte(`src`),
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:         "UTF-8",
+			IgnoreFileNames: []string{".gitignore"},
+			Paths:           []string{"src"},
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("src", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "gitignore subdir file skipped",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+			{
+				Path:     filepath.Join("src", ".gitignore"),
+				Contents: []byte(`line_comments.go`),
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			IgnoreFileNames: []string{".gitignore"},
+			Charset:         "UTF-8",
+		},
+		expected: nil,
+		// expected: []*TODORef{},
 	},
 }
 
