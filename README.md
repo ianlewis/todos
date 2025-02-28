@@ -165,9 +165,9 @@ chmod +x slsa-verifier
 Download and verify the `todos` CLI binary and verify it's provenance:
 
 ```shell
-curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64 && \
-curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64.intoto.jsonl && \
-./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.9.0 && \
+curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.12.0/todos-linux-amd64 && \
+curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.12.0/todos-linux-amd64.intoto.jsonl && \
+./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.12.0 && \
 chmod +x todos && \
 cp todos ~/bin/
 ```
