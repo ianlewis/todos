@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/go-enry/go-enry/v2 v2.9.1
+	github.com/go-enry/go-enry/v2 v2.9.2
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
