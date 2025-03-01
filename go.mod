@@ -7,7 +7,7 @@ require (
 	github.com/go-enry/go-enry/v2 v2.9.1
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/gobwas/glob v0.2.3
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/ianlewis/runeio v1.1.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.27.5
