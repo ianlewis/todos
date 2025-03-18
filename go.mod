@@ -13,7 +13,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.5
 	golang.org/x/text v0.22.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
-	sigs.k8s.io/release-utils v0.8.5
+	sigs.k8s.io/release-utils v0.11.0
 )
 
 require (
@@ -43,10 +43,10 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/tools v0.28.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
