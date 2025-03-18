@@ -1,4 +1,3 @@
-# Copyright 2023 Google LLC
 # Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,13 +41,15 @@ jobs:
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version-file: "go.mod"
       - name: unit tests
         run: make go-test
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out
@@ -72,11 +73,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: mbrukman/autogen
           ref: 9026b78e17573b5dda4bff79033c352443551dc5
           path: autogen
+          persist-credentials: false
       - run: |
           echo "${GITHUB_WORKSPACE}/autogen" >> "${GITHUB_PATH}"
       - run: |
@@ -87,7 +91,9 @@ jobs:
           set -euo pipefail
           if [ "$(GIT_PAGER="cat" git diff --ignore-space-at-eol | wc -l)" -gt "0" ]; then
               echo "Detected license header changes.  See status below:"
+              echo "::group::git diff"
               GIT_PAGER="cat" git diff
+              echo "::endgroup::"
               exit 1
           fi
 
@@ -98,7 +104,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: "package.json"
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
@@ -112,7 +120,9 @@ jobs:
           set -euo pipefail
           if [ "$(GIT_PAGER="cat" git diff --ignore-space-at-eol | wc -l)" -gt "0" ]; then
               echo "Detected formatting changes.  See status below:"
+              echo "::group::git diff"
               GIT_PAGER="cat" git diff
+              echo "::endgroup::"
               exit 1
           fi
 
@@ -123,6 +133,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: actionlint
         env:
           SHELLCHECK_VERSION: "0.10.0"
@@ -152,11 +164,33 @@ jobs:
 
           make actionlint
 
+  zizmor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: make zizmor
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF file
+        # NOTE: Uploading SARIF requires GitHub Enterprise and GitHub Advanced Security license for private repositories.
+        if: github.event.repository.private == false
+        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        with:
+          sarif_file: zizmor.sarif.json
+          category: zizmor
+
   markdownlint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: "package.json"
       - run: make markdownlint
@@ -165,12 +199,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - run: make yamllint
 
   golangci-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version-file: "go.mod"
@@ -195,6 +233,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version-file: "go.mod"
@@ -207,4 +247,40 @@ jobs:
               echo "Detected SUPPORTED_LANGUAGES.md changes. See status below:"
               GIT_PAGER="cat" git diff
               exit 1
+          fi
+
+  todos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: "Install slsa-verifier"
+        env:
+          SLSA_VERIFIER_VERSION: "2.7.0"
+          SLSA_VERIFIER_CHECKSUM: "499befb675efcca9001afe6e5156891b91e71f9c07ab120a8943979f85cc82e6"
+        run: |
+          # Install slsa-verifier
+          curl -sSLo slsa-verifier "https://github.com/slsa-framework/slsa-verifier/releases/download/v${SLSA_VERIFIER_VERSION}/slsa-verifier-linux-amd64"
+          echo "slsa-verifier checksum is $(sha256sum slsa-verifier | awk '{ print $1 }')"
+          echo "expected checksum is ${SLSA_VERIFIER_CHECKSUM}"
+          echo "${SLSA_VERIFIER_CHECKSUM}  slsa-verifier" | sha256sum --strict --check --status || exit 1
+
+          chmod +x ./slsa-verifier
+          mv ./slsa-verifier /usr/local/bin
+      - name: "Install todos"
+        env:
+          TODOS_VERSION: "0.12.0"
+        run: |
+          # Install todos
+          curl -sSLo todos "https://github.com/ianlewis/todos/releases/download/v${TODOS_VERSION}/todos-linux-amd64"
+          curl -sSLo todos.intoto.jsonl "https://github.com/ianlewis/todos/releases/download/v${TODOS_VERSION}/todos-linux-amd64.intoto.jsonl"
+          slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag "v${TODOS_VERSION}"
+
+          chmod +x ./todos
+          mv ./todos /usr/local/bin
+          result=$(todos --output github --todo-types="FIXME,Fixme,fixme,BUG,Bug,bug,XXX,COMBAK")
+          if [ -n "${result}" ]; then
+            echo "${result}"
+            exit 1
           fi

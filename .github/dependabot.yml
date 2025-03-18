@@ -1,4 +1,3 @@
-# Copyright 2023 Google LLC
 # Copyright 2024 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +18,69 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      # Group all dependencies with minor or patch version updates into one PR.
+      # Security updates and major updates are on separate PRs
+      all-gomod-dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      # Group all dependencies with minor or patch version updates into one PR.
+      # Security updates and major updates are on separate PRs
+      all-actions-dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      # Group all dependencies by with minor or patch version updates into one
+      # PR with production and development dependencies grouped into separate
+      # PRs.
+      # All security updates and major updates are on separate PRs
+      production-npm-dependencies:
+        dependency-type: "production"
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      development-npm-dependencies:
+        dependency-type: "development"
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      # Group all dependencies with minor or patch version updates into one PR.
+      # Security updates and major updates are on separate PRs
+      all-pip-dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

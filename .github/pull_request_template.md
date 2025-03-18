@@ -1,5 +1,3 @@
-<!-- markdownlint-disable first-line-h1 -->
-
 **Description:**
 
 <!-- Add a detailed description of the change and the rationale -->
