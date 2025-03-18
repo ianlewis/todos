@@ -16,7 +16,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -34,31 +33,9 @@ import (
 	"github.com/ianlewis/todos/internal/walker"
 )
 
-const (
-	// ExitCodeSuccess is successful error code.
-	ExitCodeSuccess int = iota
-
-	// ExitCodeFlagParseError is the exit code for a flag parsing error.
-	ExitCodeFlagParseError
-
-	// ExitCodeWalkError is the exit code for a file walking error.
-	ExitCodeWalkError
-
-	// ExitCodeUnknownError is the exit code for an unknown error.
-	ExitCodeUnknownError
-)
-
 const defaultCharset = "UTF-8"
 
 var defaultIgnoreFilenames = []string{".gitignore", ".todosignore"}
-
-var (
-	// ErrFlagParse is a flag parsing error.
-	ErrFlagParse = errors.New("parsing flags")
-
-	// ErrWalk is a file recursing error.
-	ErrWalk = errors.New("walking")
-)
 
 // TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
 //
@@ -200,34 +177,27 @@ func newTODOsApp() *cli.App {
 			if err != nil {
 				return err
 			}
+
+			todosFound := false
+			todoFunc := opts.TODOFunc
+			opts.TODOFunc = func(o *walker.TODORef) error {
+				todosFound = true
+				return todoFunc(o)
+			}
+
 			w := walker.New(opts)
 			if w.Walk() {
 				return ErrWalk
 			}
 
+			if todosFound {
+				return ErrTODOsFound
+			}
+
 			return nil
 		},
-		ExitErrHandler: func(c *cli.Context, err error) {
-			if err == nil {
-				return
-			}
-
-			// NOTE: Walk errors return an exit code but do not print the error as it
-			// has presumably already been handled.
-			if errors.Is(err, ErrWalk) {
-				cli.OsExiter(ExitCodeWalkError)
-				return
-			}
-
-			// ExitCode return an exit code for the given error.
-			_ = utils.Must(fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err))
-			if errors.Is(err, ErrFlagParse) {
-				cli.OsExiter(ExitCodeFlagParseError)
-				return
-			}
-
-			cli.OsExiter(ExitCodeUnknownError)
-		},
+		OnUsageError:   OnUsageError,
+		ExitErrHandler: ExitErrHandler,
 	}
 
 	setupProfiling(app)

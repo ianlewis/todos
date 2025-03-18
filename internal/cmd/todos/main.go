@@ -15,17 +15,22 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/urfave/cli/v2"
+
+	"github.com/ianlewis/todos/internal/utils"
 )
 
 func main() {
-	// NOTE: Errors are generally handled in the app itself but Run could
-	// return errors if command line flags are incorrect etc. In this case neither
-	// Action nor ExitErrHandler are called.
 	app := newTODOsApp()
+
 	if err := app.Run(os.Args); err != nil {
-		cli.OsExiter(ExitCodeUnknownError)
+		// NOTE: Errors are usually handled in the app itself and os.Exit is
+		// called halting the program before we get here. However, Run could
+		// return errors in some situations.
+		_ = utils.Must(fmt.Fprintf(app.ErrWriter, "%s: %v\n", app.Name, err))
+		cli.OsExiter(ErrUnknown.ExitCode())
 	}
 }
