@@ -5,6 +5,13 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
+  found ([#1657](https://github.com/ianlewis/todos/issues/1657)).
+
 ## [0.12.0] - 2025-02-28
 
 ### Changed in 0.12.0

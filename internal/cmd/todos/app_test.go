@@ -85,8 +85,8 @@ func Test_TODOsApp_version(t *testing.T) {
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{"--version"})
-	if err := app.Action(c); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	if diff := cmp.Diff(nil, app.Action(c), cmpopts.EquateErrors()); diff != "" {
+		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 	}
 
 	versionTitle := app.Name + " devel"
@@ -118,8 +118,8 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
-	if err := app.Action(c); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	if diff := cmp.Diff(ErrTODOsFound, app.Action(c), cmpopts.EquateErrors()); diff != "" {
+		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 	}
 
 	for i := range files {
@@ -129,12 +129,41 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	}
 }
 
+func Test_TODOsApp_Walk_no_todos(t *testing.T) {
+	t.Parallel()
+
+	files := []*testutils.File{
+		{
+			Path:     "foo.go",
+			Contents: []byte("// not a TODO"),
+			Mode:     0o600,
+		},
+	}
+
+	d := testutils.NewTempDir(files)
+	defer d.Cleanup()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.Writer = &b
+	c := newContext(app, []string{d.Dir()})
+	if diff := cmp.Diff(nil, app.Action(c), cmpopts.EquateErrors()); diff != "" {
+		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
+	}
+
+	if diff := cmp.Diff("", b.String()); diff != "" {
+		t.Fatalf("unexpected output (-want, +got): \n%s", diff)
+	}
+}
+
 //nolint:paralleltest // modifies cli.OsExiter
-func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
+func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	oldExiter := cli.OsExiter
 	var exitCode *int
 	cli.OsExiter = func(c int) {
-		exitCode = &c
+		if exitCode == nil {
+			exitCode = &c
+		}
 	}
 	defer func() {
 		cli.OsExiter = oldExiter
@@ -143,6 +172,51 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	app := newTODOsApp()
 	var b strings.Builder
 	app.ErrWriter = &b
+
+	oldErrWriter := cli.ErrWriter
+	cli.ErrWriter = &b
+	defer func() {
+		cli.ErrWriter = oldErrWriter
+	}()
+
+	c := newContext(app, nil)
+	app.ExitErrHandler(c, ErrFlagParse)
+
+	if !strings.Contains(b.String(), ErrFlagParse.Error()) {
+		t.Fatalf("expected %q in output: \n%q", ErrFlagParse.Error(), b.String())
+	}
+
+	if exitCode == nil {
+		t.Fatalf("unexpected exit code, want: %v, got: %v", ExitCodeFlagParseError, exitCode)
+	}
+	if diff := cmp.Diff(ExitCodeFlagParseError, *exitCode); diff != "" {
+		t.Errorf("unexpected exit code (-want, +got): \n%s", diff)
+	}
+}
+
+//nolint:paralleltest // modifies cli.OsExiter
+func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
+	oldExiter := cli.OsExiter
+	var exitCode *int
+	cli.OsExiter = func(c int) {
+		if exitCode == nil {
+			exitCode = &c
+		}
+	}
+	defer func() {
+		cli.OsExiter = oldExiter
+	}()
+
+	app := newTODOsApp()
+	var b strings.Builder
+	app.ErrWriter = &b
+
+	oldErrWriter := cli.ErrWriter
+	cli.ErrWriter = &b
+	defer func() {
+		cli.ErrWriter = oldErrWriter
+	}()
+
 	c := newContext(app, nil)
 	app.ExitErrHandler(c, ErrWalk)
 
