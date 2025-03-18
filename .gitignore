@@ -1,5 +1,5 @@
 # For markdownlint
-.git
+.git/
 
 # Binaries for programs and plugins
 *.exe
@@ -14,13 +14,16 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Go pprof files
-*.prof
-
 # Dependency directories (remove the comment below to include it)
 vendor/
 node_modules/
-.venv
+.venv/
+
+# SARIF files
+*.sarif.json
+
+# Go pprof files
+*.prof
 
 # JetBrains IDEs
 .idea

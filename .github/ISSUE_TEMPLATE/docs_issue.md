@@ -3,7 +3,6 @@ name: Documentation
 about: An idea or bug in docs
 title: "[docs]"
 labels: documentation, triage
-assignees: ianlewis
 ---
 
 **Which document are you referring to?**
