@@ -177,7 +177,7 @@ cp todos ~/bin/
 If you already have Go 1.20+ you can install the latest version using `go install`:
 
 ```shell
-go install github.com/ianlewis/todos/internal/cmd/todos
+go install github.com/ianlewis/todos/cmd/todos
 ```
 
 ### Usage

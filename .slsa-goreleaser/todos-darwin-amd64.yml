@@ -35,7 +35,7 @@ goarch: amd64
 # main: ./path/to/main.go
 
 # (Optional) Working directory. (default: root of the project)
-dir: ./internal/cmd/todos
+dir: ./cmd/todos
 
 # Binary output name.
 # {{ .Os }} will be replaced by goos field in the config file.
