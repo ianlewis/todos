@@ -73,7 +73,7 @@ func newTODOsApp() *cli.App {
 			// Flags for functionality are in alphabetical order.
 			&cli.BoolFlag{
 				Name:               "blame",
-				Usage:              "[BETA] attempt to find committer info",
+				Usage:              "attempt to find committer info (experimental)",
 				Value:              false,
 				DisableDefaultText: true,
 			},
