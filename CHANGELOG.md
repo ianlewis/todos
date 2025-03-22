@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Support was added for the [Nix language](https://nix.dev/)
+  ([#1653](https://github.com/ianlewis/todos/issues/1653)).
+
 ### Changed
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are

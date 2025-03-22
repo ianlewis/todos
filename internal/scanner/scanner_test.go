@@ -2140,6 +2140,36 @@ This is more text.<!-- this is another comment -->
 		},
 	},
 
+	// Nix
+	{
+		name: "comments.nix",
+		src: `# file comment
+
+/*
+Block comments
+can span multiple lines.
+*/ "hello"
+        `,
+
+		config: "Nix",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: `/*
+Block comments
+can span multiple lines.
+*/`,
+				line: 3,
+			},
+		},
+	},
+
 	// OCaml
 	{
 		name: "comments.ml",
@@ -3280,6 +3310,18 @@ end
 `),
 		scanCharset:    "UTF-8",
 		expectedConfig: "Julia",
+	},
+
+	// Nix
+	{
+		name: "attribute_set.nix",
+		src: []byte(`{
+  x = 123;
+  text = "Hello";
+  y = f { bla = 456; };
+}`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "Nix",
 	},
 
 	// OCaml
