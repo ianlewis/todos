@@ -202,7 +202,6 @@ var LanguagesConfig = map[string]*Config{
 	"Elixir": {
 		LineComments: hashLineComments,
 		// Support function documentation.
-		// TODO(#1546): Support @moduledoc
 		MultilineComments: []MultilineCommentConfig{
 			{
 				Start: []rune(`@moduledoc """`),
