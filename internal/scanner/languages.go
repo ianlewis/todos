@@ -455,6 +455,10 @@ var LanguagesConfig = map[string]*Config{
 			},
 		},
 	},
+	"Nix": {
+		LineComments:      hashLineComments,
+		MultilineComments: cBlockComments,
+	},
 	"Objective-C": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
