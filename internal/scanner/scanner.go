@@ -22,14 +22,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/go-enry/go-enry/v2"
 	"github.com/ianlewis/runeio"
 	"github.com/saintfish/chardet"
 	"golang.org/x/text/encoding/ianaindex"
-
-	"github.com/ianlewis/todos/internal/utils"
 )
 
 var (
@@ -569,5 +568,5 @@ func (s *CommentScanner) peekEqual(val []rune) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("reading rune: %w", err)
 	}
-	return utils.SliceEqual(r, val), nil
+	return slices.Equal(r, val), nil
 }
