@@ -1,0 +1,79 @@
+# Copyright 2025 Ian Lewis
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+plugin:
+  - id: "@textlint/textlint-plugin-text"
+  - id: "@textlint/textlint-plugin-markdown"
+filters:
+  comments: true
+rules:
+  spelling:
+    language: "en"
+    skipPatterns:
+      - "CHANGELOG"
+      - "CODEOWNER"
+      - "CLI"
+      - "CVSS"
+      - "DCO"
+      - "PR"
+      - "UI"
+      - "YAML"
+      - "Changelog"
+      - "CodeQL"
+      - "Dependabot"
+      - "JavaScript"
+      - "MacOS"
+      - "Makefile"
+      - "Node.js"
+      - "OpenSSF"
+      - "e2e"
+      - "/[Ff]ormatter/"
+      - "/[Ll]inter/"
+      - "/[Pp]re/"
+      - "/[Rr]untime/"
+      - "/[Ss]exualized/"
+      - "/[Ss]ocio-economic/"
+      - "/[Uu]serspace/"
+      - "/[Vv]endored/"
+      - "/[Vv]irtualenv/"
+      - "/v[0-9]+/"
+      - "/[0-9]+/"
+      - ":white_check_mark:"
+
+      # Terminology
+      - "/[Cc]odebase/"
+      - "Codecov"
+      - "JavaDoc"
+      - "JSDoc"
+      - "SLSA"
+      - "TSDoc"
+      - "TODO"
+      - "/[Uu]nixy/"
+      - "UTF"
+      - "/[Ww]hitespace/"
+
+      # Languages
+      - "CoffeeScript"
+      - "Dockerfile"
+      - "ERB"
+      - "Fortran"
+      - "GraphQL"
+      - "HCL"
+      - "JSON"
+      - "Lua"
+      - "OCaml"
+      - "PowerShell"
+      - "TOML"
+      - "VCS"
+      - "XSLT"

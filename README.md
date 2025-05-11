@@ -1,7 +1,7 @@
-# todos
+# `todos`
 
 [![unit tests](https://github.com/ianlewis/todos/actions/workflows/pre-submit.units.yml/badge.svg)](https://github.com/ianlewis/todos/actions/workflows/pre-submit.units.yml)
-[![codecov](https://codecov.io/gh/ianlewis/todos/branch/main/graph/badge.svg?token=0EBN8DQYFR)](https://codecov.io/gh/ianlewis/todos)
+[![Codecov](https://codecov.io/gh/ianlewis/todos/branch/main/graph/badge.svg?token=0EBN8DQYFR)](https://codecov.io/gh/ianlewis/todos)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ianlewis/todos)](https://goreportcard.com/report/github.com/ianlewis/todos)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fianlewis%2Ftodos.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fianlewis%2Ftodos?ref=badge_shield)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ianlewis/todos/badge)](https://api.securityscorecards.dev/projects/github.com/ianlewis/todos)
@@ -146,34 +146,34 @@ Actions workflow commands by default when running on GitHub Actions:
 
 ```yaml
 on:
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  todos:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v3
-      - name: install todos
-        run: |
-          curl -sSLo slsa-verifier https://github.com/slsa-framework/slsa-verifier/releases/download/v2.3.0/slsa-verifier-linux-amd64 && \
-          echo "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d  slsa-verifier" | sha256sum -c - && \
-          chmod +x slsa-verifier
+    todos:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v3
+            - name: install todos
+              run: |
+                  curl -sSLo slsa-verifier https://github.com/slsa-framework/slsa-verifier/releases/download/v2.3.0/slsa-verifier-linux-amd64 && \
+                  echo "ea687149d658efecda64d69da999efb84bb695a3212f29548d4897994027172d  slsa-verifier" | sha256sum -c - && \
+                  chmod +x slsa-verifier
 
-          curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64 && \
-          curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64.intoto.jsonl && \
-          ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.9.0 && \
-          rm -f slsa-verifier && \
-          chmod +x todos
+                  curl -sSLo todos https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64 && \
+                  curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/download/v0.9.0/todos-linux-amd64.intoto.jsonl && \
+                  ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.9.0 && \
+                  rm -f slsa-verifier && \
+                  chmod +x todos
 
-      - name: run todos
-        run: |
-          ./todos .
+            - name: run todos
+              run: |
+                  ./todos .
 ```
 
 ### Outputting JSON
@@ -201,7 +201,7 @@ kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uni
 
 ### Supported Languages
 
-See [SUPPORTED_LANGUAGES.md].
+See [`SUPPORTED_LANGUAGES.md`].
 
 ## TODO comment format
 
@@ -216,16 +216,16 @@ For example:
 
 ### TODO comment type variants
 
-There a few veriants of this type of comment thare are in wide use.
+There a few variants of this type of comment that are in wide use.
 
-- **TODO**: A general TODO comment indicating something that is to be done in
+- **`TODO`**: A general TODO comment indicating something that is to be done in
   the future.
-- **FIXME**: Something that is broken that needs to be fixed in the code.
-- **BUG**: A bug in the code that needs to be fixed.
-- **HACK**: This code is a "hack"; a hard to understand or brittle piece of
+- **`FIXME`**: Something that is broken that needs to be fixed in the code.
+- **`BUG`**: A bug in the code that needs to be fixed.
+- **`HACK`**: This code is a "hack"; a hard to understand or brittle piece of
   code. It could use a cleanup.
-- **XXX**: Danger! Similar to "HACK". Modifying this code is dangerous. It
-- **COMBAK**: Something you should "come back" to.
+- **`XXX`**: Danger! Similar to "HACK". Modifying this code is dangerous. It
+- **`COMBAK`**: Something you should "come back" to.
 
 ### TODO comment examples
 
@@ -233,34 +233,34 @@ TODO comments can include some optional metadata. Here are some examples:
 
 - A naked TODO comment.
 
-  ```go
-  // TODO
-  ```
+    ```go
+    // TODO
+    ```
 
 - A TODO comment with an explanation message
 
-  ```go
-  // TODO: Do something.
-  ```
+    ```go
+    // TODO: Do something.
+    ```
 
 - A TODO comment with a linked bug or issue and optional message
 
-  ```go
-  // TODO(github.com/ianlewis/todos/issues/8): Do something.
-  ```
+    ```go
+    // TODO(github.com/ianlewis/todos/issues/8): Do something.
+    ```
 
 - A TODO comment with a username and optional message. This type is discouraged
   as it links the issue to a specific developer but can be helpful temporarily
   when making changes to a PR. Linking to issues is recommended for permanent
   comments.
 
-  ```go
-  // TODO(ianlewis): Do something.
-  ```
+    ```go
+    // TODO(ianlewis): Do something.
+    ```
 
 ## Use Cases
 
-Tracking TODOs in code can help you have a cleaner and heathier code base. Here
+Tracking TODOs in code can help you have a cleaner and healthier code base. Here
 are some basic use cases.
 
 ### Finding TODOs in your code
@@ -278,7 +278,7 @@ main.go:28:// TODO(ianlewis): Implement the main method.
 In order for the comments to be more easily parsed keep in mind the following:
 
 - Spaces between the comment start and 'TODO' is optional (e.g. `//TODO: some comment`)
-- TODOs should have a colon if a message is present so it can be distingished
+- TODOs should have a colon if a message is present so it can be distinguished
   from normal comments.
 - TODOs can be prefixed with `@` (e.g. `// @TODO: comment`)
 - Comments can be on the same line with other code (e.g. `x = f() // TODO: call f`
@@ -329,15 +329,15 @@ See [`ianlewis/todo-issue-reopener`] for more information.
 
 ## Related projects
 
-- [pgilad/leasot](https://github.com/pgilad/leasot): A fairly robust tool with good integration with the Node.js ecosystem.
-- [judepereira/checktodo](https://github.com/judepereira/checktodo): A GitHub PR checker that checks if PRs contain TODOs.
-- [kynikos/report-todo](https://github.com/kynikos/report-todo): A generic reporting tool for TODOs.
+- [`pgilad/leasot`](https://github.com/pgilad/leasot): A fairly robust tool with good integration with the Node.js ecosystem.
+- [`judepereira/checktodo`](https://github.com/judepereira/checktodo): A GitHub PR checker that checks if PRs contain TODOs.
+- [`kynikos/report-todo`](https://github.com/kynikos/report-todo): A generic reporting tool for TODOs.
 
 ## FAQ
 
 ### Why use this?
 
-Tracking TODOs in code can help you have a cleaner and heathier code base.
+Tracking TODOs in code can help you have a cleaner and healthier code base.
 
 1. It can help you realize when issues you thought were complete actually
    require some additional work (See [`ianlewis/todo-issue-reopener`]).
@@ -346,14 +346,14 @@ Tracking TODOs in code can help you have a cleaner and heathier code base.
 
 ### Why not just use `grep`?
 
-`grep` is an amazing and blazingly fast tool. However, there are a few reasons
+`grep` is an amazing and very fast tool. However, there are a few reasons
 why you might use `todos`.
 
 1. `grep` doesn't have much knowledge of code and languages so it's difficult to
    differentiate between comments and code. `todos` will ignore matches in code
    and only prints TODOs found it comments. It also ignores matches that occur
    in strings.
-2. `grep` doesn't know about repository structure. It doesn't have inherant
+2. `grep` doesn't know about repository structure. It doesn't have inherent
    knowledge of VCS directories (e.g. `.git`) or vendored dependencies. It can't
    make use of `.gitignore` or other hints.
 3. `todos` will parse TODO comments and can output in different formats such as
@@ -362,9 +362,9 @@ why you might use `todos`.
 
 ## Contributing
 
-See [CONTRIBUTING.md] for contributor documentation.
+See [`CONTRIBUTING.md`] for contributor documentation.
 
 [`ianlewis/todo-issue-reopener`]: https://github.com/ianlewis/todo-issue-reopener
 [FAQ]: #faq
-[CONTRIBUTING.md]: CONTRIBUTING.md
-[SUPPORTED_LANGUAGES.md]: SUPPORTED_LANGUAGES.md
+[`CONTRIBUTING.md`]: CONTRIBUTING.md
+[`SUPPORTED_LANGUAGES.md`]: SUPPORTED_LANGUAGES.md

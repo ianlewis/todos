@@ -1,0 +1,70 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    // Use the best-practices preset. Adds options to pin dependencies.
+    // https://docs.renovatebot.com/upgrade-best-practices/#whats-in-the-configbest-practices-preset
+    "config:best-practices",
+
+    // Update dependencies monthly
+    "schedule:monthly",
+
+    // Add DCO sign-off
+    ":gitSignOff",
+
+    // Add Aqua present to allow updating CLI tools.
+    // https://aquaproj.github.io/docs/guides/renovate/
+    "github>aquaproj/aqua-renovate-config#2.7.5",
+  ],
+
+  // Security alerts/updates happen more frequently.
+  vulnerabilityAlerts: {
+    schedule: "* 0-4 * * *",
+  },
+
+  // Create a new issue for each config warning. By default, Renovate re-opens
+  // an existing issue which can be very old and is easily missed. Opening new
+  // issues is more intuitive.
+  configWarningReuseIssue: false,
+
+  // Update the Aqua version set in the Makefile.
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/Makefile/"],
+      matchStrings: ["AQUA_VERSION \\??= *(?<currentValue>\\S+)"],
+      depNameTemplate: "aquaproj/aqua",
+      datasourceTemplate: "github-releases",
+    },
+  ],
+
+  // Group various ecosystem updates. Security updates are always separate.
+  packageRules: [
+    {
+      matchManagers: ["github-actions"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "github-actions",
+      pinDigests: true,
+    },
+    {
+      matchManagers: ["pip_requirements"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "python",
+    },
+    {
+      matchManagers: ["npm"],
+      matchDepTypes: ["dependencies"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "npm",
+    },
+    {
+      matchManagers: ["npm"],
+      matchDepTypes: ["devDependencies"],
+      groupName: "npm dev",
+    },
+    {
+      matchManagers: ["gomod"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "go",
+    },
+  ],
+}

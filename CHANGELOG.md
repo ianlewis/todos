@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support was added for
   [Vim Script](https://vimdoc.sourceforge.net/htmldoc/usr_41.html).
 - Support was added for
-  [Powershell](https://learn.microsoft.com/en-us/powershell/).
+  [PowerShell](https://learn.microsoft.com/en-us/powershell/).
 - Support was added for [Elixir](https://elixir-lang.org/).
 - Support was added for [ERB templates](https://github.com/ruby/erb).
 - Support was added for [Pascal](<https://en.wikipedia.org/wiki/Pascal_(programming_language)>).
@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for [Fortran](https://fortran-lang.org/) was added.
 - Generated files are now ignored by default. The option `--include-generated`
   was added to allow generated files to be scanned for TODOs.
-- A new `--blame` option (BETA) was added which tells todos to try and get the
+- A new `--blame` option (BETA) was added which tells `todos` to try and get the
   VCS committer of each TODO.
 
 ### Fixed in 0.9.0
@@ -106,8 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Basic](https://learn.microsoft.com/en-us/dotnet/visual-basic/) was added.
 - Support for recognizing multi-line comments only at the beginning of a line
   (Ruby, Perl) was added.
-- Added support for [vanity urls](actions/issue-reopener/README.md#vanityurls)
-  to the issue-reopener action.
+- Added support for [vanity URLs](actions/issue-reopener/README.md#vanityurls)
+  to the `todo-issue-reopener` action.
 
 ## [0.6.0] - 2023-09-23
 
@@ -135,7 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Erlang, Haskell, R, and SQL programming languages has been added.
 - A new `exclude-dir` flag was added to `todos` that allows for excluding
   matching directories from the search.
-- TODO comments are matched more loosely with more delimeters such as '/' or '-'
+- TODO comments are matched more loosely with more delimiters such as '/' or '-'
   in addition to ':' being recognized.
 - A new `--charset` flag was added which defaults to `UTF-8`. This is the
   character set used to read the code files. A special name of `detect`
@@ -143,23 +143,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support was added for TODO comments with no space between the comment start
   and "TODO" marker and no delimiter.
 
-  ```go
-  //TODO Add some code here.
-  ```
+    ```go
+    //TODO Add some code here.
+    ```
 
 - Support was added for TODO comments in JavaDoc/JSDoc/TSDoc that had a `*`
   prefix.
 
-  ```java
-  /**
-   * Some comment.
-   * TODO: Add some code here.
-   */
-  ```
+    ```java
+    /**
+     * Some comment.
+     * TODO: Add some code here.
+     */
+    ```
 
 ### Changed in 0.5.0
 
-- `todos` no longer detects character encodings by default and now defaults to
+- `todos` no longer detects character encoding by default and now defaults to
   reading files as UTF-8. Character detection can be enabled by using the
   `--charset=detect` flag.
 
@@ -191,14 +191,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed in 0.3.0
 
-- Lowercase "Todo", "todo", "Fixme", "fixme", "Hack", "hack" were added as
+- Lowercase `Todo`, `todo`, `Fixme`, `fixme`, `Hack`, `hack` were added as
   default TODO types.
 
 ## [0.2.0] - 2023-06-30
 
 ### Changed in 0.2.0
 
-- Leading whitespaces is now trimmed from TODOS in multi-line comments.
+- Leading whitespace is now trimmed from TODOS in multi-line comments.
 - The `--include-hidden` option was replaced with the `--exclude-hidden`
   option and including hidden files was made the default.
 - An `--include-vcs` option was added and the VCS directories `.git`, `.hg`,
@@ -237,7 +237,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added in 0.0.1
 
 - Initial release of `todos` CLI application.
-- Simple support for scanning directories for TODO/FIXME/BUG/HACK/XXX comments.
+- Simple support for scanning directories for `TODO`/`FIXME`/`BUG`/`HACK`/`XXX`
+  comments.
 
 [0.0.1]: https://github.com/ianlewis/todos/releases/tag/v0.0.1
 [0.1.0]: https://github.com/ianlewis/todos/releases/tag/v0.1.0

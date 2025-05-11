@@ -1,0 +1,32 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+# Files should be formatted in utf-8 by default.
+charset = utf-8
+# set to true to remove any whitespace characters preceding newline characters
+# and false to ensure it doesn't.
+trim_trailing_whitespace = true
+
+# 4 space indentation
+[*.md]
+indent_style = space
+indent_size = 4
+
+# Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+# Matches config files like package.json.
+[{*.json,*.yaml}]
+indent_style = space
+indent_size = 2
+
+# Matches Go files.
+[*.go]
+indent_style = tab
