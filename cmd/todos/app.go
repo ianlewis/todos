@@ -39,7 +39,7 @@ var defaultIgnoreFilenames = []string{".gitignore", ".todosignore"}
 
 // TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
 //
-//nolint:gochecknoinits // init needed needed for global variable.
+//nolint:gochecknoinits // init needed for global variable.
 func init() {
 	// Set the HelpFlag to a random name so that it isn't used. `cli` handles
 	// the flag with the root command such that it takes a command name argument

@@ -370,6 +370,7 @@ var scannerTestCases = []*struct {
 	// Elixir
 	{
 		name: "line_comments.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				# TODO is a function.
@@ -398,6 +399,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "comments_in_string.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				# TODO is a function.
@@ -423,6 +425,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "comments_in_multiline_string.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				# TODO is a function.
@@ -450,6 +453,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "comments_in_charlist.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				# TODO is a function.
@@ -475,6 +479,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "comments_in_multiline_charlist.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				# TODO is a function.
@@ -502,6 +507,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "moduledoc_comment.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `@moduledoc """
 			module comment
 			"""
@@ -523,6 +529,7 @@ var scannerTestCases = []*struct {
 	},
 	{
 		name: "doc_comment.ex",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# module comment
 			defmodule Math do
 				@doc """
@@ -1111,7 +1118,7 @@ Author of questions and answers in a website
 	{
 		name: "line_comments.tf",
 		src: `# file comment
-         
+
         # vm instance
         resource "aws_instance" "example" {
             ami = "abc123 # comment in string"
@@ -1205,7 +1212,7 @@ Author of questions and answers in a website
 		src: `# module comment
 
 """
-TODOs in doc comments are not currently included 
+TODOs in doc comments are not currently included
 TODO: foo
 """
 function mandelbrot(a)
@@ -1665,6 +1672,7 @@ end
 	// Puppet
 	{
 		name: "line_comments.pp",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `# file comment
 
 			# todo is a service
@@ -2938,6 +2946,7 @@ End Module`,
 	},
 	{
 		name: "escaped_string.vim",
+		//nolint:dupword // Allow duplicate words in test code.
 		src: `" module comment
 
 			" TODO is a function
@@ -3041,7 +3050,7 @@ End Module`,
 				  <tr>
 					<td><xsl:value-of select="title"/></td>
 					<td><xsl:value-of select="artist"/></td>
-					<td><xsl:value-of select="price"/></td>        
+					<td><xsl:value-of select="price"/></td>
 				  </tr>
 				</xsl:if>
 				</xsl:for-each>
@@ -3365,14 +3374,14 @@ let () = print_endline "hello world"
 				  <tr bgcolor="#9acd32">
 				  <th>Title</th>
 				  <th>Artist</th>
-				  <th>Price</th>      
+				  <th>Price</th>
 				</tr>
 				<xsl:for-each select="catalog/cd">
 				<xsl:if test="price>10">
 				  <tr>
 					<td><xsl:value-of select="title"/></td>
 					<td><xsl:value-of select="artist"/></td>
-					<td><xsl:value-of select="price"/></td>        
+					<td><xsl:value-of select="price"/></td>
 				  </tr>
 				</xsl:if>
 				</xsl:for-each>

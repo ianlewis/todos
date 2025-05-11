@@ -714,7 +714,7 @@ func TestTODOScanner(t *testing.T) {
 						},
 					},
 					{
-						Text:      "/*\nfoo\nfoo\n*/",
+						Text:      "/*\nfoo\nbar\n*/",
 						Line:      5,
 						Multiline: true,
 						MultilineConfig: &scanner.MultilineCommentConfig{

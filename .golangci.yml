@@ -57,8 +57,7 @@ linters:
     - depguard # Go linter that checks if package imports are in a list of acceptable packages.
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, , , _, := f()).
     - dupl # Detects duplicate fragments of code.
-    # TODO(#1678): Enable dupword linter.
-    # - dupword # Checks for duplicate words in the source code.
+    - dupword # Checks for duplicate words in the source code.
     - durationcheck # Check for two durations multiplied together.
     - err113 # Go linter to check the errors handling expressions.
     - errchkjson # Checks types passed to the json encoding functions. Reports unsupported types and reports occurrences where the check for the returned error can be omitted.
