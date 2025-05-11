@@ -74,12 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          persist-credentials: false
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          repository: mbrukman/autogen
-          ref: 9026b78e17573b5dda4bff79033c352443551dc5
-          path: autogen
+          submodules: true
           persist-credentials: false
       - run: |
           echo "${GITHUB_WORKSPACE}/autogen" >> "${GITHUB_PATH}"
@@ -106,7 +101,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: "package.json"
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
@@ -136,33 +131,7 @@ jobs:
         with:
           persist-credentials: false
       - name: actionlint
-        env:
-          SHELLCHECK_VERSION: "0.10.0"
-          SHELLCHECK_CHECKSUM: "6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87"
-          ACTIONLINT_VERSION: "1.7.3"
-          ACTIONLINT_CHECKSUM: "37252b4d440b56374b0fc1726e05fd7452d30d6d774f6e9b52e65bb64475f9db"
-        run: |
-          set -euo pipefail
-
-          # Install shellcheck
-          curl -sSLo shellcheck.tar.gz "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
-          echo "shellcheck checksum is $(sha256sum shellcheck.tar.gz | awk '{ print $1 }')"
-          echo "expected checksum is $SHELLCHECK_CHECKSUM"
-          echo "$SHELLCHECK_CHECKSUM  shellcheck.tar.gz" | sha256sum --strict --check --status || exit 1
-
-          tar xf shellcheck.tar.gz
-          mv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin
-
-          # Install actionlint
-          curl -sSLo actionlint.tar.gz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
-          echo "actionlint checksum is $(sha256sum actionlint.tar.gz | awk '{ print $1 }')"
-          echo "expected checksum is $ACTIONLINT_CHECKSUM"
-          echo "$ACTIONLINT_CHECKSUM  actionlint.tar.gz" | sha256sum --strict --check --status || exit 1
-
-          tar xf actionlint.tar.gz
-          mv ./actionlint /usr/local/bin
-
-          make actionlint
+        run: make actionlint
 
   zizmor:
     runs-on: ubuntu-latest
@@ -176,10 +145,18 @@ jobs:
       - run: make zizmor
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload SARIF file
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
         # NOTE: Uploading SARIF requires GitHub Enterprise and GitHub Advanced Security license for private repositories.
         if: github.event.repository.private == false
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
         with:
           sarif_file: zizmor.sarif.json
           category: zizmor
@@ -190,10 +167,32 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: "package.json"
       - run: make markdownlint
+
+  renovate-config-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: "package.json"
+      - run: make renovate-config-validator
+
+  textlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: "package.json"
+      - run: make textlint
 
   yamllint:
     runs-on: ubuntu-latest
@@ -212,22 +211,7 @@ jobs:
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version-file: "go.mod"
-      - env:
-          GOLANGCI_LINT_VERSION: "1.64.5"
-          GOLANGCI_LINT_CHECKSUM: "e6bd399a0479c5fd846dcf9f3990d20448b4f0d1e5027d82348eab9f80f7ac71"
-        run: |
-          set -euo pipefail
-
-          #Install golangci-lint
-          curl -sSLo golangci-lint.tar.gz "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz"
-          echo "golangci-lint checksum is $(sha256sum golangci-lint.tar.gz | awk '{ print $1 }')"
-          echo "expected checksum is $GOLANGCI_LINT_CHECKSUM"
-          echo "$GOLANGCI_LINT_CHECKSUM  golangci-lint.tar.gz" | sha256sum --strict --check --status || exit 1
-          tar xf golangci-lint.tar.gz
-          mv "golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint" /usr/local/bin
-
-          # Run golangci-lint
-          make golangci-lint
+      - run: make golangci-lint
 
   SUPPORTED_LANGUAGES:
     runs-on: ubuntu-latest

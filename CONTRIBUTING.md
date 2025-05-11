@@ -77,7 +77,7 @@ development.
 
 #### The Makefile
 
-Most of my repositiories make heavy use of `make` during development. This helps
+Most of my repositories make heavy use of `make` during development. This helps
 with automation of tasks locally on your machine. Type `make` to see a full list
 of `Makefile` targets.
 
@@ -117,7 +117,7 @@ used.
 - [`golangci-lint`](https://github.com/golangci/golangci-lint): For Go.
 - [`markdownlint`](https://github.com/DavidAnson/markdownlint): For markdown.
 - [`yamllint`](https://www.yamllint.com/): For YAML (GitHub Actions workflows,
-  config files etc.)
+  configuration files etc.)
 
 You do not necessarily need to have all installed but you will need to install
 those that you want to run them locally.
@@ -185,8 +185,8 @@ Once you have your code pushed to your fork you can now created a new
 #### Create a PR
 
 You can
-[create a new pull request via the GitHub UI](https://github.com/ianlewis/todos/compare)
-or via the [`gh` CLI] tool. Create the PR as a
+[create a new pull request via the GitHub UI](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=webui)
+or [via the `gh` CLI tool](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=cli). Create the PR as a
 [draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests)
 to start.
 
@@ -276,7 +276,6 @@ In general, the following prefixes are supported:
 [Google's Open Source Community Guidelines]: https://opensource.google/conduct/
 [Connecting to GitHub with SSH]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
 [pull request]: https://docs.github.com/pull-requests
-[`gh` CLI]: https://cli.github.com/
 [About pull request reviews]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews
 [Semantic Versioning]: https://semver.org/
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
