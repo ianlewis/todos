@@ -56,8 +56,7 @@ linters:
     - decorder # Check declaration order and count of types, constants, variables and functions.
     - depguard # Go linter that checks if package imports are in a list of acceptable packages.
     - dogsled # Checks assignments with too many blank identifiers (e.g. x, , , _, := f()).
-    # TODO(#1678): Enable dupl linter.
-    # - dupl # Detects duplicate fragments of code.
+    - dupl # Detects duplicate fragments of code.
     # TODO(#1678): Enable dupword linter.
     # - dupword # Checks for duplicate words in the source code.
     - durationcheck # Check for two durations multiplied together.
