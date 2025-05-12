@@ -61,8 +61,7 @@ linters:
     - durationcheck # Check for two durations multiplied together.
     - err113 # Go linter to check the errors handling expressions.
     - errchkjson # Checks types passed to the json encoding functions. Reports unsupported types and reports occurrences where the check for the returned error can be omitted.
-    # TODO(#1678): Enable errname linter.
-    # - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
+    - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
     - errorlint # Errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
     - exhaustive # Check exhaustiveness of enum switch statements.
     # NOTE: exhaustruct is useful based on preferences but is very noisy for

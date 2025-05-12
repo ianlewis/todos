@@ -85,27 +85,27 @@ func traverseErr(err error, cb func(err error)) {
 	}
 }
 
-type exitCoder struct {
+type exitCoderError struct {
 	msg      string
 	wrapped  error
 	exitCode int
 }
 
-func (err *exitCoder) Error() string {
+func (err *exitCoderError) Error() string {
 	return err.msg
 }
 
-func (err *exitCoder) Unwrap() error {
+func (err *exitCoderError) Unwrap() error {
 	return err.wrapped
 }
 
-func (err *exitCoder) ExitCode() int {
+func (err *exitCoderError) ExitCode() int {
 	return err.exitCode
 }
 
 // wrapExitCoder wraps an ExitCoder with another ExitCoder with different error message.
 func wrapExitCoder(msg string, err cli.ExitCoder) cli.ExitCoder {
-	return &exitCoder{
+	return &exitCoderError{
 		msg:      msg,
 		wrapped:  err,
 		exitCode: err.ExitCode(),
