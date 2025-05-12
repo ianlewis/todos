@@ -107,7 +107,7 @@ linters:
     # - ireturn # Accept Interfaces, Return Concrete Types.
     - lll # Reports long lines.
     - loggercheck # Checks key value pairs for common logger libraries (kitlog,klog,logr,zap).
-    # TODO(#1678): Enable maintidx linter.
+    # maintidx doesn't add much above using gocyclo, cyclop, and gocognit.
     # - maintidx # Maintidx measures the maintainability index of each function.
     - makezero # Finds slice declarations with non-zero initial length.
     - mirror # Reports wrong mirror patterns of bytes/strings usage.
