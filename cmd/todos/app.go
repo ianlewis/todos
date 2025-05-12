@@ -393,7 +393,7 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 
 	todoTypesStr := c.String("todo-types")
 	if todoTypesStr != "" {
-		for _, todoType := range strings.Split(todoTypesStr, ",") {
+		for todoType := range strings.SplitSeq(todoTypesStr, ",") {
 			o.Config.Types = append(o.Config.Types, strings.TrimSpace(todoType))
 		}
 	}
