@@ -102,7 +102,8 @@ linters:
     - inamedparam # Reports interfaces with unnamed method parameters.
     - interfacebloat # A linter that checks the number of methods inside an interface.
     - intrange # Intrange is a linter to find places where for loops could make use of an integer range.
-    # TODO(#1678): Enable ireturn linter.
+    # ireturn seems to be somewhat buggy and doesn't produce many helpful
+    # results.
     # - ireturn # Accept Interfaces, Return Concrete Types.
     - lll # Reports long lines.
     - loggercheck # Checks key value pairs for common logger libraries (kitlog,klog,logr,zap).
