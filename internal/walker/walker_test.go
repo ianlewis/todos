@@ -1221,6 +1221,40 @@ var testCases = []testCase{
 		expected: nil,
 		// expected: []*TODORef{},
 	},
+	{
+		name: "binary files are ignored",
+		files: []*testutils.File{
+			{
+				Path:     "binary.exe",
+				Contents: []byte{1, 2, 0, 3},
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+		},
+		expected: nil,
+	},
+	{
+		name: "unsupported files are ignored",
+		files: []*testutils.File{
+			{
+				Path:     "unsupported_lang.coq",
+				Contents: []byte{},
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+		},
+		expected: nil,
+	},
 }
 
 type blameTestCase struct {

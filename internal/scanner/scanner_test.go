@@ -3295,11 +3295,12 @@ var loaderTestCases = []struct {
 		expectedConfig: "Go",
 	},
 	{
-		name:        "zeros.go",
+		name:        "binary.exe",
 		src:         []byte{0, 0, 0, 0, 0, 0},
 		scanCharset: "detect",
 		// Detected as binary
 		expectedConfig: "",
+		err:            ErrBinaryFile,
 	},
 	{
 		name:           "detect_by_filename.go",
@@ -3411,16 +3412,11 @@ let () = print_endline "hello world"
 	//	expectedConfig: "Go",
 	// },
 	{
-		name: "binary.exe",
-		// NOTE: Control codes rarely seen in text.
-		scanCharset: "UTF-8",
-		src:         []byte{1, 2, 3, 4, 5},
-	},
-	{
 		name:           "unsupported_lang.coq",
 		src:            []byte{},
 		scanCharset:    "UTF-8",
 		expectedConfig: "", // nil
+		err:            ErrUnsupportedLanguage,
 	},
 	{
 		name: "typescript_is_not_xml.ts",

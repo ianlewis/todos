@@ -326,6 +326,10 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	}
 
 	s, err := scanner.FromBytes(f.Name(), rawContents, w.options.Charset)
+	if errors.Is(err, scanner.ErrUnsupportedLanguage) || errors.Is(err, scanner.ErrBinaryFile) {
+		// Ignore unsupported languages and binary files.
+		return nil
+	}
 	if err != nil {
 		if herr := w.handleErr(f.Name(), err); herr != nil {
 			return herr
@@ -335,11 +339,6 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	// Cache these values for each file for performance reasons.
 	var repo *git.Repository
 	var br *git.BlameResult
-
-	// Skip files that can't be scanned.
-	if s == nil {
-		return nil
-	}
 	t := todos.NewTODOScanner(s, w.options.Config)
 	for t.Scan() {
 		todo := t.Next()
@@ -459,6 +458,7 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 	if err != nil {
 		// Ignore files that aren't checked in.
 		if errors.Is(err, object.ErrFileNotFound) {
+			//nolint:nilnil // nil, nil is valid to match the signature of git.Blame.
 			return nil, nil
 		}
 		return nil, fmt.Errorf("%w: getting blame result for commit %s at path %q: %w", errGit, hash, path, err)

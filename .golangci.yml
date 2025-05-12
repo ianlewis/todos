@@ -118,8 +118,7 @@ linters:
     - nestif # Reports deeply nested if statements.
     - nilerr # Finds the code that returns nil even if it checks that the error is not nil.
     - nilnesserr # Reports constructs that checks for err != nil, but returns a different nil value error. Powered by nilness and nilerr.
-    # TODO(#1678): Enable nilnil linter.
-    # - nilnil # Checks that there is no simultaneous return of nil error and an invalid value.
+    - nilnil # Checks that there is no simultaneous return of nil error and an invalid value.
     # NOTE: nlreturn could be enabled based on your preferences but is noisy otherwise.
     # - nlreturn # Nlreturn checks for a new line before return and branch statements to increase code clarity.
     - noctx # Finds sending http request without context.Context.
