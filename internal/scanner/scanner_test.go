@@ -28,6 +28,7 @@ import (
 	"github.com/ianlewis/todos/internal/testutils"
 )
 
+//nolint:gochecknoglobals // allow global table-driven tests.
 var scannerTestCases = []*struct {
 	// name is the test name. it is also the file name.
 	name string
@@ -3111,6 +3112,7 @@ func TestCommentScanner(t *testing.T) {
 	}
 }
 
+//nolint:gochecknoglobals // allow global table-driven tests.
 var scannerRegressionTestCases = []*struct {
 	name   string
 	src    string
@@ -3201,6 +3203,7 @@ func BenchmarkCommentScanner(b *testing.B) {
 	}
 }
 
+//nolint:gochecknoglobals // allow global table-driven tests.
 var loaderTestCases = []struct {
 	name    string
 	charset string

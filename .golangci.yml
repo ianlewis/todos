@@ -78,8 +78,7 @@ linters:
     - gci # Checks if code and import statements are formatted, with additional rules.
     - ginkgolinter # Enforces standards of using ginkgo and gomega.
     - gocheckcompilerdirectives # Checks that go compiler directive comments (//go:) are valid.
-    # TODO(#1678): Enable gochecknoglobals linter.
-    # - gochecknoglobals # Check that no global variables exist.
+    - gochecknoglobals # Check that no global variables exist.
     - gochecknoinits # Checks that no init functions are present in Go code.
     - gochecksumtype # Run exhaustiveness checks on Go "sum types".
     - gocognit # Computes and checks the cognitive complexity of functions.

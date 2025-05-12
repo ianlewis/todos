@@ -40,6 +40,7 @@ type testCase struct {
 	err      bool
 }
 
+//nolint:gochecknoglobals // allow global table-driven tests.
 var testCases = []testCase{
 	{
 		name: "single file traverse path",
@@ -1229,6 +1230,7 @@ type blameTestCase struct {
 	email  string
 }
 
+//nolint:gochecknoglobals // allow global table-driven tests.
 var blameTestCases = []blameTestCase{}
 
 //nolint:gochecknoinits // init used to initialize test cases.

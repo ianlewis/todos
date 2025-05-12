@@ -30,6 +30,9 @@ func concat[T any](slices ...[]T) []T {
 	return newS
 }
 
+// TODO(#1686): Refactor language config global variables.
+//
+//nolint:gochecknoglobals // remove in the future.
 var (
 	// sh-style languages.
 
@@ -130,6 +133,12 @@ var (
 	}
 )
 
+// LanguagesConfig is a map of language names to their configuration for all
+// languages supported by CommentScanner.
+//
+// TODO(#1686): Refactor LanguagesConfig global variable.
+//
+//nolint:gochecknoglobals // remove in the future.
 var LanguagesConfig = map[string]*Config{
 	"Assembly": {
 		LineComments: []LineCommentConfig{

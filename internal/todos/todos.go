@@ -22,6 +22,8 @@ import (
 )
 
 // DefaultTypes is the default set of TODO types.
+//
+//nolint:gochecknoglobals // DefaultTypes is an overridable default.
 var DefaultTypes = []string{
 	"TODO",
 	"Todo",

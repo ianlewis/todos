@@ -35,6 +35,7 @@ import (
 
 const defaultCharset = "UTF-8"
 
+//nolint:gochecknoglobals // default ignore filenames is used in tests.
 var defaultIgnoreFilenames = []string{".gitignore", ".todosignore"}
 
 // TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
@@ -309,6 +310,7 @@ func outJSON(w io.Writer) walker.TODOHandler {
 	}
 }
 
+//nolint:gochecknoglobals // outTypes globally maps output types to handlers.
 var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 	// NOTE: An empty value is treated as the default value.
 	"":        outCLI,
