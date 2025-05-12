@@ -3194,7 +3194,7 @@ func BenchmarkCommentScanner(b *testing.B) {
 	for i := range scannerTestCases {
 		tc := scannerTestCases[i]
 		b.Run(tc.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
 				for s.Scan() {
 				}
