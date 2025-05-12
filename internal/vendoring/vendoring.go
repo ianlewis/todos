@@ -30,6 +30,8 @@ var vendorRaw []byte
 
 // VendorMatcher regular expression that is used to check if a
 // path is a vendored directory.
+//
+//nolint:gochecknoglobals // VendorMatcher is a Regexp created by MustCompile.
 var VendorMatcher *regexp.Regexp
 
 // IsVendor returns if the path is in a vendored directory.
@@ -66,5 +68,5 @@ func init() {
 		noPrefix = append(noPrefix, `(?:(?:^|/)(?:`+strings.Join(slashPrefix, "|")+`))`)
 	}
 
-	VendorMatcher = utils.Must(regexp.Compile(strings.Join(noPrefix, "|")))
+	VendorMatcher = regexp.MustCompile(strings.Join(noPrefix, "|"))
 }
