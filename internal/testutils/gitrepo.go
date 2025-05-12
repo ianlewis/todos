@@ -40,12 +40,13 @@ func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
 
 	w := Must(r.repo.Worktree())
 
+	const readWriteExec = os.FileMode(0o700)
 	if len(files) > 0 {
 		for _, f := range files {
 			fullPath := filepath.Join(r.dir, f.Path)
 
 			// Create necessary sub-directories.
-			Check(os.MkdirAll(filepath.Dir(fullPath), 0o700))
+			Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
 
 			// Write the file
 			Check(os.WriteFile(fullPath, f.Contents, f.Mode))

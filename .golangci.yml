@@ -112,8 +112,7 @@ linters:
     - makezero # Finds slice declarations with non-zero initial length.
     - mirror # Reports wrong mirror patterns of bytes/strings usage.
     - misspell # Finds commonly misspelled English words.
-    # TODO(#1678): Enable mnd linter.
-    # - mnd # An analyzer to detect magic numbers.
+    - mnd # An analyzer to detect magic numbers.
     - musttag # Enforce field tags in (un)marshaled structs.
     - nakedret # Checks that functions with naked returns are not longer than a maximum size (can be zero).
     - nestif # Reports deeply nested if statements.
