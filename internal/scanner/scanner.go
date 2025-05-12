@@ -39,6 +39,15 @@ var (
 	errDecodeCharset = errors.New("decoding charset")
 )
 
+var (
+	// ErrUnsupportedCharset indicates that the detected language is not
+	// supported.
+	ErrUnsupportedLanguage = errors.New("unsupported language")
+
+	// ErrBinaryFile indicates that the file is a binary file.
+	ErrBinaryFile = errors.New("binary file")
+)
+
 type StringConfig struct {
 	Start      []rune
 	End        []rune
@@ -88,7 +97,7 @@ func FromFile(f *os.File, charset string) (*CommentScanner, error) {
 func FromBytes(fileName string, rawContents []byte, charset string) (*CommentScanner, error) {
 	// Ignore binary files.
 	if enry.IsBinary(rawContents) {
-		return nil, nil
+		return nil, ErrBinaryFile
 	}
 
 	if charset == "detect" {
@@ -128,13 +137,13 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	// Detect the programming language.
 	lang := enry.GetLanguage(fileName, decodedContents)
 	if lang == enry.OtherLanguage {
-		return nil, nil
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedLanguage, lang)
 	}
 
 	// Detect the language encoding.
 	config, ok := LanguagesConfig[lang]
 	if !ok {
-		return nil, nil
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedLanguage, lang)
 	}
 
 	return New(bytes.NewReader(decodedContents), config), nil
