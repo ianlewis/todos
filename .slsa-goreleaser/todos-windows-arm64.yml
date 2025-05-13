@@ -17,7 +17,6 @@ version: 1
 
 # (Optional) List of env variables used during compilation.
 env:
-  - GO111MODULE=on
   - CGO_ENABLED=0
 
 # (Optional) Flags for the compiler.
