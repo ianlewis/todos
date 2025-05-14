@@ -24,6 +24,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/go-enry/go-enry/v2"
 	"github.com/ianlewis/runeio"
@@ -57,6 +58,10 @@ type StringConfig struct {
 type LineCommentConfig struct {
 	// Start is the starting sequence for the line comment.
 	Start []rune
+
+	// AtLineStart indicates that the comment must start at the beginning of a
+	// line.
+	AtLineStart bool
 }
 
 type MultilineCommentConfig struct {
@@ -66,9 +71,9 @@ type MultilineCommentConfig struct {
 	// End is the ending sequence for the multiline comment.
 	End []rune
 
-	// AtLineStart indicates that the multiline comment must start at the
-	// beginning of a line.
-	AtLineStart bool
+	// AtFirstColumn indicates that the multiline comment must start at the
+	// first column of a line.
+	AtFirstColumn bool
 
 	// Nested indicates that the multi-line comment can be nested.
 	Nested bool
@@ -155,6 +160,9 @@ func New(r io.Reader, c *Config) *CommentScanner {
 		config: c,
 		reader: runeio.NewReader(bufio.NewReader(r)),
 
+		atLineStart:   true,
+		atFirstColumn: true,
+
 		// Starting state
 		state: &stateCode{},
 		line:  1, // NOTE: lines are 1 indexed
@@ -168,6 +176,10 @@ type CommentScanner struct {
 
 	// state is the current state-machine state.
 	state state
+
+	// atFirstColumn indicates whether the next character is at the first
+	// column of a line.
+	atFirstColumn bool
 
 	// atLineStart indicates whether the next character is at the start of the
 	// line.
@@ -268,12 +280,10 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 
 		// Check for multi-line comments.
 		if mm != nil {
-			if !mm.AtLineStart || s.atLineStart {
-				return &stateMultilineComment{
-					line:  s.line,
-					index: mmIndex,
-				}, nil
-			}
+			return &stateMultilineComment{
+				line:  s.line,
+				index: mmIndex,
+			}, nil
 		}
 
 		// Check for strings.
@@ -303,7 +313,7 @@ func (s *CommentScanner) lineMatch() (int, *LineCommentConfig, error) {
 		if err != nil {
 			return 0, nil, err
 		}
-		if eq {
+		if eq && (!m.AtLineStart || s.atLineStart) {
 			return i, &m, nil
 		}
 	}
@@ -314,7 +324,9 @@ func (s *CommentScanner) multiLineMatch() (int, *MultilineCommentConfig, error) 
 	// Check for multiline comment
 	for i, mlConfig := range s.config.MultilineComments {
 		if eq, err := s.peekEqual(mlConfig.Start); err == nil && eq {
-			return i, &mlConfig, nil
+			if !mlConfig.AtFirstColumn || s.atFirstColumn {
+				return i, &mlConfig, nil
+			}
 		} else if err != nil {
 			return 0, nil, err
 		}
@@ -487,7 +499,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 			if err != nil {
 				return st, err
 			}
-			if mlStart && (!mm.AtLineStart || s.atLineStart) {
+			if mlStart && (!mm.AtFirstColumn || s.atFirstColumn) {
 				if _, errDiscard := s.reader.Discard(len(mm.Start)); errDiscard != nil {
 					return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 				}
@@ -503,7 +515,7 @@ func (s *CommentScanner) processMultilineComment(st *stateMultilineComment) (sta
 		if err != nil {
 			return st, err
 		}
-		if mlEnd && (!mm.AtLineStart || s.atLineStart) {
+		if mlEnd && (!mm.AtFirstColumn || s.atFirstColumn) {
 			if _, errDiscard := s.reader.Discard(len(mm.End)); errDiscard != nil {
 				return st, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 			}
@@ -542,9 +554,13 @@ func (s *CommentScanner) nextRune() (rune, error) {
 	}
 	if rn == '\n' {
 		s.line++
+		s.atFirstColumn = true
 		s.atLineStart = true
 	} else {
-		s.atLineStart = false
+		s.atFirstColumn = false
+		if !unicode.IsSpace(rn) {
+			s.atLineStart = false
+		}
 	}
 	return rn, nil
 }

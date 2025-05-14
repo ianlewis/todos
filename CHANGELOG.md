@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support was added for the [Nix language](https://nix.dev/)
   ([#1653](https://github.com/ianlewis/todos/issues/1653)).
+- Support was added for the
+  [`CODEOWNERS`](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+  file and [Ignore List](https://git-scm.com/docs/gitignore) files (e.g.
+  `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667), [#1700](https://github.com/ianlewis/todos/issues/1700))
 
 ### Changed
 
