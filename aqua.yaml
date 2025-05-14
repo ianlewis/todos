@@ -32,3 +32,4 @@ packages:
   - name: daixiang0/gci@v0.13.6
   - name: mvdan/gofumpt@v0.8.0
   - name: ianlewis/todos@v0.12.0
+  - name: hadolint/hadolint@v2.12.0

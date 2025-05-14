@@ -107,6 +107,7 @@ $(AQUA_ROOT_DIR)/.installed: aqua.yaml .bin/aqua-$(AQUA_VERSION)/aqua
 
 .PHONY: build
 build: ## Build todos binary for current platform.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 		go build \
 			-trimpath \
@@ -116,10 +117,11 @@ build: ## Build todos binary for current platform.
 			github.com/ianlewis/todos/cmd/todos
 
 .PHONY: build-all
-build-all: todos-linux-amd64 todos-linux-arm64 todos-darwin-amd64 todos-darwin-arm64 todos-windows-amd64.exe todos-windows-arm64.exe ## Build todos for all platforms.
+build-all: todos-linux-amd64 todos-linux-arm64 todos-darwin-amd64 todos-darwin-arm64 todos-windows-amd64 todos-windows-arm64 ## Build todos for all platforms.
 
 .PHONY: build-with-pprof
 build-with-pprof: ## Build todos with profiling for current platform.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 		go build \
 			-o todos-with-pprof \
@@ -146,6 +148,7 @@ build-npm: node_modules/.installed build-all ## Build npm package tarball.
 
 todos-with-pprof-%:
 	# NOTE: $@ is for local use only and is not used in releases.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 	 GOOS=$(word 1,$(subst -, ,$*)) \
 	 GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -159,6 +162,7 @@ todos-with-pprof-%:
 
 todos-%:
 	# NOTE: $@ is for local use only and is not used in releases.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 	 GOOS=$(word 1,$(subst -, ,$*)) \
 	 GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -171,6 +175,13 @@ todos-%:
 			github.com/ianlewis/todos/cmd/todos
 
 todos-%.exe:  todos-%
+
+.PHONY: docker-image
+docker-image: build-all ## Build Docker image.
+	# NOTE: The Docker image is for local use only and is not used in releases.
+	docker build \
+		-t ghcr.io/ianlewis/todos \
+		.
 
 ## Testing
 #####################################################################
@@ -224,6 +235,7 @@ license-headers: ## Update license headers.
 				'*.yaml' \
 				'*.yml' \
 				'Makefile' \
+				'Dockerfile' \
 				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
 		); \
 		name=$$(git config user.name); \
@@ -298,7 +310,7 @@ go-format: $(AQUA_ROOT_DIR)/.installed ## Format Go files (gofumpt).
 #####################################################################
 
 .PHONY: lint
-lint: actionlint golangci-lint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
+lint: actionlint golangci-lint hadolint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
 
 .PHONY: actionlint
 actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
@@ -316,6 +328,30 @@ actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
 			actionlint -format '{{range $$err := .}}::error file={{$$err.Filepath}},line={{$$err.Line}},col={{$$err.Column}}::{{$$err.Message}}%0A```%0A{{replace $$err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:' $${files}; \
 		else \
 			actionlint $${files}; \
+		fi
+
+.PHONY: golangci-lint
+golangci-lint: $(AQUA_ROOT_DIR)/.installed ## Runs the golangci-lint linter.
+	@set -euo pipefail;\
+		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
+		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
+		golangci-lint run -c .golangci.yml ./...
+
+.PHONY: hadolint
+hadolint: $(AQUA_ROOT_DIR)/.installed ## Runs the hadolint linter.
+	@set -euo pipefail;\
+		files=$$( \
+			git ls-files --deduplicate \
+				'[Dd]ockerfile' \
+				'[Cc]ontainerfile' \
+				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
+		); \
+		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
+		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			hadolint -f checkstyle $${files}; \
+		else \
+			hadolint $${files}; \
 		fi
 
 .PHONY: zizmor
@@ -454,13 +490,6 @@ yamllint: .venv/.installed ## Runs the yamllint linter.
 			extraargs="-f github"; \
 		fi; \
 		.venv/bin/yamllint --strict -c .yamllint.yaml $${extraargs} $${files}
-
-.PHONY: golangci-lint
-golangci-lint: $(AQUA_ROOT_DIR)/.installed ## Runs the golangci-lint linter.
-	@set -euo pipefail;\
-		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
-		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
-		golangci-lint run -c .golangci.yml ./...
 
 ## Documentation
 #####################################################################
