@@ -182,6 +182,14 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: nil,
 		Strings:           doubleQuoteString,
 	},
+	"CODEOWNERS": {
+		LineComments: []LineCommentConfig{
+			{
+				Start:       []rune("#"),
+				AtLineStart: true,
+			},
+		},
+	},
 	"CoffeeScript": {
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
@@ -350,6 +358,14 @@ var LanguagesConfig = map[string]*Config{
 			},
 		},
 		Strings: cStrings,
+	},
+	"Ignore List": {
+		LineComments: []LineCommentConfig{
+			{
+				Start:       []rune("#"),
+				AtLineStart: true,
+			},
+		},
 	},
 	"JSON": {
 		// NOTE: Some JSON parsers support comments.
@@ -528,9 +544,9 @@ var LanguagesConfig = map[string]*Config{
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune{'='},
-				End:         []rune("=cut"),
-				AtLineStart: true,
+				Start:         []rune{'='},
+				End:           []rune("=cut"),
+				AtFirstColumn: true,
 			},
 		},
 		Strings: cStrings,
@@ -575,9 +591,9 @@ var LanguagesConfig = map[string]*Config{
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
 			{
-				Start:       []rune("=begin"),
-				End:         []rune("=end"),
-				AtLineStart: true,
+				Start:         []rune("=begin"),
+				End:           []rune("=end"),
+				AtFirstColumn: true,
 			},
 		},
 		Strings: concat(

@@ -244,6 +244,28 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// CODEOWNERS
+	{
+		name: "CODEOWNERS",
+		src: `# file comment
+		* @ianlewis # Not a comment
+		# another comment`,
+		config: "CODEOWNERS",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# another comment",
+				line: 3,
+			},
+		},
+	},
+
 	// CoffeeScript
 	{
 		name: "line_comments.coffee",
@@ -1203,6 +1225,28 @@ Author of questions and answers in a website
 			{
 				text: "<!-- extra comment -->",
 				line: 9,
+			},
+		},
+	},
+
+	// Ignore List (.gitignore)
+	{
+		name: "Ignore List",
+		src: `# file comment
+		/some/file/path # Not a comment
+		# another comment`,
+		config: "CODEOWNERS",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# file comment",
+				line: 1,
+			},
+			{
+				text: "# another comment",
+				line: 3,
 			},
 		},
 	},
