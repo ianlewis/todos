@@ -31,6 +31,36 @@
       "algorithm": "sha256"
     },
     {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-darwin-amd64",
+      "checksum": "6F5A294D197A0435490D0416F7F3D8B43652691C1BF9683719157E4A198C866E",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-darwin-arm64",
+      "checksum": "5183B349216D58048BFFFB2FCD7E449C5A593A47DD3AB95A7CF044E8DA26F6A1",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-linux-amd64",
+      "checksum": "B3C1497420A023622B4ED045708F7E741472F042522C2299D839E03B8AE2A11D",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-linux-arm64",
+      "checksum": "2DF23EA47B4156310A541D2B8E8690E758A24DF370D32277CAA55919A4819349",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-windows-amd64.exe",
+      "checksum": "65E5278BFCAAE6C0A180FB0D00A663F0EBA5051D4850569083CCCEE6C24A8E57",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-windows-arm64.exe",
+      "checksum": "30A6CB23278AD6B6F9D22DF862275EB029EEC35E07A26480E30188FE6BC7A192",
+      "algorithm": "sha256"
+    },
+    {
       "id": "github_release/github.com/jqlang/jq/jq-1.7.1/jq-linux-amd64",
       "checksum": "5942C9B0934E510EE61EB3E30273F1B3FE2590DF93933A93D7C58B81D19C8FF5",
       "algorithm": "sha256"
@@ -148,6 +178,11 @@
     {
       "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.364.0/registry.yaml",
       "checksum": "799600A73C2BFD11303016AF39AC934A291FB3E5CAE59836312B0CA66B839ADE7FF2E7A622B07188BA81B0DEAD49CF17816AC9ED5F9ACA4EC9A0597EB2A96807",
+      "algorithm": "sha512"
+    },
+    {
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.366.0/registry.yaml",
+      "checksum": "2AB10879875CD2393ABEABDF5E6A449030D7CFB7C3C1D29258E72B065008C2A9940CF60782A7D6AE4D24FB2444A65D5405D31E29830DFC72646D6CB1A6D60E51",
       "algorithm": "sha512"
     }
   ]
