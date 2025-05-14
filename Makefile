@@ -106,12 +106,71 @@ $(AQUA_ROOT_DIR)/.installed: aqua.yaml .bin/aqua-$(AQUA_VERSION)/aqua
 #####################################################################
 
 .PHONY: build
-build: ## Build todos app.
-	@go build -mod=vendor github.com/ianlewis/todos/cmd/todos
+build: ## Build todos binary for current platform.
+	@CGO_ENABLED=0 \
+		go build \
+			-trimpath \
+			-mod=vendor \
+			-tags=netgo \
+			-ldflags="-s -w" \
+			github.com/ianlewis/todos/cmd/todos
 
-.PHONY: build
-build-profile: ## Build todos app with profiling.
-	@go build -mod=vendor -tags profile github.com/ianlewis/todos/cmd/todos
+.PHONY: build-all
+build-all: todos-linux-amd64 todos-linux-arm64 todos-darwin-amd64 todos-darwin-arm64 todos-windows-amd64.exe todos-windows-arm64.exe ## Build todos for all platforms.
+
+.PHONY: build-with-pprof
+build-with-pprof: ## Build todos with profiling for current platform.
+	@CGO_ENABLED=0 \
+		go build \
+			-o todos-with-pprof \
+			-trimpath \
+			-mod=vendor \
+			-tags=netgo,profile \
+			-ldflags="-s -w" \
+			github.com/ianlewis/todos/cmd/todos
+
+.PHONY: build-with-pprof-all
+build-with-pprof-all: todos-with-pprof-linux-amd64 todos-with-pprof-linux-arm64 todos-with-pprof-darwin-amd64 todos-with-pprof-darwin-arm64 todos-with-pprof-windows-amd64 todos-with-pprof-windows-arm64 ## Build todos with profiling for all platforms.
+
+.PHONY: build-npm
+build-npm: node_modules/.installed build-all ## Build npm package tarball.
+	# NOTE: npm tarball is for local use only and is not used in releases.
+	@set -euo pipefail; \
+		cp todos-linux-amd64 packages/todos-linux-amd64/todos-linux-amd64; \
+		cp todos-linux-arm64 packages/todos-linux-arm64/todos-linux-arm64; \
+		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos-darwin-amd64; \
+		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos-darwin-arm64; \
+		cp todos-windows-amd64.exe packages/todos-windows-amd64/todos-windows-amd64.exe; \
+		cp todos-windows-arm64.exe packages/todos-windows-arm64/todos-windows-arm64.exe; \
+		npm pack --workspaces
+
+todos-with-pprof-%:
+	# NOTE: $@ is for local use only and is not used in releases.
+	@CGO_ENABLED=0 \
+	 GOOS=$(word 1,$(subst -, ,$*)) \
+	 GOARCH=$(word 2,$(subst -, ,$*)) \
+		go build \
+			-o todos-with-pprof-$* \
+			-trimpath \
+			-mod=vendor \
+			-tags=netgo,profile \
+			-ldflags="-s -w" \
+			github.com/ianlewis/todos/cmd/todos
+
+todos-%:
+	# NOTE: $@ is for local use only and is not used in releases.
+	@CGO_ENABLED=0 \
+	 GOOS=$(word 1,$(subst -, ,$*)) \
+	 GOARCH=$(word 2,$(subst -, ,$*)) \
+		go build \
+			-o todos-$* \
+			-trimpath \
+			-mod=vendor \
+			-tags=netgo \
+			-ldflags="-s -w" \
+			github.com/ianlewis/todos/cmd/todos
+
+todos-%.exe:  todos-%
 
 ## Testing
 #####################################################################
@@ -423,4 +482,7 @@ clean: ## Delete temporary files.
 		node_modules \
 		*.sarif.json \
 		vendor \
-		coverage.out
+		coverage.out \
+		todos \
+		todos-* \
+		ianlewis-todos-*.tgz

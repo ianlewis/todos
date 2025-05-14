@@ -26,6 +26,7 @@ jobs:
     permissions:
       contents: read
     outputs:
+      tag: ${{ steps.ldflags.outputs.tag }}
       version: ${{ steps.ldflags.outputs.version }}
     steps:
       - id: checkout
@@ -33,18 +34,35 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: "package.json"
       - id: ldflags
         run: |
           set -euo pipefail
 
-          version=$(git describe --tags --always --dirty)
+          version_tag=$(git describe --tags --always --dirty)
+          version=$(echo "${version_tag}" | sed -E 's/^v([0-9]+.[0-9]+.[0-9]+)(.*)/\1/')
           exit_code=0
-          if ! grep "${version}" CHANGELOG.md >/dev/null; then
-            echo >&2 "${version} must be included in the CHANGELOG.md"
+          if ! grep "${version_tag}" CHANGELOG.md >/dev/null; then
+            echo >&2 "${version_tag} must be included in the CHANGELOG.md"
             exit_code=1
           fi
 
-          echo "version=$(echo "$version" | cut -c2-)" >> "$GITHUB_OUTPUT"
+          # Check the npm package versions.
+          NPM_VERSIONS_JSON=$(npm version --workspaces)
+          for os in linux darwin windows; do
+            for arch in amd64 arm64; do
+              npm_version=$(echo "${NPM_VERSIONS_JSON}" | jq -r ".\"@ianlewis/todos-${os}-${arch}\"")
+              if [[ "${npm_version}" != "${version}" ]]; then
+                echo >&2 "npm package @ianlewis/todos-${os}-${arch} version ${npm_version} does not match release version ${version}"
+                exit_code=1
+              fi
+            done
+          done
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${version_tag}" >> "$GITHUB_OUTPUT"
           exit "${exit_code}"
 
   build-todos:
@@ -67,4 +85,28 @@ jobs:
     with:
       go-version-file: "go.mod"
       config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
-      evaluated-envs: "VERSION:${{needs.validate.outputs.version}}"
+      evaluated-envs: "VERSION:${{needs.validate.outputs.tag}}"
+
+  npm-publish:
+    needs: [validate, build-todos]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # To sign.
+    steps:
+      - id: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Publish to npm.
+          npm publish \
+            --provenance \
+            --workspaces \
+            --access public \
+            --tag "${version}"

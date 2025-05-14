@@ -1,6 +1,37 @@
 {
+  "name": "@ianlewis/todos",
+  "description": "Parse TODO and FIXME comments from code",
+  "homepage": "https://github.com/ianlewis/todos#readme",
+  "version": "0.12.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Ian Lewis",
+    "email": "ian@ianlewis.org",
+    "url": "https://ianlewis.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianlewis/todos.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ianlewis/todos/issues"
+  },
+  "files": [
+    "img/todos.png",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=22.0.0 <23"
+  },
+  "optionalDependencies": {
+    "@ianlewis/todos-linux-amd64": "0.12.0",
+    "@ianlewis/todos-linux-arm64": "0.12.0",
+    "@ianlewis/todos-darwin-amd64": "0.12.0",
+    "@ianlewis/todos-darwin-arm64": "0.12.0",
+    "@ianlewis/todos-windows-amd64": "0.12.0",
+    "@ianlewis/todos-windows-arm64": "0.12.0"
   },
   "devDependencies": {
     "dictionary-en": "4.0.0",
@@ -10,5 +41,11 @@
     "textlint": "14.5.0",
     "textlint-filter-rule-comments": "1.2.2",
     "textlint-rule-spelling": "0.3.0"
+  },
+  "workspaces": [
+    "./packages/*"
+  ],
+  "publishConfig": {
+    "provenance": true
   }
 }
