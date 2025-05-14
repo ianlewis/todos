@@ -22,9 +22,6 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "engines": {
-    "node": ">=22.0.0 <23"
-  },
   "optionalDependencies": {
     "@ianlewis/todos-linux-amd64": "0.12.0",
     "@ianlewis/todos-linux-arm64": "0.12.0",
@@ -42,9 +39,6 @@
     "textlint-filter-rule-comments": "1.2.2",
     "textlint-rule-spelling": "0.3.0"
   },
-  "workspaces": [
-    "./packages/*"
-  ],
   "publishConfig": {
     "provenance": true
   }

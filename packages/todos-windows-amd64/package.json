@@ -1,0 +1,34 @@
+{
+  "name": "@ianlewis/todos-windows-amd64",
+  "description": "Parse TODO and FIXME comments from code",
+  "homepage": "https://github.com/ianlewis/todos#readme",
+  "version": "0.12.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Ian Lewis",
+    "email": "ian@ianlewis.org",
+    "url": "https://ianlewis.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianlewis/todos.git"
+  },
+  "os": [
+    "windows"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "bugs": {
+    "url": "https://github.com/ianlewis/todos/issues"
+  },
+  "files": [
+    "todos-windows-amd64"
+  ],
+  "bin": {
+    "todos": "todos-windows-amd64"
+  },
+  "publishConfig": {
+    "provenance": true
+  }
+}
