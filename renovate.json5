@@ -41,6 +41,11 @@
   packageRules: [
     {
       matchManagers: ["github-actions"],
+      matchPackageNames: ["slsa-framework/slsa-verifier/actions/installer"],
+      pinDigests: false,
+    },
+    {
+      matchManagers: ["github-actions"],
       matchUpdateTypes: ["minor", "patch"],
       groupName: "github-actions",
       pinDigests: true,

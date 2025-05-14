@@ -107,6 +107,7 @@ $(AQUA_ROOT_DIR)/.installed: aqua.yaml .bin/aqua-$(AQUA_VERSION)/aqua
 
 .PHONY: build
 build: ## Build todos binary for current platform.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 		go build \
 			-trimpath \
@@ -116,10 +117,11 @@ build: ## Build todos binary for current platform.
 			github.com/ianlewis/todos/cmd/todos
 
 .PHONY: build-all
-build-all: todos-linux-amd64 todos-linux-arm64 todos-darwin-amd64 todos-darwin-arm64 todos-windows-amd64.exe todos-windows-arm64.exe ## Build todos for all platforms.
+build-all: todos-linux-amd64 todos-linux-arm64 todos-darwin-amd64 todos-darwin-arm64 todos-windows-amd64 todos-windows-arm64 ## Build todos for all platforms.
 
 .PHONY: build-with-pprof
 build-with-pprof: ## Build todos with profiling for current platform.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 		go build \
 			-o todos-with-pprof \
@@ -140,12 +142,13 @@ build-npm: node_modules/.installed build-all ## Build npm package tarball.
 		cp todos-linux-arm64 packages/todos-linux-arm64/todos-linux-arm64; \
 		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos-darwin-amd64; \
 		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos-darwin-arm64; \
-		cp todos-windows-amd64.exe packages/todos-windows-amd64/todos-windows-amd64.exe; \
-		cp todos-windows-arm64.exe packages/todos-windows-arm64/todos-windows-arm64.exe; \
-		npm pack --workspaces
+		cp todos-windows-amd64 packages/todos-windows-amd64/todos-windows-amd64.exe; \
+		cp todos-windows-arm64 packages/todos-windows-arm64/todos-windows-arm64.exe; \
+		npm pack
 
 todos-with-pprof-%:
 	# NOTE: $@ is for local use only and is not used in releases.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 	 GOOS=$(word 1,$(subst -, ,$*)) \
 	 GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -159,6 +162,7 @@ todos-with-pprof-%:
 
 todos-%:
 	# NOTE: $@ is for local use only and is not used in releases.
+	@go mod vendor
 	@CGO_ENABLED=0 \
 	 GOOS=$(word 1,$(subst -, ,$*)) \
 	 GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -170,7 +174,12 @@ todos-%:
 			-ldflags="-s -w" \
 			github.com/ianlewis/todos/cmd/todos
 
-todos-%.exe:  todos-%
+.PHONY: docker-image
+docker-image: build-all ## Build Docker image.
+	# NOTE: The Docker image is for local use only and is not used in releases.
+	docker build \
+		-t ghcr.io/ianlewis/todos \
+		.
 
 ## Testing
 #####################################################################
@@ -224,6 +233,7 @@ license-headers: ## Update license headers.
 				'*.yaml' \
 				'*.yml' \
 				'Makefile' \
+				'Dockerfile' \
 				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
 		); \
 		name=$$(git config user.name); \
@@ -298,7 +308,7 @@ go-format: $(AQUA_ROOT_DIR)/.installed ## Format Go files (gofumpt).
 #####################################################################
 
 .PHONY: lint
-lint: actionlint golangci-lint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
+lint: actionlint golangci-lint hadolint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
 
 .PHONY: actionlint
 actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
@@ -318,6 +328,30 @@ actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
 			actionlint $${files}; \
 		fi
 
+.PHONY: golangci-lint
+golangci-lint: $(AQUA_ROOT_DIR)/.installed ## Runs the golangci-lint linter.
+	@set -euo pipefail;\
+		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
+		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
+		golangci-lint run -c .golangci.yml ./...
+
+.PHONY: hadolint
+hadolint: $(AQUA_ROOT_DIR)/.installed ## Runs the hadolint linter.
+	@set -euo pipefail;\
+		files=$$( \
+			git ls-files --deduplicate \
+				'[Dd]ockerfile' \
+				'[Cc]ontainerfile' \
+				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
+		); \
+		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
+		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			hadolint -f checkstyle $${files}; \
+		else \
+			hadolint $${files}; \
+		fi
+
 .PHONY: zizmor
 zizmor: .venv/.installed ## Runs the zizmor linter.
 	@# NOTE: On GitHub actions this outputs SARIF format to zizmor.sarif.json
@@ -330,9 +364,9 @@ zizmor: .venv/.installed ## Runs the zizmor linter.
 				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
 		); \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-			.venv/bin/zizmor --quiet --pedantic --format sarif $${files} > zizmor.sarif.json || true; \
+			.venv/bin/zizmor --config zizmor.yml --quiet --pedantic --format sarif $${files} > zizmor.sarif.json || true; \
 		fi; \
-		.venv/bin/zizmor --quiet --pedantic --format plain $${files}
+		.venv/bin/zizmor --config zizmor.yml --quiet --pedantic --format plain $${files}
 
 .PHONY: markdownlint
 markdownlint: node_modules/.installed $(AQUA_ROOT_DIR)/.installed ## Runs the markdownlint linter.
@@ -454,13 +488,6 @@ yamllint: .venv/.installed ## Runs the yamllint linter.
 			extraargs="-f github"; \
 		fi; \
 		.venv/bin/yamllint --strict -c .yamllint.yaml $${extraargs} $${files}
-
-.PHONY: golangci-lint
-golangci-lint: $(AQUA_ROOT_DIR)/.installed ## Runs the golangci-lint linter.
-	@set -euo pipefail;\
-		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
-		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
-		golangci-lint run -c .golangci.yml ./...
 
 ## Documentation
 #####################################################################

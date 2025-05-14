@@ -31,6 +31,26 @@
       "algorithm": "sha256"
     },
     {
+      "id": "github_release/github.com/hadolint/hadolint/v2.12.0/hadolint-Darwin-x86_64",
+      "checksum": "2A5B7AFCAB91645C39A7CEBEFCD835B865F7488E69BE24567F433DFC3D41CD27",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/hadolint/hadolint/v2.12.0/hadolint-Linux-arm64",
+      "checksum": "5798551BF19F33951881F15EB238F90AEF023F11E7EC7E9F4C37961CB87C5DF6",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/hadolint/hadolint/v2.12.0/hadolint-Linux-x86_64",
+      "checksum": "56DE6D5E5EC427E17B74FA48D51271C7FC0D61244BF5C90E828AAB8362D55010",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/hadolint/hadolint/v2.12.0/hadolint-Windows-x86_64.exe",
+      "checksum": "ED89A156290E15452276B2B4C84EFA688A5183D3B578BFAEC7CFDF986F0632A8",
+      "algorithm": "sha256"
+    },
+    {
       "id": "github_release/github.com/ianlewis/todos/v0.12.0/todos-darwin-amd64",
       "checksum": "6F5A294D197A0435490D0416F7F3D8B43652691C1BF9683719157E4A198C866E",
       "algorithm": "sha256"
