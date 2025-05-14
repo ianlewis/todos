@@ -142,9 +142,9 @@ build-npm: node_modules/.installed build-all ## Build npm package tarball.
 		cp todos-linux-arm64 packages/todos-linux-arm64/todos-linux-arm64; \
 		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos-darwin-amd64; \
 		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos-darwin-arm64; \
-		cp todos-windows-amd64.exe packages/todos-windows-amd64/todos-windows-amd64.exe; \
-		cp todos-windows-arm64.exe packages/todos-windows-arm64/todos-windows-arm64.exe; \
-		npm pack --workspaces
+		cp todos-windows-amd64 packages/todos-windows-amd64/todos-windows-amd64.exe; \
+		cp todos-windows-arm64 packages/todos-windows-arm64/todos-windows-arm64.exe; \
+		npm pack
 
 todos-with-pprof-%:
 	# NOTE: $@ is for local use only and is not used in releases.
@@ -173,8 +173,6 @@ todos-%:
 			-tags=netgo \
 			-ldflags="-s -w" \
 			github.com/ianlewis/todos/cmd/todos
-
-todos-%.exe:  todos-%
 
 .PHONY: docker-image
 docker-image: build-all ## Build Docker image.
@@ -366,9 +364,9 @@ zizmor: .venv/.installed ## Runs the zizmor linter.
 				| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
 		); \
 		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-			.venv/bin/zizmor --quiet --pedantic --format sarif $${files} > zizmor.sarif.json || true; \
+			.venv/bin/zizmor --config zizmor.yml --quiet --pedantic --format sarif $${files} > zizmor.sarif.json || true; \
 		fi; \
-		.venv/bin/zizmor --quiet --pedantic --format plain $${files}
+		.venv/bin/zizmor --config zizmor.yml --quiet --pedantic --format plain $${files}
 
 .PHONY: markdownlint
 markdownlint: node_modules/.installed $(AQUA_ROOT_DIR)/.installed ## Runs the markdownlint linter.

@@ -103,6 +103,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
@@ -118,6 +119,7 @@ jobs:
 
   # This step builds our image, pushes it, and outputs the repo hash digest.
   docker-build:
+    needs: [validate, build-todos]
     permissions:
       contents: read # for checking out the repo.
       packages: write # for pushing the image to the registry.
@@ -167,6 +169,51 @@ jobs:
           # NOTE: Set the image as an output because the `env` context is not
           # available to the inputs of a reusable workflow call.
           echo "image=${IMAGE_REGISTRY}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Download todos-linux-amd64
+        id: download-linux-amd64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-amd64
+
+      - name: Download todos-linux-amd64.intoto.jsonl
+        id: download-linux-amd64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-amd64.intoto.jsonl
+
+      - name: Download todos-linux-arm64
+        id: download-linux-arm64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-arm64
+
+      - name: Download todos-linux-arm64.intoto.jsonl
+        id: download-linux-arm64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-arm64.intoto.jsonl
+
+      - name: Install slsa-verifier
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+
+      - name: Verify artifact provenance
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          # Verify the provenance of the downloaded binaries.
+          for arch in amd64 arm64; do
+            artifact="todos-linux-${arch}"
+            provenance_file="${artifact}.intoto.jsonl"
+            slsa-verifier verify-artifact \
+              --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
+              --provenance-path "${provenance_file}" \
+              --source-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+              --source-tag "${TAG}" \
+              "${artifact}"
+          done
 
   # This step calls the container workflow to generate provenance and push it to
   # the container registry.
