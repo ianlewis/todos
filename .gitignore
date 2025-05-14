@@ -33,5 +33,5 @@ node_modules/
 # binary names
 /todos
 /todos-*
-/packages/**/todos-*
+/packages/todos-*/todos-*
 ianlewis-todos-*.tgz

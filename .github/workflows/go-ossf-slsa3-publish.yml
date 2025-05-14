@@ -41,7 +41,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: "package.json"
+          node-version-file: ".node-version"
       - id: ldflags
         run: |
           set -euo pipefail
@@ -104,18 +104,129 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Publish to npm
+      - name: Download todos-linux-amd64
+        id: download-linux-amd64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-amd64
+
+      - name: Download todos-linux-amd64.intoto.jsonl
+        id: download-linux-amd64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-amd64.intoto.jsonl
+
+      - name: Download todos-linux-arm64
+        id: download-linux-arm64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-arm64
+
+      - name: Download todos-linux-arm64.intoto.jsonl
+        id: download-linux-arm64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-linux-arm64.intoto.jsonl
+
+      - name: Download todos-darwin-amd64
+        id: download-darwin-amd64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-darwin-amd64
+
+      - name: Download todos-darwin-amd64.intoto.jsonl
+        id: download-darwin-amd64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-darwin-amd64.intoto.jsonl
+
+      - name: Download todos-darwin-arm64
+        id: download-darwin-arm64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-darwin-arm64
+
+      - name: Download todos-darwin-arm64.intoto.jsonl
+        id: download-darwin-arm64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-darwin-arm64.intoto.jsonl
+
+      - name: Download todos-windows-amd64.exe
+        id: download-windows-amd64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-windows-amd64.exe
+
+      - name: Download todos-windows-amd64.exe.intoto.jsonl
+        id: download-windows-amd64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-windows-amd64.exe.intoto.jsonl
+
+      - name: Download todos-windows-arm64.exe
+        id: download-windows-arm64
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-windows-arm64.exe
+
+      - name: Download todos-windows-arm64.exe.intoto.jsonl
+        id: download-windows-arm64-provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: todos-windows-arm64.intoto.exe.jsonl
+
+      - name: Install slsa-verifier
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+
+      - name: Verify artifact provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          TAG: ${{ needs.validate.outputs.tag }}
         run: |
           set -euo pipefail
 
-          # Publish to npm.
+          # Verify the provenance of the downloaded binaries.
+          for arch in amd64 arm64; do
+            artifact="todos-linux-${arch}"
+            provenance_file="${artifact}.intoto.jsonl"
+            slsa-verifier verify-artifact \
+              --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
+              --provenance-path "${provenance_file}" \
+              --source-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+              --source-tag "${TAG}" \
+              "${artifact}"
+          done
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          # Publish first package to npm.
           npm publish \
             --provenance \
-            --workspaces \
             --access public \
-            --tag "${version}"
+            --tag "${VERSION}"
+
+          # Publish all sub-packages to npm.
+          for os in linux darwin windows; do
+            for arch in amd64 arm64; do
+              artifact="todos-${os}-${arch}"
+              if [[ "${os}" == "windows" ]]; then
+                artifact="${artifact}.exe"
+              fi
+              cp "${artifact}" "packages/todos-${os}-${arch}/"
+              (
+                cd "packages/todos-${os}-${arch}"
+                npm publish \
+                  --provenance \
+                  --access public \
+                  --tag "${VERSION}"
+              )
+            done
+          done
 
   # This step builds our image, pushes it, and outputs the repo hash digest.
   docker-build:

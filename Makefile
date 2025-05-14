@@ -138,13 +138,19 @@ build-with-pprof-all: todos-with-pprof-linux-amd64 todos-with-pprof-linux-arm64 
 build-npm: node_modules/.installed build-all ## Build npm package tarball.
 	# NOTE: npm tarball is for local use only and is not used in releases.
 	@set -euo pipefail; \
+		npm pack; \
 		cp todos-linux-amd64 packages/todos-linux-amd64/todos-linux-amd64; \
+		(cd packages/todos-linux-amd64 && npm pack); \
 		cp todos-linux-arm64 packages/todos-linux-arm64/todos-linux-arm64; \
+		(cd packages/todos-linux-arm64 && npm pack); \
 		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos-darwin-amd64; \
+		(cd packages/todos-darwin-amd64 && npm pack); \
 		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos-darwin-arm64; \
+		(cd packages/todos-darwin-arm64 && npm pack); \
 		cp todos-windows-amd64 packages/todos-windows-amd64/todos-windows-amd64.exe; \
+		(cd packages/todos-windows-amd64 && npm pack); \
 		cp todos-windows-arm64 packages/todos-windows-arm64/todos-windows-arm64.exe; \
-		npm pack
+		(cd packages/todos-windows-arm64 && npm pack)
 
 todos-with-pprof-%:
 	# NOTE: $@ is for local use only and is not used in releases.
@@ -512,4 +518,10 @@ clean: ## Delete temporary files.
 		coverage.out \
 		todos \
 		todos-* \
-		ianlewis-todos-*.tgz
+		ianlewis-todos-*.tgz \
+		packages/todos-linux-amd64/*.tgz \
+		packages/todos-linux-arm64/*.tgz \
+		packages/todos-darwin-amd64/*.tgz \
+		packages/todos-darwin-arm64/*.tgz \
+		packages/todos-windows-amd64/*.tgz \
+		packages/todos-windows-arm64/*.tgz
