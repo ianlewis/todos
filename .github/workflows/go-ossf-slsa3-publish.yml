@@ -55,10 +55,16 @@ jobs:
           fi
 
           # Check the npm package versions.
-          NPM_VERSIONS_JSON=$(npm version --workspaces)
+          npm_version=$(npm version --json | jq -r ".\"@ianlewis/todos\"")
+          if [[ "${npm_version}" != "${version}" ]]; then
+            echo >&2 "npm package @ianlewis/todos version ${npm_version} does not match release version ${version}"
+            exit_code=1
+          fi
+
+          # Check the sub-package versions.
           for os in linux darwin windows; do
             for arch in amd64 arm64; do
-              npm_version=$(echo "${NPM_VERSIONS_JSON}" | jq -r ".\"@ianlewis/todos-${os}-${arch}\"")
+              npm_version=$(cd "packages/todos-${os}-${arch}" && npm version --json | jq -r ".\"@ianlewis/todos-${os}-${arch}\"")
               if [[ "${npm_version}" != "${version}" ]]; then
                 echo >&2 "npm package @ianlewis/todos-${os}-${arch} version ${npm_version} does not match release version ${version}"
                 exit_code=1
