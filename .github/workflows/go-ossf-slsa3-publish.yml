@@ -180,7 +180,7 @@ jobs:
         id: download-windows-arm64-provenance
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: todos-windows-arm64.intoto.exe.jsonl
+          name: todos-windows-arm64.exe.intoto.jsonl
 
       - name: Install slsa-verifier
         uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
@@ -251,42 +251,6 @@ jobs:
           submodules: true
           persist-credentials: false
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-        with:
-          # NOTE: Do not use the cached binary for buildx to avoid potential
-          # cache poisoning.
-          cache-binary: false
-
-      - name: Authenticate Docker
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          registry: ${{ env.IMAGE_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
-        with:
-          images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
-        id: build
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
-
-      - name: Output image
-        id: image
-        run: |
-          # NOTE: Set the image as an output because the `env` context is not
-          # available to the inputs of a reusable workflow call.
-          echo "image=${IMAGE_REGISTRY}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
-
       - name: Download todos-linux-amd64
         id: download-linux-amd64
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -331,6 +295,42 @@ jobs:
               --source-tag "${TAG}" \
               "${artifact}"
           done
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        with:
+          # NOTE: Do not use the cached binary for buildx to avoid potential
+          # cache poisoning.
+          cache-binary: false
+
+      - name: Authenticate Docker
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
+        id: build
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+
+      - name: Output image
+        id: image
+        run: |
+          # NOTE: Set the image as an output because the `env` context is not
+          # available to the inputs of a reusable workflow call.
+          echo "image=${IMAGE_REGISTRY}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
 
   # This step calls the container workflow to generate provenance and push it to
   # the container registry.

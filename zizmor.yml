@@ -17,4 +17,4 @@ rules:
     ignore:
       # Allow unpinned use of the slsa-verifier installer action.
       - go-ossf-slsa3-publish.yml:186:9
-      - go-ossf-slsa3-publish.yml:315:9
+      - go-ossf-slsa3-publish.yml:279:9
