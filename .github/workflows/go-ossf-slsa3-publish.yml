@@ -213,8 +213,7 @@ jobs:
           # Publish first package to npm.
           npm publish \
             --provenance \
-            --access public \
-            --tag "${VERSION}"
+            --access public
 
           # Publish all sub-packages to npm.
           for os in linux darwin windows; do
