@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [`CODEOWNERS`](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
   file and [Ignore List](https://git-scm.com/docs/gitignore) files (e.g.
   `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667), [#1700](https://github.com/ianlewis/todos/issues/1700))
+- `todos` has been added to the [Aqua](https://aquaproj.github.io/) registry.
+  This allows `todos` to be installed using the Aqua package manager.
+
+    ```shell
+    aqua generate -g ianlewis/todos
+    ```
+
+- `todos` can now be installed via `npm`
+
+    ```shell
+    npm install -g @ianlewis/todos
+    ```
 
 ### Changed in `0.13.0-rc.4`
 
