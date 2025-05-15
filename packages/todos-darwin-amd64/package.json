@@ -2,7 +2,7 @@
   "name": "@ianlewis/todos-darwin-amd64",
   "description": "Parse TODO and FIXME comments from code",
   "homepage": "https://github.com/ianlewis/todos#readme",
-  "version": "0.13.0-rc.1",
+  "version": "0.13.0-rc.2",
   "license": "Apache-2.0",
   "author": {
     "name": "Ian Lewis",
