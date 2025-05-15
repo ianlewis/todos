@@ -5,9 +5,9 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [`0.13.0-rc.0`] - 2025-05-15
+## [`0.13.0-rc.1`] - 2025-05-15
 
-### Added in `0.13.0-rc.0`
+### Added in `0.13.0-rc.1`
 
 - Support was added for the [Nix language](https://nix.dev/)
   ([#1653](https://github.com/ianlewis/todos/issues/1653)).
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file and [Ignore List](https://git-scm.com/docs/gitignore) files (e.g.
   `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667), [#1700](https://github.com/ianlewis/todos/issues/1700))
 
-### Changed in `0.13.0-rc.0`
+### Changed in `0.13.0-rc.1`
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
   found ([#1657](https://github.com/ianlewis/todos/issues/1657)).
@@ -257,4 +257,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [`0.10.0`]: https://github.com/ianlewis/todos/releases/tag/v0.10.0
 [`0.11.0`]: https://github.com/ianlewis/todos/releases/tag/v0.11.0
 [`0.12.0`]: https://github.com/ianlewis/todos/releases/tag/v0.12.0
-[`0.13.0-rc.0`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0-rc.0
+[`0.13.0-rc.1`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0-rc.1
