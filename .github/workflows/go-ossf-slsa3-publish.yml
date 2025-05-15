@@ -198,7 +198,7 @@ jobs:
             slsa-verifier verify-artifact \
               --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
               --provenance-path "${provenance_file}" \
-              --source-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+              --source-uri "github.com/${GITHUB_REPOSITORY}" \
               --source-tag "${TAG}" \
               "${artifact}"
           done
@@ -291,7 +291,7 @@ jobs:
             slsa-verifier verify-artifact \
               --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
               --provenance-path "${provenance_file}" \
-              --source-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+              --source-uri "github.com/${GITHUB_REPOSITORY}" \
               --source-tag "${TAG}" \
               "${artifact}"
           done
