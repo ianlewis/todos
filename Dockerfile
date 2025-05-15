@@ -18,6 +18,6 @@ FROM --platform=$BUILDPLATFORM scratch
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY todos-${TARGETOS}-${TARGETARCH} /todos
+COPY --chmod=0755 todos-${TARGETOS}-${TARGETARCH} /todos
 
 ENTRYPOINT ["/todos"]
