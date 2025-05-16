@@ -27,9 +27,9 @@ See the [FAQ] for more info on the philosophy behind the project.
 
 ## Installation
 
-There are two main methods for installing `todos`.
+`todos` can be installed via multiple methods.
 
-### Install from a release
+### Install pre-built binaries
 
 Download the [`slsa-verifier`](https://github.com/slsa-framework/slsa-verifier)
 and verify it's checksum:
@@ -48,6 +48,41 @@ curl -sSLo todos.intoto.jsonl https://github.com/ianlewis/todos/releases/downloa
 ./slsa-verifier verify-artifact todos --provenance-path todos.intoto.jsonl --source-uri github.com/ianlewis/todos --source-tag v0.12.0 && \
 chmod +x todos && \
 cp todos ~/bin/
+```
+
+### Install using `npm`
+
+Install `todos` by installing the `@ianlewis/todos` package from `npm`:
+
+```shell
+npm install -g @ianlewis/todos
+```
+
+Verify the package signature:
+
+```shell
+npm audit signatures
+```
+
+### Docker image
+
+Download and run `todos` with Docker. You should use a specific version tag:
+
+```shell
+docker run --rm -t -v $(pwd):/src ghcr.io/ianlewis/todos:v0.13.0 /src
+```
+
+Verify the image attestation using
+[`cosign`](https://docs.sigstore.dev/cosign/verifying/attestation/):
+
+```shell
+cosign verify-attestation \
+  --type slsaprovenance \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v[0-9]+.[0-9]+.[0-9]+$' \
+  --certificate-github-workflow-repository "ianlewis/todos" \
+  --certificate-github-workflow-ref "refs/tags/v0.13.0" \
+  ghcr.io/ianlewis/todos:v0.13.0
 ```
 
 ### Install from source
