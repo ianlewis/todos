@@ -139,17 +139,17 @@ build-npm: node_modules/.installed build-all ## Build npm package tarball.
 	# NOTE: npm tarball is for local use only and is not used in releases.
 	@set -euo pipefail; \
 		npm pack; \
-		cp todos-linux-amd64 packages/todos-linux-amd64/todos-linux-amd64; \
+		cp todos-linux-amd64 packages/todos-linux-amd64/todos; \
 		(cd packages/todos-linux-amd64 && npm pack); \
-		cp todos-linux-arm64 packages/todos-linux-arm64/todos-linux-arm64; \
+		cp todos-linux-arm64 packages/todos-linux-arm64/todos; \
 		(cd packages/todos-linux-arm64 && npm pack); \
-		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos-darwin-amd64; \
+		cp todos-darwin-amd64 packages/todos-darwin-amd64/todos; \
 		(cd packages/todos-darwin-amd64 && npm pack); \
-		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos-darwin-arm64; \
+		cp todos-darwin-arm64 packages/todos-darwin-arm64/todos; \
 		(cd packages/todos-darwin-arm64 && npm pack); \
-		cp todos-windows-amd64 packages/todos-windows-amd64/todos-windows-amd64.exe; \
+		cp todos-windows-amd64 packages/todos-windows-amd64/todos.exe; \
 		(cd packages/todos-windows-amd64 && npm pack); \
-		cp todos-windows-arm64 packages/todos-windows-arm64/todos-windows-arm64.exe; \
+		cp todos-windows-arm64 packages/todos-windows-arm64/todos.exe; \
 		(cd packages/todos-windows-arm64 && npm pack)
 
 todos-with-pprof-%:
@@ -261,7 +261,30 @@ license-headers: ## Update license headers.
 #####################################################################
 
 .PHONY: format
-format: go-format json-format md-format yaml-format ## Format all files
+format: go-format js-format json-format md-format yaml-format ## Format all files
+
+.PHONY: go-format
+go-format: $(AQUA_ROOT_DIR)/.installed ## Format Go files (gofumpt).
+	@set -euo pipefail;\
+		files=$$(git ls-files '*.go'); \
+		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
+		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
+		if [ "$${files}" != "" ]; then \
+			gofumpt -w $${files}; \
+			gci write  --skip-generated -s standard -s default -s "prefix($$(go list -m))" $${files}; \
+		fi
+
+.PHONY: js-format
+js-format: node_modules/.installed ## Format YAML files.
+	@set -euo pipefail; \
+		files=$$( \
+			git ls-files \
+				'*.js' '**/*.js' \
+				'*.javascript' '**/*.javascript' \
+		); \
+		./node_modules/.bin/prettier \
+			--write \
+			$${files}
 
 .PHONY: json-format
 json-format: node_modules/.installed ## Format JSON files.
@@ -299,22 +322,11 @@ yaml-format: node_modules/.installed ## Format YAML files.
 		); \
 		./node_modules/.bin/prettier --write --no-error-on-unmatched-pattern $${files}
 
-.PHONY: go-format
-go-format: $(AQUA_ROOT_DIR)/.installed ## Format Go files (gofumpt).
-	@set -euo pipefail;\
-		files=$$(git ls-files '*.go'); \
-		PATH="$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION):$(AQUA_ROOT_DIR)/bin:$${PATH}"; \
-		AQUA_ROOT_DIR="$(AQUA_ROOT_DIR)"; \
-		if [ "$${files}" != "" ]; then \
-			gofumpt -w $${files}; \
-			gci write  --skip-generated -s standard -s default -s "prefix($$(go list -m))" $${files}; \
-		fi
-
 ## Linting
 #####################################################################
 
 .PHONY: lint
-lint: actionlint golangci-lint hadolint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
+lint: actionlint eslint golangci-lint hadolint markdownlint renovate-config-validator textlint todos yamllint zizmor ## Run all linters.
 
 .PHONY: actionlint
 actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
@@ -332,6 +344,42 @@ actionlint: $(AQUA_ROOT_DIR)/.installed ## Runs the actionlint linter.
 			actionlint -format '{{range $$err := .}}::error file={{$$err.Filepath}},line={{$$err.Line}},col={{$$err.Column}}::{{$$err.Message}}%0A```%0A{{replace $$err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:' $${files}; \
 		else \
 			actionlint $${files}; \
+		fi
+
+.PHONY: eslint
+eslint: node_modules/.installed ## Runs eslint.
+	@set -euo pipefail; \
+		files=$$( \
+			git ls-files \
+				'*.mjs' \
+				'*.js' \
+		); \
+		if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
+			set -euo pipefail; \
+			exit_code=0; \
+			while IFS="" read -r p && [ -n "$${p}" ]; do \
+				file=$$(echo "$${p}" | jq -c '.filePath // empty' | tr -d '"'); \
+				while IFS="" read -r m && [ -n "$${m}" ]; do \
+					severity=$$(echo "$${m}" | jq -c '.severity // empty' | tr -d '"'); \
+					line=$$(echo "$${m}" | jq -c '.line // empty' | tr -d '"'); \
+					endline=$$(echo "$${m}" | jq -c '.endLine // empty' | tr -d '"'); \
+					col=$$(echo "$${m}" | jq -c '.column // empty' | tr -d '"'); \
+					endcol=$$(echo "$${m}" | jq -c '.endColumn // empty' | tr -d '"'); \
+					message=$$(echo "$${m}" | jq -c '.message // empty' | tr -d '"'); \
+					exit_code=1; \
+					case $${severity} in \
+					"1") \
+						echo "::warning file=$${file},line=$${line},endLine=$${endline},col=$${col},endColumn=$${endcol}::$${message}"; \
+						;; \
+					"2") \
+						echo "::error file=$${file},line=$${line},endLine=$${endline},col=$${col},endColumn=$${endcol}::$${message}"; \
+						;; \
+					esac; \
+				done <<<$$(echo "$${p}" | jq -c '.messages[]'); \
+			done <<<$$(npx eslint --max-warnings 0 -f json $${files} | jq -c '.[]'); \
+			exit "$${exit_code}"; \
+		else \
+			npx eslint --max-warnings 0 $${files}; \
 		fi
 
 .PHONY: golangci-lint

@@ -23,11 +23,8 @@
     "url": "https://github.com/ianlewis/todos/issues"
   },
   "files": [
-    "todos-windows-amd64"
+    "todos"
   ],
-  "bin": {
-    "todos": "todos-windows-amd64"
-  },
   "publishConfig": {
     "provenance": true
   }
