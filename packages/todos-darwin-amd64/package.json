@@ -23,11 +23,8 @@
     "url": "https://github.com/ianlewis/todos/issues"
   },
   "files": [
-    "todos-darwin-amd64"
+    "todos"
   ],
-  "bin": {
-    "todos": "todos-darwin-amd64"
-  },
   "publishConfig": {
     "provenance": true
   }

@@ -16,22 +16,29 @@
   "bugs": {
     "url": "https://github.com/ianlewis/todos/issues"
   },
+  "bin": {
+    "todos": "index.js"
+  },
   "files": [
+    "index.js",
     "img/todos.png",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
   "optionalDependencies": {
-    "@ianlewis/todos-linux-amd64": "0.13.0-rc.7",
-    "@ianlewis/todos-linux-arm64": "0.13.0-rc.7",
     "@ianlewis/todos-darwin-amd64": "0.13.0-rc.7",
     "@ianlewis/todos-darwin-arm64": "0.13.0-rc.7",
+    "@ianlewis/todos-linux-amd64": "0.13.0-rc.7",
+    "@ianlewis/todos-linux-arm64": "0.13.0-rc.7",
     "@ianlewis/todos-windows-amd64": "0.13.0-rc.7",
     "@ianlewis/todos-windows-arm64": "0.13.0-rc.7"
   },
   "devDependencies": {
     "dictionary-en": "4.0.0",
+    "eslint": "^9.26.0",
+    "eslint-plugin-github": "^6.0.0",
+    "eslint-plugin-prettier": "^5.4.0",
     "markdownlint-cli": "0.44.0",
     "prettier": "3.5.3",
     "renovate": "40.11.2",
