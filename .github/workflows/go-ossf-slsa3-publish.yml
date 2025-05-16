@@ -226,9 +226,12 @@ jobs:
               artifact="todos-${os}-${arch}"
               if [[ "${os}" == "windows" ]]; then
                 cp "${artifact}.exe" "packages/todos-${os}-${arch}/todos.exe"
+                chmod +x "packages/todos-${os}-${arch}/todos.exe"
               else
                 cp "${artifact}" "packages/todos-${os}-${arch}/todos"
+                chmod +x "packages/todos-${os}-${arch}/todos"
               fi
+
               (
                 cd "packages/todos-${os}-${arch}"
                 npm publish \
