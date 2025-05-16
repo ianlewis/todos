@@ -5,9 +5,9 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [`0.13.0-rc.8`] - 2025-05-15
+## [`0.13.0-rc.9`] - 2025-05-15
 
-### Added in `0.13.0-rc.8`
+### Added in `0.13.0-rc.9`
 
 - Support was added for the [Nix language](https://nix.dev/)
   ([#1653](https://github.com/ianlewis/todos/issues/1653)).
@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     npm install -g @ianlewis/todos
     ```
 
-### Changed in `0.13.0-rc.8`
+### Changed in `0.13.0-rc.9`
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
   found ([#1657](https://github.com/ianlewis/todos/issues/1657)).
@@ -269,4 +269,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [`0.10.0`]: https://github.com/ianlewis/todos/releases/tag/v0.10.0
 [`0.11.0`]: https://github.com/ianlewis/todos/releases/tag/v0.11.0
 [`0.12.0`]: https://github.com/ianlewis/todos/releases/tag/v0.12.0
-[`0.13.0-rc.8`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0-rc.8
+[`0.13.0-rc.9`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0-rc.9
