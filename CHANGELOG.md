@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     npm install -g @ianlewis/todos
     ```
 
+- `todos` can now be run from a Docker container
+
+    ```shell
+    docker run --rm -t -v $(pwd):/src ghcr.io/ianlewis/todos /src
+    ```
+
 ### Changed in `0.13.0-rc.10`
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
