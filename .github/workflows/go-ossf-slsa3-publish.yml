@@ -225,9 +225,10 @@ jobs:
             for arch in amd64 arm64; do
               artifact="todos-${os}-${arch}"
               if [[ "${os}" == "windows" ]]; then
-                artifact="${artifact}.exe"
+                cp "${artifact}.exe" "packages/todos-${os}-${arch}/todos.exe"
+              else
+                cp "${artifact}" "packages/todos-${os}-${arch}/todos"
               fi
-              cp "${artifact}" "packages/todos-${os}-${arch}/"
               (
                 cd "packages/todos-${os}-${arch}"
                 npm publish \

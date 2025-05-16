@@ -14,6 +14,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// index.js (todos) is a wrapper around the todos binary. It is used to
+// dispatch the right platform-specific binary in the correct sub-package
+// location.
+
 function getBinaryPath() {
   // Lookup table for all platforms and binary distribution packages
   const BINARY_DISTRIBUTION_PACKAGES = {
@@ -30,13 +34,12 @@ function getBinaryPath() {
     BINARY_DISTRIBUTION_PACKAGES[`${process.platform}-${process.arch}`];
 
   // Windows binaries end with .exe so we need to special case them.
-  const binaryName =
-    process.platform === "win32"
-      ? `${platformSpecificPackageName}.exe`
-      : platformSpecificPackageName;
+  const binaryName = process.platform === "win32" ? "todos.exe" : "todos";
 
   // Resolving will fail if the optionalDependency was not installed
-  return require.resolve(`${platformSpecificPackageName}/${binaryName}`);
+  return require.resolve(
+    `@ianlewis/${platformSpecificPackageName}/${binaryName}`,
+  );
 }
 
 require("child_process")
