@@ -105,7 +105,7 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 		}
 	}
 
-	var quotedTypes []string
+	quotedTypes := make([]string, 0, len(config.Types))
 	for _, tp := range config.Types {
 		quotedTypes = append(quotedTypes, regexp.QuoteMeta(tp))
 	}
