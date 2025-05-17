@@ -46,7 +46,7 @@ func (l langConfigs) Swap(i, j int) {
 }
 
 func main() {
-	var langs langConfigs
+	langs := langConfigs(make([]langConfig, 0, len(scanner.LanguagesConfig)))
 	for lang, config := range scanner.LanguagesConfig {
 		info, err := enry.GetLanguageInfo(lang)
 		if err != nil {
