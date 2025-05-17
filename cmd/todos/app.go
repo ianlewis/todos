@@ -20,6 +20,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -222,7 +223,7 @@ func outCLI(w io.Writer) walker.TODOHandler {
 		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
-			color.GreenString(fmt.Sprintf("%d", o.TODO.Line)),
+			color.GreenString(strconv.Itoa(o.TODO.Line)),
 			color.CyanString(":"),
 			blameInfo,
 			o.TODO.Text,
