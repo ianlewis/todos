@@ -3583,3 +3583,225 @@ func TestFromBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestOverlappingConfig(t *testing.T) {
+	t.Parallel()
+
+	type expectedComment struct {
+		Text string
+		Line int
+	}
+
+	testCases := map[string]struct {
+		src              string
+		config           *Config
+		expectedComments []expectedComment
+	}{
+		"longer multi-line comment and string": {
+			src: `x = #this is a string#
+			###this is a comment###`,
+			config: &Config{
+				MultilineComments: []MultilineCommentConfig{
+					{
+						Start: []rune("###"),
+						End:   []rune("###"),
+					},
+				},
+				Strings: []StringConfig{
+					{
+						Start:      []rune("#"),
+						End:        []rune("#"),
+						EscapeFunc: NoEscape,
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "###this is a comment###",
+					Line: 2,
+				},
+			},
+		},
+		"multi-line comment and longer string": {
+			src: `x = ###this is a string###
+			#this is a comment#`,
+			config: &Config{
+				MultilineComments: []MultilineCommentConfig{
+					{
+						Start: []rune("#"),
+						End:   []rune("#"),
+					},
+				},
+				Strings: []StringConfig{
+					{
+						Start:      []rune("###"),
+						End:        []rune("###"),
+						EscapeFunc: NoEscape,
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "#this is a comment#",
+					Line: 2,
+				},
+			},
+		},
+		"longer line comments and string": {
+			src: `x = #this is a string#
+			### this is a comment # foo`,
+			config: &Config{
+				LineComments: []LineCommentConfig{
+					{
+						Start: []rune("###"),
+					},
+				},
+				Strings: []StringConfig{
+					{
+						Start:      []rune("#"),
+						End:        []rune("#"),
+						EscapeFunc: NoEscape,
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "### this is a comment # foo",
+					Line: 2,
+				},
+			},
+		},
+		"line comments and longer string": {
+			src: `x = ###this is a string###
+			# this is a comment`,
+			config: &Config{
+				LineComments: []LineCommentConfig{
+					{
+						Start: []rune("#"),
+					},
+				},
+				Strings: []StringConfig{
+					{
+						Start:      []rune("###"),
+						End:        []rune("###"),
+						EscapeFunc: NoEscape,
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "# this is a comment",
+					Line: 2,
+				},
+			},
+		},
+		"line comments and string": {
+			src: `x = #this is a string#; meh
+			# this is a comment`,
+			config: &Config{
+				LineComments: []LineCommentConfig{
+					{
+						Start: []rune("#"),
+					},
+				},
+				Strings: []StringConfig{
+					{
+						Start:      []rune("#"),
+						End:        []rune("#"),
+						EscapeFunc: NoEscape,
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "# this is a comment",
+					Line: 2,
+				},
+			},
+		},
+		"longer line comment and multi-line comment": {
+			src: `#
+			multi-line comment
+			#
+			x = "some code";
+			### this is a comment ###; foo`,
+			config: &Config{
+				LineComments: []LineCommentConfig{
+					{
+						Start: []rune("###"),
+					},
+				},
+				MultilineComments: []MultilineCommentConfig{
+					{
+						Start: []rune("#"),
+						End:   []rune("#"),
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "#\n\t\t\tmulti-line comment\n\t\t\t#",
+					Line: 1,
+				},
+				{
+					Text: "### this is a comment ###; foo",
+					Line: 5,
+				},
+			},
+		},
+		"line comment and longer multi-line comment": {
+			src: `###
+			multi-line comment
+			###
+			x = "some code";
+			# this is a comment ###; foo`,
+			config: &Config{
+				LineComments: []LineCommentConfig{
+					{
+						Start: []rune("#"),
+					},
+				},
+				MultilineComments: []MultilineCommentConfig{
+					{
+						Start: []rune("###"),
+						End:   []rune("###"),
+					},
+				},
+			},
+			expectedComments: []expectedComment{
+				{
+					Text: "###\n\t\t\tmulti-line comment\n\t\t\t###",
+					Line: 1,
+				},
+				{
+					Text: "# this is a comment ###; foo",
+					Line: 5,
+				},
+			},
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			s := New(strings.NewReader(tc.src), tc.config)
+
+			var comments []expectedComment
+			for s.Scan() {
+				c := s.Next()
+				comments = append(comments, expectedComment{
+					Text: c.Text,
+					Line: c.Line,
+				})
+			}
+			if err := s.Err(); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			want, got := tc.expectedComments, comments
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("unexpected comments (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

@@ -84,7 +84,8 @@ linters:
     - gocognit # Computes and checks the cognitive complexity of functions.
     - goconst # Finds repeated strings that could be replaced by a constant.
     - gocritic # Provides diagnostics that check for bugs, performance and style issues.
-    - gocyclo # Computes and checks the cyclomatic complexity of functions.
+    # NOTE: gocyclo is useful but functionality overlaps with cyclop.
+    # - gocyclo # Computes and checks the cyclomatic complexity of functions.
     - godot # Check if comments end in a period.
     - godox # Detects usage of FIXME, TODO and other keywords inside comments.
     - gofmt # Checks if the code is formatted according to 'gofmt' command.
@@ -174,7 +175,9 @@ linters:
 linters-settings:
   cyclop:
     # Increased preserve some semblance of sanity.
-    max-complexity: 20
+    max-complexity: 30
+    # TODO(#1725): Reduce package average complexity.
+    package-average: 6.0
 
   depguard:
     rules:
