@@ -127,8 +127,7 @@ linters:
     - nonamedreturns # Reports all named returns.
     - nosprintfhostport # Checks for misuse of Sprintf to construct a host with port in a URL.
     - paralleltest # Detects missing usage of t.Parallel() method in your Go test.
-    # TODO(#1678): Enable perfsprint linter.
-    # - perfsprint # Checks that fmt.Sprintf can be replaced with a faster alternative.
+    - perfsprint # Checks that fmt.Sprintf can be replaced with a faster alternative.
     # TODO(#1678): Enable prealloc linter.
     # - prealloc # Finds slice declarations that could potentially be pre-allocated.
     - predeclared # Find code that shadows one of Go's predeclared identifiers.
@@ -151,7 +150,7 @@ linters:
     - testableexamples # Linter checks if examples are testable (have an expected output).
     - testifylint # Checks usage of github.com/stretchr/testify.
     # NOTE: Blackbox testing shouldn't necessarily be enforced and sometimes hinders full test coverage.
-    # - testpackage # Linter that makes you use a separate _test package.
+    # - testpackage # Linter that makes you use a separate test package.
     - thelper # Thelper detects tests helpers which is not start with t.Helper() method.
     - tparallel # Tparallel detects inappropriate usage of t.Parallel() method in your Go test codes.
     - unconvert # Remove unnecessary type conversions.
