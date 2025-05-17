@@ -379,21 +379,21 @@ Tracking TODOs in code can help you have a cleaner and healthier code base.
 2. It makes it easier for contributors to find areas of the code that need work.
 3. It makes it easier for contributors to find the relevant code for an issue.
 
-### Why not just use `grep`?
+### Why not just use `grep` or `rg`?
 
-`grep` is an amazing and very fast tool. However, there are a few reasons
-why you might use `todos`.
+`grep` and `rg` are amazing and very fast tools. However, there are a few
+reasons why you might use `todos`.
 
-1. `grep` doesn't have much knowledge of code and languages so it's difficult to
-   differentiate between comments and code. `todos` will ignore matches in code
-   and only prints TODOs found it comments. It also ignores matches that occur
-   in strings.
+1. `grep` and `rg` don't have much knowledge of code and languages so it's
+   difficult to differentiate between comments and code. `todos` will ignore
+   matches in code and only prints TODOs found it comments. It also ignores
+   matches that occur in strings.
 2. `grep` doesn't know about repository structure. It doesn't have inherent
    knowledge of VCS directories (e.g. `.git`) or vendored dependencies. It can't
    make use of `.gitignore` or other hints.
-3. `todos` will parse TODO comments and can output in different formats such as
-   JSON. This gives users an easy way to search for TODOs with their username,
-   or with a specific issue number.
+3. `todos` can output JSON with parsed values from the TODOs. This gives users
+   an easy way to search for TODOs with their username, or with a specific issue
+   number.
 
 ## Contributing
 
