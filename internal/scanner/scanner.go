@@ -253,55 +253,88 @@ func (s *CommentScanner) processCode(st *stateCode) (state, error) {
 		if err != nil {
 			return st, err
 		}
+		lcLen := 0
+		if m != nil {
+			lcLen = len(m.Start)
+		}
 
-		mmIndex, mm, err := s.multiLineMatch()
+		mmIndex, mm, err := s.multilineMatch()
 		if err != nil {
 			return st, err
 		}
-
-		// Check for line comments.
-		if m != nil {
-			// If both line comments and multi-line comments match, chose the
-			// one with the longest start sequence.
-			if mm == nil || len(m.Start) >= len(mm.Start) {
-				for i, stringStart := range s.config.Strings {
-					if string(stringStart.Start) == string(m.Start) {
-						return &stateLineCommentOrString{
-							index: i,
-						}, nil
-					}
-				}
-
-				return &stateLineComment{
-					index: lcIndex,
-				}, nil
-			}
+		mmLen := 0
+		if mm != nil {
+			mmLen = len(mm.Start)
 		}
 
-		// Check for multi-line comments.
-		if mm != nil {
+		sIndex, strs, err := s.stringMatch()
+		if err != nil {
+			return st, err
+		}
+		strsLen := 0
+		if strs != nil {
+			strsLen = len(strs.Start)
+		}
+
+		// Generally the longest match gets precedence. However, if two matches
+		// are the same length (e.g. the same characters), some special
+		// processing may need to be done.
+		maxLen := max(lcLen, mmLen, strsLen)
+		if maxLen == 0 {
+			// There was no match, process the next rune.
+			if _, err := s.nextRune(); err != nil {
+				return st, err
+			}
+			continue
+		}
+
+		switch {
+		case mmLen == maxLen && lcLen < maxLen && strsLen < maxLen:
+			// multiline comment
 			return &stateMultilineComment{
 				line:  s.line,
 				index: mmIndex,
 			}, nil
-		}
-
-		// Check for strings.
-		for i, strs := range s.config.Strings {
-			eq, err := s.peekEqual(strs.Start)
-			if err != nil {
-				return st, err
-			}
-			if eq {
-				return &stateString{
-					index: i,
-				}, nil
-			}
-		}
-
-		// Process the next rune.
-		if _, err := s.nextRune(); err != nil {
-			return st, err
+		case lcLen == maxLen && mmLen < maxLen && strsLen < maxLen:
+			// line comment
+			return &stateLineComment{
+				index: lcIndex,
+			}, nil
+		case strsLen == maxLen && lcLen < maxLen && mmLen < maxLen:
+			// string
+			return &stateString{
+				index: sIndex,
+			}, nil
+		case mmLen == maxLen && lcLen == maxLen && strsLen < maxLen:
+			// multiline comment and line comment
+			// TODO(#1722): Handle when multi-line and line comments have
+			// 				the same start sequence
+			return &stateMultilineComment{
+				line:  s.line,
+				index: mmIndex,
+			}, nil
+		case mmLen == maxLen && strsLen == maxLen && lcLen < maxLen:
+			// multiline comment and string
+			// TODO(#1723): Handle when multi-line and line comments have
+			// 				the same start sequence
+			return &stateMultilineComment{
+				line:  s.line,
+				index: mmIndex,
+			}, nil
+		case lcLen == maxLen && strsLen == maxLen && mmLen < maxLen:
+			// line comment and string
+			return &stateLineCommentOrString{
+				lcIndex: lcIndex,
+				sIndex:  sIndex,
+			}, nil
+		default:
+			// multiline comment and line comment and string
+			// TODO(#1723): Handle when multi-line and line comments have
+			// 				the same start sequence
+			return &stateMultilineComment{
+				line:  s.line,
+				index: mmIndex,
+			}, nil
 		}
 	}
 }
@@ -320,7 +353,7 @@ func (s *CommentScanner) lineMatch() (int, *LineCommentConfig, error) {
 	return 0, nil, nil
 }
 
-func (s *CommentScanner) multiLineMatch() (int, *MultilineCommentConfig, error) {
+func (s *CommentScanner) multilineMatch() (int, *MultilineCommentConfig, error) {
 	// Check for multiline comment
 	for i, mlConfig := range s.config.MultilineComments {
 		if eq, err := s.peekEqual(mlConfig.Start); err == nil && eq {
@@ -329,6 +362,19 @@ func (s *CommentScanner) multiLineMatch() (int, *MultilineCommentConfig, error) 
 			}
 		} else if err != nil {
 			return 0, nil, err
+		}
+	}
+	return 0, nil, nil
+}
+
+func (s *CommentScanner) stringMatch() (int, *StringConfig, error) {
+	for i, strs := range s.config.Strings {
+		eq, err := s.peekEqual(strs.Start)
+		if err != nil {
+			return i, &strs, err
+		}
+		if eq {
+			return i, &strs, nil
 		}
 	}
 	return 0, nil, nil
@@ -407,14 +453,14 @@ func (s *CommentScanner) processLineComment(st *stateLineComment) (state, error)
 // the same start character. e.g. Vim Script.
 func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString) (bool, state, error) {
 	// Discard the string start characters.
-	if _, err := s.reader.Discard(len(s.config.Strings[st.index].Start)); err != nil {
+	if _, err := s.reader.Discard(len(s.config.Strings[st.sIndex].Start)); err != nil {
 		return false, st, fmt.Errorf("parsing string: %w", err)
 	}
 
 	// b is used to build the line comment text.
 	var b strings.Builder
 	// Add the opening to the builder since we want it in the output if this is a comment.
-	b.WriteString(string(s.config.Strings[st.index].Start))
+	b.WriteString(string(s.config.Strings[st.sIndex].Start))
 	for {
 		lineEnd, err := s.isLineEnd()
 		if err != nil {
@@ -429,13 +475,16 @@ func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString
 				Text:       b.String(),
 				Line:       s.line,
 				Multiline:  false,
-				LineConfig: &s.config.LineComments[st.index],
+				LineConfig: &s.config.LineComments[st.lcIndex],
 			}
 			return true, &stateCode{}, nil
 		}
 
 		// Handle escaped characters.
-		escaped, err := s.config.Strings[st.index].EscapeFunc(s, s.config.Strings[st.index].End)
+		escaped, err := s.config.Strings[st.sIndex].EscapeFunc(
+			s,
+			s.config.Strings[st.sIndex].End,
+		)
 		// There may still be characters to process so continue.
 		if err != nil && !errors.Is(err, io.EOF) {
 			return false, st, err
@@ -455,12 +504,12 @@ func (s *CommentScanner) processLineCommentOrString(st *stateLineCommentOrString
 		}
 
 		// Look for the end of the string.
-		stringEnd, err := s.peekEqual(s.config.Strings[st.index].End)
+		stringEnd, err := s.peekEqual(s.config.Strings[st.sIndex].End)
 		if err != nil {
 			return false, st, fmt.Errorf("parsing string: %w", err)
 		}
 		if stringEnd {
-			if _, discardErr := s.reader.Discard(len(s.config.Strings[st.index].End)); discardErr != nil {
+			if _, discardErr := s.reader.Discard(len(s.config.Strings[st.sIndex].End)); discardErr != nil {
 				return false, st, fmt.Errorf("parsing string: %w", discardErr)
 			}
 			return false, &stateCode{}, nil

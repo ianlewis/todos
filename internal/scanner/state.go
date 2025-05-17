@@ -42,8 +42,11 @@ func (s *stateMultilineComment) stateMustImplement() {}
 // stateLineCommentOrString implements the special case when strings and line
 // comments start with the same character. e.g. Vim Script.
 type stateLineCommentOrString struct {
-	// index is the index for the type of string.
-	index int
+	// lcIndex is the index for the type of line comment.
+	lcIndex int
+
+	// sIndex is the index for the type of string.
+	sIndex int
 }
 
 func (s *stateLineCommentOrString) stateMustImplement() {}
