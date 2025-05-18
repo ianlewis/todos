@@ -5,6 +5,20 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Support was added for
+  [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)
+  files ([#1729](https://github.com/ianlewis/todos/issues/1729)).
+
+### Changed
+
+- **BREAKING CHANGE:** `todos` now returns an exit status of 3 when an file of
+  an unsupported languages is passed via the command line
+  ([#1668](https://github.com/ianlewis/todos/issues/1668)).
+
 ## [`0.13.0-rc.10`] - 2025-05-15
 
 ### Added in `0.13.0-rc.10`
@@ -14,7 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support was added for the
   [`CODEOWNERS`](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
   file and [Ignore List](https://git-scm.com/docs/gitignore) files (e.g.
-  `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667), [#1700](https://github.com/ianlewis/todos/issues/1700))
+  `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667),
+  [#1700](https://github.com/ianlewis/todos/issues/1700))
 - `todos` has been added to the [Aqua](https://aquaproj.github.io/) registry.
   This allows `todos` to be installed using the Aqua package manager.
 

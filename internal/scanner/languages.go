@@ -551,6 +551,9 @@ var LanguagesConfig = map[string]*Config{
 		},
 		Strings: cStrings,
 	},
+	"Pip Requirements": {
+		LineComments: hashLineComments,
+	},
 	"PowerShell": {
 		LineComments: hashLineComments,
 		MultilineComments: []MultilineCommentConfig{
