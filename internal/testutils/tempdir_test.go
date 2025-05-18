@@ -112,8 +112,8 @@ func TestTempDir(t *testing.T) {
 				}
 			}()
 
-			d := NewTempDir(tc.files)
-			baseDir := d.Dir()
+			tempDir := NewTempDir(tc.files)
+			baseDir := tempDir.Dir()
 			defer func() {
 				_ = os.RemoveAll(baseDir)
 			}()
@@ -153,7 +153,7 @@ func TestTempDir(t *testing.T) {
 				}
 			}
 
-			d.Cleanup()
+			tempDir.Cleanup()
 			if _, err := os.Stat(baseDir); !os.IsNotExist(err) {
 				t.Fatalf("expected not exist error: %v", err)
 			}

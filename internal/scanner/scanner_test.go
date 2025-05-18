@@ -3508,26 +3508,26 @@ func TestFromFile(t *testing.T) {
 	t.Parallel()
 
 	for i := range loaderTestCases {
-		tc := loaderTestCases[i]
+		testCase := loaderTestCases[i]
 
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			// Create a temporary file.
 			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
-			f := testutils.Must(os.CreateTemp("", "*."+tc.name))
+			f := testutils.Must(os.CreateTemp("", "*."+testCase.name))
 			defer os.Remove(f.Name())
 
 			var w io.Writer
 			w = f
-			if tc.charset != "" {
-				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
+			if testCase.charset != "" {
+				e := testutils.Must(ianaindex.IANA.Encoding(testCase.charset))
 				w = e.NewEncoder().Writer(f)
 			}
-			_ = testutils.Must(w.Write(tc.src))
+			_ = testutils.Must(w.Write(testCase.src))
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
-			s, err := FromFile(f, tc.scanCharset)
-			if got, want := err, tc.err; got != nil {
+			s, err := FromFile(f, testCase.scanCharset)
+			if got, want := err, testCase.err; got != nil {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 				}
@@ -3540,7 +3540,7 @@ func TestFromFile(t *testing.T) {
 			if s != nil {
 				config = s.Config()
 			}
-			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
+			if got, want := config, LanguagesConfig[testCase.expectedConfig]; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
 		})

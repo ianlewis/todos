@@ -198,7 +198,7 @@ func (w *TODOWalker) walkDir(path string) {
 }
 
 // walkFunc implements io.fs.WalkDirFunc.
-func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
+func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) error {
 	// If the path had an error then just skip it. WalkDir has likely hit the path already.
 	if err != nil {
 		return w.handleErr(path, err)
@@ -207,7 +207,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
 	if err != nil {
 		// NOTE: If the symbolic link couldn't be evaluated just skip it.
-		if d.IsDir() {
+		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
 		return nil
@@ -218,7 +218,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 		if herr := w.handleErr(path, err); herr != nil {
 			return herr
 		}
-		if d.IsDir() {
+		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
 		return nil
@@ -230,7 +230,7 @@ func (w *TODOWalker) walkFunc(path string, d fs.DirEntry, err error) error {
 		if herr := w.handleErr(path, err); herr != nil {
 			return herr
 		}
-		if d.IsDir() {
+		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
 		return nil
@@ -318,17 +318,17 @@ func (w *TODOWalker) processFile(path, fullPath string, f *os.File) error {
 	return w.scanFile(f, false)
 }
 
-func (w *TODOWalker) scanFile(f *os.File, force bool) error {
-	rawContents, err := io.ReadAll(f)
+func (w *TODOWalker) scanFile(file *os.File, force bool) error {
+	rawContents, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("reading %s: %w", f.Name(), err)
+		return fmt.Errorf("reading %s: %w", file.Name(), err)
 	}
 
-	if !force && !w.options.IncludeGenerated && enry.IsGenerated(f.Name(), rawContents) {
+	if !force && !w.options.IncludeGenerated && enry.IsGenerated(file.Name(), rawContents) {
 		return nil
 	}
 
-	s, err := scanner.FromBytes(f.Name(), rawContents, w.options.Charset)
+	s, err := scanner.FromBytes(file.Name(), rawContents, w.options.Charset)
 	if errors.Is(err, scanner.ErrUnsupportedLanguage) || errors.Is(err, scanner.ErrBinaryFile) {
 		// Ignore unsupported languages and binary files.
 		if force {
@@ -339,7 +339,7 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 		return nil
 	}
 	if err != nil {
-		if herr := w.handleErr(f.Name(), err); herr != nil {
+		if herr := w.handleErr(file.Name(), err); herr != nil {
 			return herr
 		}
 	}
@@ -347,9 +347,9 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	// Cache these values for each file for performance reasons.
 	var repo *git.Repository
 	var br *git.BlameResult
-	t := todos.NewTODOScanner(s, w.options.Config)
-	for t.Scan() {
-		todo := t.Next()
+	todoScanner := todos.NewTODOScanner(s, w.options.Config)
+	for todoScanner.Scan() {
+		todo := todoScanner.Next()
 
 		// Check the label globs to see if any match.
 		if len(w.options.LabelGlobs) > 0 {
@@ -367,15 +367,15 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 
 		if w.options.TODOFunc != nil {
 			var gitUser *GitUser
-			repo, br, gitUser, err = w.gitUser(f.Name(), repo, br, todo.Line)
+			repo, br, gitUser, err = w.gitUser(file.Name(), repo, br, todo.Line)
 			if err != nil {
-				if herr := w.handleErr(f.Name(), err); herr != nil {
+				if herr := w.handleErr(file.Name(), err); herr != nil {
 					return herr
 				}
 			}
 
 			if err := w.options.TODOFunc(&TODORef{
-				FileName: f.Name(),
+				FileName: file.Name(),
 				TODO:     todo,
 				GitUser:  gitUser,
 			}); err != nil {
@@ -383,8 +383,8 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 			}
 		}
 	}
-	if err := t.Err(); err != nil {
-		if herr := w.handleErr(f.Name(), err); herr != nil {
+	if err := todoScanner.Err(); err != nil {
+		if herr := w.handleErr(file.Name(), err); herr != nil {
 			return herr
 		}
 	}
@@ -476,8 +476,8 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 
 func (w *TODOWalker) gitUser(
 	path string,
-	r *git.Repository,
-	br *git.BlameResult,
+	repo *git.Repository,
+	blameResult *git.BlameResult,
 	lineNo int,
 ) (*git.Repository, *git.BlameResult, *GitUser, error) {
 	if !w.options.Blame {
@@ -487,34 +487,36 @@ func (w *TODOWalker) gitUser(
 	// Attempt to fin the repo.
 	var repoRoot string
 	var err error
-	if r == nil {
-		r, repoRoot, err = w.gitRepo(path)
+	if repo == nil {
+		repo, repoRoot, err = w.gitRepo(path)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
 	// Return early if the file is not in a git repo.
-	if r == nil {
+	if repo == nil {
 		return nil, nil, nil, nil
 	}
 
-	if br == nil {
-		br, err = w.gitBlame(r, repoRoot, path)
+	if blameResult == nil {
+		blameResult, err = w.gitBlame(repo, repoRoot, path)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
 
 	// If there is still no blame result this must not be a committed file.
-	if br == nil {
+	if blameResult == nil {
 		return nil, nil, nil, nil
 	}
 
-	if lineNo > len(br.Lines) {
-		return r, br, nil, fmt.Errorf("%w: invalid blame line # for file %q: %d", errGit, br.Path, lineNo)
+	if lineNo > len(blameResult.Lines) {
+		return repo, blameResult, nil,
+			fmt.Errorf("%w: invalid blame line # for file %q: %d",
+				errGit, blameResult.Path, lineNo)
 	}
-	blameLine := br.Lines[lineNo-1]
-	return r, br, &GitUser{
+	blameLine := blameResult.Lines[lineNo-1]
+	return repo, blameResult, &GitUser{
 		Name:  blameLine.AuthorName,
 		Email: blameLine.Author,
 	}, nil
