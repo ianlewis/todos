@@ -153,8 +153,7 @@ linters:
     - unconvert # Remove unnecessary type conversions.
     - unparam # Reports unused function parameters. unused    v1.9.0
     - usestdlibvars # A linter that detect the possibility to use variables/constants from the Go standard library.
-    # TODO(#1678): Enable usetesting linter.
-    # - usetesting # Reports uses of functions with replacement inside the testing package.
+    - usetesting # Reports uses of functions with replacement inside the testing package.
     # NOTE: varnamelen isn't bad necessarily, but it is very noisy.
     - varnamelen # Checks that the length of a variable's name matches its scope.
     - wastedassign # Finds wasted assignment statements.
