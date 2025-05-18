@@ -2,7 +2,7 @@
   "name": "@ianlewis/todos",
   "description": "Parse TODO and FIXME comments from code",
   "homepage": "https://github.com/ianlewis/todos#readme",
-  "version": "0.13.0-rc.12",
+  "version": "0.13.0",
   "license": "Apache-2.0",
   "author": {
     "name": "Ian Lewis",
@@ -27,12 +27,12 @@
     "LICENSE"
   ],
   "optionalDependencies": {
-    "@ianlewis/todos-darwin-amd64": "0.13.0-rc.12",
-    "@ianlewis/todos-darwin-arm64": "0.13.0-rc.12",
-    "@ianlewis/todos-linux-amd64": "0.13.0-rc.12",
-    "@ianlewis/todos-linux-arm64": "0.13.0-rc.12",
-    "@ianlewis/todos-windows-amd64": "0.13.0-rc.12",
-    "@ianlewis/todos-windows-arm64": "0.13.0-rc.12"
+    "@ianlewis/todos-darwin-amd64": "0.13.0",
+    "@ianlewis/todos-darwin-arm64": "0.13.0",
+    "@ianlewis/todos-linux-amd64": "0.13.0",
+    "@ianlewis/todos-linux-arm64": "0.13.0",
+    "@ianlewis/todos-windows-amd64": "0.13.0",
+    "@ianlewis/todos-windows-arm64": "0.13.0"
   },
   "devDependencies": {
     "dictionary-en": "4.0.0",
