@@ -320,11 +320,11 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 	"json":    outJSON,
 }
 
-func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
-	o := walker.Options{}
+func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
+	opts := walker.Options{}
 
 	// Valdidate the character set.
-	charset := c.String("charset")
+	charset := cliCtx.String("charset")
 	if charset != "detect" {
 		if charset == "ISO-8859-1" {
 			charset = "UTF-8"
@@ -341,68 +341,68 @@ func walkerOptionsFromContext(c *cli.Context) (*walker.Options, error) {
 			return nil, fmt.Errorf("%w: %s: unsupported character set", ErrFlagParse, charset)
 		}
 	}
-	o.Charset = charset
+	opts.Charset = charset
 
-	for _, gs := range c.StringSlice("exclude") {
+	for _, gs := range cliCtx.StringSlice("exclude") {
 		g, err := glob.Compile(gs)
 		if err != nil {
 			return nil, fmt.Errorf("%w: exclude: %w", ErrFlagParse, err)
 		}
-		o.ExcludeGlobs = append(o.ExcludeGlobs, g)
+		opts.ExcludeGlobs = append(opts.ExcludeGlobs, g)
 	}
 
-	for _, gs := range c.StringSlice("exclude-dir") {
+	for _, gs := range cliCtx.StringSlice("exclude-dir") {
 		g, err := glob.Compile(strings.TrimRight(gs, string(os.PathSeparator)))
 		if err != nil {
 			return nil, fmt.Errorf("%w: exclude-dir: %w", ErrFlagParse, err)
 		}
-		o.ExcludeDirGlobs = append(o.ExcludeDirGlobs, g)
+		opts.ExcludeDirGlobs = append(opts.ExcludeDirGlobs, g)
 	}
 
-	o.Blame = c.Bool("blame")
+	opts.Blame = cliCtx.Bool("blame")
 
 	// File Includes
-	o.IncludeGenerated = c.Bool("include-generated")
-	o.IncludeHidden = !c.Bool("exclude-hidden")
-	o.IncludeVCS = c.Bool("include-vcs")
-	o.IncludeVendored = c.Bool("include-vendored")
+	opts.IncludeGenerated = cliCtx.Bool("include-generated")
+	opts.IncludeHidden = !cliCtx.Bool("exclude-hidden")
+	opts.IncludeVCS = cliCtx.Bool("include-vcs")
+	opts.IncludeVendored = cliCtx.Bool("include-vendored")
 
-	o.IgnoreFileNames = c.StringSlice("ignore-file-name")
+	opts.IgnoreFileNames = cliCtx.StringSlice("ignore-file-name")
 
 	// Filters
-	for _, label := range c.StringSlice("label") {
+	for _, label := range cliCtx.StringSlice("label") {
 		g, err := glob.Compile(label)
 		if err != nil {
 			return nil, fmt.Errorf("%w: label: %w", ErrFlagParse, err)
 		}
-		o.LabelGlobs = append(o.LabelGlobs, g)
+		opts.LabelGlobs = append(opts.LabelGlobs, g)
 	}
 
-	outType := c.String("output")
+	outType := cliCtx.String("output")
 	outFunc, ok := outTypes[outType]
 	if !ok {
 		return nil, fmt.Errorf("%w: invalid output type: %v", ErrFlagParse, outType)
 	}
 
-	o.TODOFunc = outFunc(c.App.Writer)
-	o.ErrorFunc = func(err error) error {
-		_ = utils.Must(fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err))
+	opts.TODOFunc = outFunc(cliCtx.App.Writer)
+	opts.ErrorFunc = func(err error) error {
+		_ = utils.Must(fmt.Fprintf(cliCtx.App.ErrWriter, "%s: %v\n", cliCtx.App.Name, err))
 		return nil
 	}
 
-	o.Config = &todos.Config{}
+	opts.Config = &todos.Config{}
 
-	todoTypesStr := c.String("todo-types")
+	todoTypesStr := cliCtx.String("todo-types")
 	if todoTypesStr != "" {
 		for todoType := range strings.SplitSeq(todoTypesStr, ",") {
-			o.Config.Types = append(o.Config.Types, strings.TrimSpace(todoType))
+			opts.Config.Types = append(opts.Config.Types, strings.TrimSpace(todoType))
 		}
 	}
 
-	o.Paths = c.Args().Slice()
-	if len(o.Paths) == 0 {
-		o.Paths = []string{"."}
+	opts.Paths = cliCtx.Args().Slice()
+	if len(opts.Paths) == 0 {
+		opts.Paths = []string{"."}
 	}
 
-	return &o, nil
+	return &opts, nil
 }

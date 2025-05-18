@@ -32,18 +32,18 @@ type TestRepo struct {
 // NewTestRepo creates a new TestRepo with the given files committed into a
 // single commit in the repo.
 func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
-	r := &TestRepo{
+	testRepo := &TestRepo{
 		dir: dir,
 	}
 
-	r.repo = Must(git.PlainInit(r.dir, false))
+	testRepo.repo = Must(git.PlainInit(testRepo.dir, false))
 
-	w := Must(r.repo.Worktree())
+	w := Must(testRepo.repo.Worktree())
 
 	const readWriteExec = os.FileMode(0o700)
 	if len(files) > 0 {
 		for _, f := range files {
-			fullPath := filepath.Join(r.dir, f.Path)
+			fullPath := filepath.Join(testRepo.dir, f.Path)
 
 			// Create necessary sub-directories.
 			Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
@@ -65,7 +65,7 @@ func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
 		}))
 	}
 
-	return r
+	return testRepo
 }
 
 // Dir returns the path to the repo root directory.
