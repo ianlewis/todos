@@ -3514,8 +3514,8 @@ func TestFromFile(t *testing.T) {
 			t.Parallel()
 			// Create a temporary file.
 			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
-			f := testutils.Must(os.CreateTemp("", "*."+testCase.name))
-			defer os.Remove(f.Name())
+			f := testutils.Must(os.CreateTemp(t.TempDir(), "*."+testCase.name))
+			defer f.Close()
 
 			var w io.Writer
 			w = f
