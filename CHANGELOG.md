@@ -5,23 +5,9 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [`0.13.0`] - 2025-05-18
 
-### Added
-
-- Support was added for
-  [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)
-  files ([#1729](https://github.com/ianlewis/todos/issues/1729)).
-
-### Changed
-
-- **BREAKING CHANGE:** `todos` now returns an exit status of 3 when an file of
-  an unsupported languages is passed via the command line
-  ([#1668](https://github.com/ianlewis/todos/issues/1668)).
-
-## [`0.13.0-rc.10`] - 2025-05-15
-
-### Added in `0.13.0-rc.10`
+### Added in `0.13.0`
 
 - Support was added for the [Nix language](https://nix.dev/)
   ([#1653](https://github.com/ianlewis/todos/issues/1653)).
@@ -30,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file and [Ignore List](https://git-scm.com/docs/gitignore) files (e.g.
   `.gitignore`) ([#1667](https://github.com/ianlewis/todos/issues/1667),
   [#1700](https://github.com/ianlewis/todos/issues/1700))
+- Support was added for
+  [`requirements.txt`](https://pip.pypa.io/en/stable/reference/requirements-file-format/)
+  files ([#1729](https://github.com/ianlewis/todos/issues/1729)).
 - `todos` has been added to the [Aqua](https://aquaproj.github.io/) registry.
   This allows `todos` to be installed using the Aqua package manager.
 
@@ -49,10 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     docker run --rm -t -v $(pwd):/src ghcr.io/ianlewis/todos /src
     ```
 
-### Changed in `0.13.0-rc.10`
+### Changed in `0.13.0`
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
   found ([#1657](https://github.com/ianlewis/todos/issues/1657)).
+- **BREAKING CHANGE:** `todos` now returns an exit status of 3 when an file of
+  an unsupported languages is passed via the command line
+  ([#1668](https://github.com/ianlewis/todos/issues/1668)).
 
 ## [`0.12.0`] - 2025-02-28
 
@@ -290,4 +282,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [`0.10.0`]: https://github.com/ianlewis/todos/releases/tag/v0.10.0
 [`0.11.0`]: https://github.com/ianlewis/todos/releases/tag/v0.11.0
 [`0.12.0`]: https://github.com/ianlewis/todos/releases/tag/v0.12.0
-[`0.13.0-rc.10`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0-rc.10
+[`0.13.0`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0
