@@ -1255,6 +1255,25 @@ var testCases = []testCase{
 		},
 		expected: nil,
 	},
+	{
+		name: "unsupported files generate error if specified",
+		files: []*testutils.File{
+			{
+				Path:     "unsupported_lang.coq",
+				Contents: []byte{},
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+			Paths:   []string{"unsupported_lang.coq"},
+		},
+		expected: nil,
+		err:      true,
+	},
 }
 
 type blameTestCase struct {
@@ -1297,6 +1316,7 @@ func init() {
 				files:    tc.files,
 				opts:     &opts,
 				expected: expected,
+				err:      tc.err,
 			},
 
 			author: author,

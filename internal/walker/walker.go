@@ -328,6 +328,11 @@ func (w *TODOWalker) scanFile(f *os.File, force bool) error {
 	s, err := scanner.FromBytes(f.Name(), rawContents, w.options.Charset)
 	if errors.Is(err, scanner.ErrUnsupportedLanguage) || errors.Is(err, scanner.ErrBinaryFile) {
 		// Ignore unsupported languages and binary files.
+		if force {
+			// ...unless the file was explicitly specified in options.Paths.
+			//nolint:wrapcheck // error is for an explicitly specified file.
+			return err
+		}
 		return nil
 	}
 	if err != nil {
