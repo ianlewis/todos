@@ -152,6 +152,7 @@ func (t *TODOScanner) Scan() bool {
 
 		if next.Multiline {
 			matches := t.findMultilineMatches(next)
+
 			t.next = append(t.next, matches...)
 			if len(t.next) > 0 {
 				return true
@@ -164,13 +165,16 @@ func (t *TODOScanner) Scan() bool {
 			}
 		}
 	}
+
 	return false
 }
 
 // findMultilineMatch returns the TODO for the comment if it was found.
 func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
 	var matches []*TODO
+
 	var i int
+
 	for line := range strings.SplitSeq(strings.TrimSpace(c.Text), "\n") {
 		lineText := strings.TrimLeft(line, string(c.MultilineConfig.Start))
 		lineText = strings.TrimRight(lineText, string(c.MultilineConfig.End))
@@ -197,14 +201,17 @@ func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
 				CommentLine: c.Line,
 			})
 		}
+
 		i++
 	}
+
 	return matches
 }
 
 // findLineMatch returns the TODO for the comment if it was found.
 func (t *TODOScanner) findLineMatch(c *scanner.Comment) *TODO {
 	trimmedText := strings.TrimSpace(c.Text)
+
 	commentText := strings.TrimLeft(trimmedText, string(c.LineConfig.Start))
 	for _, lnMatch := range t.lineMatch {
 		match := lnMatch.FindAllStringSubmatch(commentText, 1)
@@ -239,6 +246,7 @@ func (t *TODOScanner) Next() *TODO {
 	if len(t.next) > 0 {
 		return t.next[0]
 	}
+
 	return nil
 }
 

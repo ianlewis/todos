@@ -47,7 +47,9 @@ func (s *testScanner) Scan() bool {
 	if s.err != nil {
 		return false
 	}
+
 	s.index++
+
 	return s.index <= len(s.comments)
 }
 
@@ -55,6 +57,7 @@ func (s *testScanner) Next() *scanner.Comment {
 	if s.err != nil {
 		return nil
 	}
+
 	return s.comments[s.index-1]
 }
 
@@ -1174,7 +1177,9 @@ func TestTODOScanner(t *testing.T) {
 			t.Parallel()
 
 			s := NewTODOScanner(tc.s, tc.config)
+
 			var found []*TODO
+
 			for s.Scan() {
 				found = append(found, s.Next())
 			}

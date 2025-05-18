@@ -23,12 +23,14 @@ func TestWithCancel(t *testing.T) {
 		t.Parallel()
 
 		var called int
+
 		func() {
 			d, _ := WithCancel(nil, func() {
 				called++
 			})
 			defer d()
 		}()
+
 		if want, got := 1, called; want != got {
 			t.Errorf("unexpected calls, want: %d, got: %d", want, got)
 		}
@@ -38,6 +40,7 @@ func TestWithCancel(t *testing.T) {
 		t.Parallel()
 
 		var called int
+
 		func() {
 			d, cancel := WithCancel(nil, func() {
 				called++
@@ -45,6 +48,7 @@ func TestWithCancel(t *testing.T) {
 			defer d()
 			cancel()
 		}()
+
 		if want, got := 0, called; want != got {
 			t.Errorf("unexpected calls, want: %d, got: %d", want, got)
 		}
@@ -54,7 +58,9 @@ func TestWithCancel(t *testing.T) {
 		t.Parallel()
 
 		var parentCalled int
+
 		var childCalled int
+
 		func() {
 			p := func() {
 				parentCalled++
@@ -63,12 +69,15 @@ func TestWithCancel(t *testing.T) {
 				childCalled++
 			}
 			parentDefer, _ := WithCancel(nil, p)
+
 			childDefer, _ := WithCancel(parentDefer, c)
 			defer childDefer()
 		}()
+
 		if want, got := 1, parentCalled; want != got {
 			t.Errorf("unexpected parent calls, want: %d, got: %d", want, got)
 		}
+
 		if want, got := 1, childCalled; want != got {
 			t.Errorf("unexpected child calls, want: %d, got: %d", want, got)
 		}
@@ -78,7 +87,9 @@ func TestWithCancel(t *testing.T) {
 		t.Parallel()
 
 		var parentCalled int
+
 		var childCalled int
+
 		func() {
 			p := func() {
 				parentCalled++
@@ -87,13 +98,16 @@ func TestWithCancel(t *testing.T) {
 				childCalled++
 			}
 			parentDefer, _ := WithCancel(nil, p)
+
 			childDefer, cancel := WithCancel(parentDefer, c)
 			defer childDefer()
 			cancel()
 		}()
+
 		if want, got := 0, parentCalled; want != got {
 			t.Errorf("unexpected parent calls, want: %d, got: %d", want, got)
 		}
+
 		if want, got := 0, childCalled; want != got {
 			t.Errorf("unexpected child calls, want: %d, got: %d", want, got)
 		}
@@ -103,7 +117,9 @@ func TestWithCancel(t *testing.T) {
 		t.Parallel()
 
 		var parentCalled int
+
 		var childCalled int
+
 		func() {
 			p := func() {
 				parentCalled++
@@ -112,13 +128,16 @@ func TestWithCancel(t *testing.T) {
 				childCalled++
 			}
 			parentDefer, cancel := WithCancel(nil, p)
+
 			childDefer, _ := WithCancel(parentDefer, c)
 			defer childDefer()
 			cancel()
 		}()
+
 		if want, got := 0, parentCalled; want != got {
 			t.Errorf("unexpected parent calls, want: %d, got: %d", want, got)
 		}
+
 		if want, got := 1, childCalled; want != got {
 			t.Errorf("unexpected child calls, want: %d, got: %d", want, got)
 		}

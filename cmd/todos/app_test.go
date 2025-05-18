@@ -39,9 +39,11 @@ func newContext(app *cli.App, args []string) *cli.Context {
 			panic(err)
 		}
 	}
+
 	if err := fs.Parse(args); err != nil {
 		panic(err)
 	}
+
 	return cli.NewContext(app, fs, nil)
 }
 
@@ -49,7 +51,9 @@ func Test_TODOsApp_help(t *testing.T) {
 	t.Parallel()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
+
 	app.Writer = &b
 	if err := app.Run([]string{"todos", "--help"}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -65,6 +69,7 @@ func Test_TODOsApp_help_arg(t *testing.T) {
 	t.Parallel()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.Writer = &b
 	// NOTE: somearg should be ignored.
@@ -82,9 +87,11 @@ func Test_TODOsApp_version(t *testing.T) {
 	t.Parallel()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{"--version"})
+
 	if diff := cmp.Diff(nil, app.Action(c), cmpopts.EquateErrors()); diff != "" {
 		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 	}
@@ -115,9 +122,11 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	defer d.Cleanup()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
+
 	if diff := cmp.Diff(ErrTODOsFound, app.Action(c), cmpopts.EquateErrors()); diff != "" {
 		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 	}
@@ -144,9 +153,11 @@ func Test_TODOsApp_Walk_no_todos(t *testing.T) {
 	defer d.Cleanup()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
+
 	if diff := cmp.Diff(nil, app.Action(c), cmpopts.EquateErrors()); diff != "" {
 		t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 	}
@@ -159,17 +170,21 @@ func Test_TODOsApp_Walk_no_todos(t *testing.T) {
 //nolint:paralleltest // modifies cli.OsExiter and cli.ErrWriter.
 func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	oldExiter := cli.OsExiter
+
 	var exitCode *int
+
 	cli.OsExiter = func(c int) {
 		if exitCode == nil {
 			exitCode = &c
 		}
 	}
+
 	defer func() {
 		cli.OsExiter = oldExiter
 	}()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.ErrWriter = &b
 
@@ -191,6 +206,7 @@ func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	if exitCode == nil {
 		t.Fatalf("unexpected exit code, want: %v, got: %v", ExitCodeFlagParseError, exitCode)
 	}
+
 	if diff := cmp.Diff(ExitCodeFlagParseError, *exitCode); diff != "" {
 		t.Errorf("unexpected exit code (-want, +got): \n%s", diff)
 	}
@@ -199,17 +215,21 @@ func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 //nolint:paralleltest // modifies cli.OsExiter and cli.ErrWriter
 func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	oldExiter := cli.OsExiter
+
 	var exitCode *int
+
 	cli.OsExiter = func(c int) {
 		if exitCode == nil {
 			exitCode = &c
 		}
 	}
+
 	defer func() {
 		cli.OsExiter = oldExiter
 	}()
 
 	app := newTODOsApp()
+
 	var b strings.Builder
 	app.ErrWriter = &b
 
@@ -231,6 +251,7 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	if exitCode == nil {
 		t.Fatalf("unexpected exit code, want: %v, got: %v", ExitCodeWalkError, exitCode)
 	}
+
 	if diff := cmp.Diff(ExitCodeWalkError, *exitCode); diff != "" {
 		t.Errorf("unexpected exit code (-want, +got): \n%s", diff)
 	}
@@ -277,10 +298,12 @@ func Test_outCLI(t *testing.T) {
 
 			var w strings.Builder
 			h := outCLI(&w)
+
 			err := h(tc.ref)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if diff := cmp.Diff(tc.expected, w.String()); diff != "" {
 				t.Errorf("unexpected output (-want, +got): \n%s", diff)
 			}
@@ -340,10 +363,12 @@ func Test_outGithub(t *testing.T) {
 
 			var w strings.Builder
 			h := outGithub(&w)
+
 			err := h(tc.ref)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if diff := cmp.Diff(tc.expected, w.String()); diff != "" {
 				t.Errorf("unexpected output (-want, +got): \n%s", diff)
 			}
@@ -418,14 +443,17 @@ func Test_outJSON(t *testing.T) {
 
 			var w bytes.Buffer
 			h := outJSON(&w)
+
 			err := h(tc.ref)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if tc.expected == nil {
 				if diff := cmp.Diff("", w.String()); diff != "" {
 					t.Errorf("unexpected output (-want, +got): \n%s", diff)
 				}
+
 				return
 			}
 
@@ -433,6 +461,7 @@ func Test_outJSON(t *testing.T) {
 			if err := json.Unmarshal(w.Bytes(), &out); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if diff := cmp.Diff(tc.expected, out); diff != "" {
 				t.Errorf("unexpected output (-want, +got): \n%s", diff)
 			}
@@ -670,6 +699,7 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 			if diff := cmp.Diff(tc.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Errorf("unexpected error (-want, +got): \n%s", diff)
 			}
+
 			if err == nil {
 				// NOTE: Do not consider the ErrorFunc for comparison.
 				if diff := cmp.Diff(tc.expected, o, cmpopts.IgnoreFields(walker.Options{}, "TODOFunc", "ErrorFunc")); diff != "" {

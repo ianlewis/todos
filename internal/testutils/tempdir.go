@@ -45,12 +45,14 @@ func NewTempDir(files []*File) *TempDir {
 	d := &TempDir{}
 
 	d.dir = Must(os.MkdirTemp("", "testutils"))
+
 	cleanup, cancel := WithCancel(func() {
 		d.Cleanup()
 	}, nil)
 	defer cleanup()
 
 	const readWriteExec = os.FileMode(0o700)
+
 	for _, file := range files {
 		fullPath := filepath.Join(d.dir, file.Path)
 		Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
@@ -58,6 +60,7 @@ func NewTempDir(files []*File) *TempDir {
 	}
 
 	cancel()
+
 	return d
 }
 

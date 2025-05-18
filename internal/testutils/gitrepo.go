@@ -41,6 +41,7 @@ func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
 	w := Must(testRepo.repo.Worktree())
 
 	const readWriteExec = os.FileMode(0o700)
+
 	if len(files) > 0 {
 		for _, f := range files {
 			fullPath := filepath.Join(testRepo.dir, f.Path)

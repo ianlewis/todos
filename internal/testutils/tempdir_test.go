@@ -114,6 +114,7 @@ func TestTempDir(t *testing.T) {
 
 			tempDir := NewTempDir(tc.files)
 			baseDir := tempDir.Dir()
+
 			defer func() {
 				_ = os.RemoveAll(baseDir)
 			}()
@@ -123,12 +124,14 @@ func TestTempDir(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if !dirStat.IsDir() {
 				t.Fatalf("baseDir %q not a directory", baseDir)
 			}
 
 			for _, f := range tc.files {
 				fullPath := filepath.Join(baseDir, f.Path)
+
 				info, err := os.Stat(fullPath)
 				if err != nil {
 					t.Fatalf("os.Stat: %v", err)
@@ -154,6 +157,7 @@ func TestTempDir(t *testing.T) {
 			}
 
 			tempDir.Cleanup()
+
 			if _, err := os.Stat(baseDir); !os.IsNotExist(err) {
 				t.Fatalf("expected not exist error: %v", err)
 			}

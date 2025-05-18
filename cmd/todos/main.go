@@ -34,6 +34,7 @@ func main() {
 		// called halting the program before we get here. However, Run could
 		// return errors in some situations.
 		_ = utils.Must(fmt.Fprintf(app.ErrWriter, "%s: %v\n", app.Name, err))
+
 		cli.OsExiter(ErrUnknown.ExitCode())
 	}
 }

@@ -122,6 +122,7 @@ func New(opts *Options) *TODOWalker {
 			},
 		}
 	}
+
 	return &TODOWalker{
 		options:        opts,
 		ignorePatterns: make(map[string][]gitignore.Pattern),
@@ -149,11 +150,13 @@ type TODOWalker struct {
 func (w *TODOWalker) Walk() bool {
 	for _, path := range w.options.Paths {
 		var err error
+
 		w.path, err = filepath.EvalSymlinks(path)
 		if err != nil {
 			if herr := w.handleErr(path, err); herr != nil {
 				break
 			}
+
 			continue
 		}
 
@@ -162,6 +165,7 @@ func (w *TODOWalker) Walk() bool {
 			if herr := w.handleErr(path, err); herr != nil {
 				break
 			}
+
 			continue
 		}
 		defer f.Close()
@@ -171,6 +175,7 @@ func (w *TODOWalker) Walk() bool {
 			if herr := w.handleErr(path, err); herr != nil {
 				break
 			}
+
 			continue
 		}
 
@@ -210,29 +215,34 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
+
 		return nil
 	}
 
-	f, err := os.Open(fullPath)
+	file, err := os.Open(fullPath)
 	if err != nil {
 		if herr := w.handleErr(path, err); herr != nil {
 			return herr
 		}
+
 		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
+
 		return nil
 	}
-	defer f.Close()
+	defer file.Close()
 
-	info, err := f.Stat()
+	info, err := file.Stat()
 	if err != nil {
 		if herr := w.handleErr(path, err); herr != nil {
 			return herr
 		}
+
 		if dirEntry.IsDir() {
 			return fs.SkipDir
 		}
+
 		return nil
 	}
 
@@ -240,7 +250,8 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 	if info.IsDir() {
 		return w.processDir(path, fullPath)
 	}
-	return w.processFile(path, fullPath, f)
+
+	return w.processFile(path, fullPath, file)
 }
 
 func (w *TODOWalker) processDir(path, fullPath string) error {
@@ -261,6 +272,7 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		if herr := w.handleErr(path, err); herr != nil {
 			return herr
 		}
+
 		return fs.SkipDir
 	}
 
@@ -336,8 +348,10 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 			//nolint:wrapcheck // error is for an explicitly specified file.
 			return err
 		}
+
 		return nil
 	}
+
 	if err != nil {
 		if herr := w.handleErr(file.Name(), err); herr != nil {
 			return herr
@@ -346,7 +360,9 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 
 	// Cache these values for each file for performance reasons.
 	var repo *git.Repository
+
 	var br *git.BlameResult
+
 	todoScanner := todos.NewTODOScanner(s, w.options.Config)
 	for todoScanner.Scan() {
 		todo := todoScanner.Next()
@@ -354,12 +370,14 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 		// Check the label globs to see if any match.
 		if len(w.options.LabelGlobs) > 0 {
 			labelMatch := false
+
 			for _, g := range w.options.LabelGlobs {
 				if g.Match(todo.Label) {
 					labelMatch = true
 					break
 				}
 			}
+
 			if !labelMatch {
 				continue
 			}
@@ -367,6 +385,7 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 
 		if w.options.TODOFunc != nil {
 			var gitUser *GitUser
+
 			repo, br, gitUser, err = w.gitUser(file.Name(), repo, br, todo.Line)
 			if err != nil {
 				if herr := w.handleErr(file.Name(), err); herr != nil {
@@ -383,6 +402,7 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 			}
 		}
 	}
+
 	if err := todoScanner.Err(); err != nil {
 		if herr := w.handleErr(file.Name(), err); herr != nil {
 			return herr
@@ -405,16 +425,19 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
 	if err != nil {
 		return nil, "", fmt.Errorf("%w: stat %q: %w", errGit, path, err)
 	}
+
 	if !fi.IsDir() {
 		path = filepath.Dir(path)
 	}
 
 	for {
 		gitPath := filepath.Join(path, ".git")
+
 		_, err = os.Stat(gitPath)
 		if err == nil {
 			break
 		}
+
 		if !os.IsNotExist(err) {
 			return nil, "", fmt.Errorf("%w: stat %q: %w", errGit, gitPath, err)
 		}
@@ -456,6 +479,7 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 	}
 
 	hash := ref.Hash()
+
 	c, err := r.CommitObject(hash)
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
@@ -469,8 +493,10 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 			//nolint:nilnil // nil, nil is valid to match the signature of git.Blame.
 			return nil, nil
 		}
+
 		return nil, fmt.Errorf("%w: getting blame result for commit %s at path %q: %w", errGit, hash, path, err)
 	}
+
 	return br, nil
 }
 
@@ -486,6 +512,7 @@ func (w *TODOWalker) gitUser(
 
 	// Attempt to fin the repo.
 	var repoRoot string
+
 	var err error
 	if repo == nil {
 		repo, repoRoot, err = w.gitRepo(path)
@@ -515,7 +542,9 @@ func (w *TODOWalker) gitUser(
 			fmt.Errorf("%w: invalid blame line # for file %q: %d",
 				errGit, blameResult.Path, lineNo)
 	}
+
 	blameLine := blameResult.Lines[lineNo-1]
+
 	return repo, blameResult, &GitUser{
 		Name:  blameLine.AuthorName,
 		Email: blameLine.Author,
@@ -525,6 +554,7 @@ func (w *TODOWalker) gitUser(
 // ignorePath returns true if the path matches ignore files.
 func (w *TODOWalker) ignorePath(path string, isDir bool) bool {
 	var include, exclude bool
+
 	patterns := w.getIgnorePatterns(path)
 	for _, p := range patterns {
 		switch m := p.Match(pathSplit(path), isDir); m {
@@ -545,6 +575,7 @@ func (w *TODOWalker) ignorePath(path string, isDir bool) bool {
 // getIgnorePatterns returns the ignore patterns that apply to the file at path.
 func (w *TODOWalker) getIgnorePatterns(path string) []gitignore.Pattern {
 	dirPath := filepath.Dir(path)
+
 	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, dirPath))
 	if err != nil {
 		if herr := w.handleErr(path, err); herr != nil {
@@ -573,6 +604,7 @@ func (w *TODOWalker) getIgnorePatterns(path string) []gitignore.Pattern {
 					return nil
 				}
 			}
+
 			continue
 		}
 		defer f.Close()
@@ -587,9 +619,11 @@ func (w *TODOWalker) getIgnorePatterns(path string) []gitignore.Pattern {
 				if dirPath != "." {
 					domain = pathSplit(dirPath)
 				}
+
 				patterns = append(patterns, gitignore.ParsePattern(t, domain))
 			}
 		}
+
 		if err := s.Err(); err != nil {
 			if herr := w.handleErr(path, err); herr != nil {
 				return nil
@@ -613,10 +647,12 @@ func (w *TODOWalker) handleErr(prefix string, err error) error {
 		if prefix != "" {
 			err = fmt.Errorf("%s: %w", prefix, err)
 		}
+
 		if herr := w.options.ErrorFunc(err); herr != nil {
 			return herr
 		}
 	}
+
 	return nil
 }
 
@@ -631,10 +667,13 @@ func pathSplit(path string) []string {
 	if dir == path {
 		return nil
 	}
+
 	if dir == "" {
 		return []string{file}
 	}
+
 	parts := pathSplit(filepath.Clean(dir))
 	parts = append(parts, file)
+
 	return parts
 }

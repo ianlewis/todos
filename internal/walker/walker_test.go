@@ -1296,6 +1296,7 @@ func init() {
 		if tc.opts != nil {
 			opts = *tc.opts
 		}
+
 		opts.Blame = true
 
 		var expected []*TODORef
@@ -1339,6 +1340,7 @@ func (f *fixture) cleanup() {
 
 func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) {
 	dir := testutils.NewTempDir(files)
+
 	cleanup, cancel := testutils.WithCancel(func() {
 		dir.Cleanup()
 	}, nil)
@@ -1360,22 +1362,27 @@ func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) 
 	todoFunc := opts.TODOFunc
 	opts.TODOFunc = func(r *TODORef) error {
 		f.out = append(f.out, r)
+
 		if todoFunc != nil {
 			return todoFunc(r)
 		}
+
 		return nil
 	}
 
 	errFunc := opts.ErrorFunc
 	opts.ErrorFunc = func(err error) error {
 		f.err = append(f.err, err)
+
 		if errFunc != nil {
 			return errFunc(err)
 		}
+
 		return nil
 	}
 
 	cancel()
+
 	return f, New(opts)
 }
 
@@ -1414,6 +1421,7 @@ func newDirRepoFixture(
 	tmpDir := testutils.NewTempDir(dirFiles)
 
 	repo := testutils.NewTestRepo(filepath.Join(tmpDir.Dir(), repoSubPath), author, email, repoFiles)
+
 	cleanup, cancel := testutils.WithCancel(func() {
 		tmpDir.Cleanup()
 	}, nil)
@@ -1427,7 +1435,7 @@ func newDirRepoFixture(
 		opts.Paths = []string{"."}
 	}
 
-	f := &repoFixture{
+	fixture := &repoFixture{
 		tmpDir: tmpDir,
 		repo:   repo,
 		wd:     wd,
@@ -1435,26 +1443,31 @@ func newDirRepoFixture(
 
 	todoFunc := opts.TODOFunc
 	opts.TODOFunc = func(r *TODORef) error {
-		f.out = append(f.out, r)
+		fixture.out = append(fixture.out, r)
+
 		if todoFunc != nil {
 			return todoFunc(r)
 		}
+
 		return nil
 	}
 
 	errFunc := opts.ErrorFunc
 	opts.ErrorFunc = func(err error) error {
-		f.err = append(f.err, err)
+		fixture.err = append(fixture.err, err)
+
 		if errFunc != nil {
 			return errFunc(err)
 		}
+
 		return nil
 	}
 
 	opts.Blame = true
 
 	cancel()
-	return f, New(opts)
+
+	return fixture, New(opts)
 }
 
 //nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
@@ -1544,6 +1557,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 	if got, want := len(f.err), 1; got != want {
 		t.Errorf("unexpected # of errors, got: %v, want: %v\n%v", got, want, f.err)
 	}
+
 	if got, want := f.err[0], os.ErrNotExist; !errors.Is(got, os.ErrNotExist) {
 		t.Errorf("unexpected error, got: %v, want: %v", got, want)
 	}
@@ -1569,6 +1583,7 @@ func TestTODOWalker_DefaultOptions(t *testing.T) {
 	t.Parallel()
 
 	walker := New(nil)
+
 	got, want := walker.options.Config.Types, []string{"TODO"}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("unexpected config (-want +got):\n%s", diff)

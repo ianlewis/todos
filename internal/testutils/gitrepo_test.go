@@ -29,6 +29,7 @@ func checkDir(t *testing.T, path string) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+
 	if !dirStat.IsDir() {
 		t.Fatalf("baseDir %q not a directory", path)
 	}
@@ -155,6 +156,7 @@ func TestTempRepo(t *testing.T) {
 
 			for _, f := range tc.files {
 				fullPath := filepath.Join(baseDir, f.Path)
+
 				info, err := os.Stat(fullPath)
 				if err != nil {
 					t.Fatalf("os.Stat: %v", err)

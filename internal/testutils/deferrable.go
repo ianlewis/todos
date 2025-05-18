@@ -23,11 +23,13 @@ type CancelFunc func()
 // WithCancel returns a deferrable function that can be cancelled.
 func WithCancel(d DeferFunc, f func()) (DeferFunc, CancelFunc) {
 	var c bool
+
 	newFunc := func() {
 		if !c {
 			if f != nil {
 				f()
 			}
+
 			if d != nil {
 				d()
 			}
@@ -36,5 +38,6 @@ func WithCancel(d DeferFunc, f func()) (DeferFunc, CancelFunc) {
 	cancel := func() {
 		c = true
 	}
+
 	return newFunc, cancel
 }

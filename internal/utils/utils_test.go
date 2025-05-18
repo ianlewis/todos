@@ -42,9 +42,11 @@ func TestCheck(t *testing.T) {
 			r := recover()
 			got, ok := r.(error)
 			want := errTest
+
 			if !ok {
 				t.Errorf("expected panic, got: %v, want: %v", r, want)
 			}
+
 			if !errors.Is(got, want) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
@@ -64,6 +66,7 @@ func TestMust(t *testing.T) {
 				t.Errorf("unexpected panic: %v", r)
 			}
 		}()
+
 		if got, want := Must("test", nil), "test"; got != want {
 			t.Errorf("unexpected return value, got: %v, want: %v", got, want)
 		}
@@ -76,9 +79,11 @@ func TestMust(t *testing.T) {
 			r := recover()
 			got, ok := r.(error)
 			want := errTest
+
 			if !ok {
 				t.Errorf("expected panic, got: %v, want: %v", r, want)
 			}
+
 			if !errors.Is(got, want) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
