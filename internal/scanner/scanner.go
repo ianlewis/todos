@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package scanner implements a generic comment scanner for programming
+// languages based on a configuration that describes the language.
 package scanner
 
 import (
@@ -41,7 +43,7 @@ var (
 )
 
 var (
-	// ErrUnsupportedCharset indicates that the detected language is not
+	// ErrUnsupportedLanguage indicates that the detected language is not
 	// supported.
 	ErrUnsupportedLanguage = errors.New("unsupported language")
 
@@ -49,12 +51,19 @@ var (
 	ErrBinaryFile = errors.New("binary file")
 )
 
+// StringConfig is a configuration for a string literal.
 type StringConfig struct {
-	Start      []rune
-	End        []rune
+	// Start is the starting sequence for the string literal.
+	Start []rune
+
+	// End is the ending sequence for the string literal.
+	End []rune
+
+	// EscapeFunc is a function that checks for escaped string characters.
 	EscapeFunc EscapeFunc
 }
 
+// LineCommentConfig is a configuration for a line comment.
 type LineCommentConfig struct {
 	// Start is the starting sequence for the line comment.
 	Start []rune
@@ -64,6 +73,7 @@ type LineCommentConfig struct {
 	AtLineStart bool
 }
 
+// MultilineCommentConfig is a configuration for a multi-line comment.
 type MultilineCommentConfig struct {
 	// Start is the starting sequence for the multiline comment.
 	Start []rune

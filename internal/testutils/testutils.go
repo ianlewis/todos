@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package testutils implements utilities used for automated testing.
 package testutils
 
 // Check checks the error and panics if not nil.

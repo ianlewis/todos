@@ -14,6 +14,10 @@
 
 package scanner
 
+import (
+	"slices"
+)
+
 // EscapeFunc is function that checks for escaped string characters.
 type EscapeFunc func(s *CommentScanner, stringEnd []rune) ([]rune, error)
 
@@ -39,7 +43,7 @@ func CharEscape(c rune) EscapeFunc {
 
 // DoubleEscape checks for a repeated string ending character in the string.
 func DoubleEscape(s *CommentScanner, stringEnd []rune) ([]rune, error) {
-	b := append([]rune{}, stringEnd...)
+	b := slices.Clone(stringEnd)
 	b = append(b, stringEnd...)
 	eq, err := s.peekEqual(b)
 	if err != nil {

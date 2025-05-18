@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package utils implements some generic utility functions.
 package utils
 
 // Check checks the error and panics if not nil.
