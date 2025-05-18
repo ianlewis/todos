@@ -118,6 +118,7 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	if charset == "detect" {
 		// Detect the character set.
 		det := chardet.NewTextDetector()
+
 		result, err := det.DetectBest(rawContents)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", errDetectCharset, err)
@@ -140,6 +141,7 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
 	}
+
 	if e == nil {
 		return nil, fmt.Errorf("%w: %s: unsupported character set", errDecodeCharset, charset)
 	}
@@ -220,6 +222,7 @@ func (s *CommentScanner) Err() error {
 	if errors.Is(s.err, io.EOF) {
 		return nil
 	}
+
 	return s.err
 }
 
@@ -230,6 +233,7 @@ func (s *CommentScanner) Scan() bool {
 		if s.err != nil {
 			return false
 		}
+
 		switch st := s.state.(type) {
 		case *stateCode:
 			s.state, s.err = s.processCode(st)
@@ -242,6 +246,7 @@ func (s *CommentScanner) Scan() bool {
 			}
 		case *stateLineCommentOrString:
 			var hasComment bool
+
 			hasComment, s.state, s.err = s.processLineCommentOrString(st)
 			if hasComment {
 				return true
@@ -263,6 +268,7 @@ func (s *CommentScanner) processCode(state *stateCode) (state, error) {
 		if err != nil {
 			return state, err
 		}
+
 		lcLen := 0
 		if m != nil {
 			lcLen = len(m.Start)
@@ -272,6 +278,7 @@ func (s *CommentScanner) processCode(state *stateCode) (state, error) {
 		if err != nil {
 			return state, err
 		}
+
 		mmLen := 0
 		if mm != nil {
 			mmLen = len(mm.Start)
@@ -281,6 +288,7 @@ func (s *CommentScanner) processCode(state *stateCode) (state, error) {
 		if err != nil {
 			return state, err
 		}
+
 		strsLen := 0
 		if strs != nil {
 			strsLen = len(strs.Start)
@@ -295,6 +303,7 @@ func (s *CommentScanner) processCode(state *stateCode) (state, error) {
 			if _, err := s.nextRune(); err != nil {
 				return state, err
 			}
+
 			continue
 		}
 
@@ -356,10 +365,12 @@ func (s *CommentScanner) lineMatch() (int, *LineCommentConfig, error) {
 		if err != nil {
 			return 0, nil, err
 		}
+
 		if eq && (!m.AtLineStart || s.atLineStart) {
 			return i, &m, nil
 		}
 	}
+
 	return 0, nil, nil
 }
 
@@ -374,6 +385,7 @@ func (s *CommentScanner) multilineMatch() (int, *MultilineCommentConfig, error) 
 			return 0, nil, err
 		}
 	}
+
 	return 0, nil, nil
 }
 
@@ -383,10 +395,12 @@ func (s *CommentScanner) stringMatch() (int, *StringConfig, error) {
 		if err != nil {
 			return i, &strs, err
 		}
+
 		if eq {
 			return i, &strs, nil
 		}
 	}
+
 	return 0, nil, nil
 }
 
@@ -404,6 +418,7 @@ func (s *CommentScanner) processString(state *stateString) (state, error) {
 		if err != nil && !errors.Is(err, io.EOF) {
 			return state, err
 		}
+
 		if len(escaped) > 0 {
 			// Skip the escaped characters.
 			if _, err := s.reader.Discard(len(escaped)); err != nil {
@@ -415,10 +430,12 @@ func (s *CommentScanner) processString(state *stateString) (state, error) {
 			if err != nil {
 				return state, fmt.Errorf("parsing string: %w", err)
 			}
+
 			if stringEnd {
 				if _, err := s.reader.Discard(len(s.config.Strings[state.index].End)); err != nil {
 					return state, fmt.Errorf("parsing string: %w", err)
 				}
+
 				return &stateCode{}, nil
 			}
 
@@ -432,11 +449,13 @@ func (s *CommentScanner) processString(state *stateString) (state, error) {
 // processLineComment processes line comments and returns the next state.
 func (s *CommentScanner) processLineComment(state *stateLineComment) (state, error) {
 	var b strings.Builder
+
 	for {
 		lineEnd, err := s.isLineEnd()
 		if err != nil {
 			return state, err
 		}
+
 		if lineEnd {
 			s.next = &Comment{
 				Text:       b.String(),
@@ -444,6 +463,7 @@ func (s *CommentScanner) processLineComment(state *stateLineComment) (state, err
 				Multiline:  false,
 				LineConfig: &s.config.LineComments[state.index],
 			}
+
 			return &stateCode{}, nil
 		}
 
@@ -471,6 +491,7 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 	var commentTxt strings.Builder
 	// Add the opening to the builder since we want it in the output if this is a comment.
 	commentTxt.WriteString(string(s.config.Strings[state.sIndex].Start))
+
 	for {
 		lineEnd, err := s.isLineEnd()
 		if err != nil {
@@ -487,6 +508,7 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 				Multiline:  false,
 				LineConfig: &s.config.LineComments[state.lcIndex],
 			}
+
 			return true, &stateCode{}, nil
 		}
 
@@ -499,6 +521,7 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 		if err != nil && !errors.Is(err, io.EOF) {
 			return false, state, err
 		}
+
 		if len(escaped) > 0 {
 			// Skip the escaped characters.
 			if _, discardErr := s.reader.Discard(len(escaped)); discardErr != nil {
@@ -510,6 +533,7 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 			if err != nil {
 				return false, state, fmt.Errorf("writing runes %q: %w", escaped, err)
 			}
+
 			continue
 		}
 
@@ -518,10 +542,12 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 		if err != nil {
 			return false, state, fmt.Errorf("parsing string: %w", err)
 		}
+
 		if stringEnd {
 			if _, discardErr := s.reader.Discard(len(s.config.Strings[state.sIndex].End)); discardErr != nil {
 				return false, state, fmt.Errorf("parsing string: %w", discardErr)
 			}
+
 			return false, &stateCode{}, nil
 		}
 
@@ -547,10 +573,12 @@ func (s *CommentScanner) processMultilineComment(state *stateMultilineComment) (
 	}
 
 	var commentTxt strings.Builder
+
 	var nestingDepth int
 
 	// Add the opening to the builder since we want it in the output.
 	commentTxt.WriteString(string(mlConfig.Start))
+
 	for {
 		if mlConfig.Nested {
 			// Look for a nested comment start.
@@ -558,13 +586,16 @@ func (s *CommentScanner) processMultilineComment(state *stateMultilineComment) (
 			if err != nil {
 				return state, err
 			}
+
 			if mlStart && (!mlConfig.AtFirstColumn || s.atFirstColumn) {
 				if _, errDiscard := s.reader.Discard(len(mlConfig.Start)); errDiscard != nil {
 					return state, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 				}
 				// Add the start to the builder.
 				commentTxt.WriteString(string(mlConfig.Start))
+
 				nestingDepth++
+
 				continue
 			}
 		}
@@ -574,12 +605,14 @@ func (s *CommentScanner) processMultilineComment(state *stateMultilineComment) (
 		if err != nil {
 			return state, err
 		}
+
 		if mlEnd && (!mlConfig.AtFirstColumn || s.atFirstColumn) {
 			if _, errDiscard := s.reader.Discard(len(mlConfig.End)); errDiscard != nil {
 				return state, fmt.Errorf("parsing multi-line comment: %w", errDiscard)
 			}
 			// Add the ending to the builder.
 			commentTxt.WriteString(string(mlConfig.End))
+
 			if nestingDepth == 0 {
 				s.next = &Comment{
 					Text:            commentTxt.String(),
@@ -587,8 +620,10 @@ func (s *CommentScanner) processMultilineComment(state *stateMultilineComment) (
 					Multiline:       true,
 					MultilineConfig: &s.config.MultilineComments[state.index],
 				}
+
 				return &stateCode{}, nil
 			}
+
 			if mlConfig.Nested {
 				nestingDepth--
 			}
@@ -611,6 +646,7 @@ func (s *CommentScanner) nextRune() (rune, error) {
 	if err != nil {
 		return rn, fmt.Errorf("reading rune: %w", err)
 	}
+
 	if rn == '\n' {
 		s.line++
 		s.atFirstColumn = true
@@ -621,6 +657,7 @@ func (s *CommentScanner) nextRune() (rune, error) {
 			s.atLineStart = false
 		}
 	}
+
 	return rn, nil
 }
 
@@ -631,9 +668,11 @@ func (s *CommentScanner) isLineEnd() (bool, error) {
 		// as the end of a line.
 		return true, nil
 	}
+
 	if err != nil {
 		return false, err
 	}
+
 	if nixNL {
 		return true, nil
 	}
@@ -644,6 +683,7 @@ func (s *CommentScanner) isLineEnd() (bool, error) {
 		// be processed.
 		return false, nil
 	}
+
 	return winNL, err
 }
 
@@ -652,5 +692,6 @@ func (s *CommentScanner) peekEqual(val []rune) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("reading rune: %w", err)
 	}
+
 	return slices.Equal(r, val), nil
 }

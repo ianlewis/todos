@@ -67,9 +67,11 @@ func Unwrap(err error) []error {
 	if unwrapped != nil {
 		return []error{unwrapped}
 	}
+
 	if err, ok := err.(joinedError); ok {
 		return err.Unwrap()
 	}
+
 	return nil
 }
 
@@ -80,6 +82,7 @@ func traverseErr(err error, cb func(err error)) {
 	}
 
 	cb(err)
+
 	for _, err := range Unwrap(err) {
 		traverseErr(err, cb)
 	}
@@ -144,6 +147,7 @@ func ExitErrHandler(c *cli.Context, err error) {
 	})
 
 	_ = utils.Must(fmt.Fprintf(c.App.ErrWriter, "%s: %v\n", c.App.Name, err))
+
 	cli.OsExiter(ErrUnknown.ExitCode())
 }
 
@@ -152,5 +156,6 @@ func OnUsageError(_ *cli.Context, err error, _ bool) error {
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrFlagParse, err)
 	}
+
 	return nil
 }

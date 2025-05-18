@@ -160,8 +160,7 @@ linters:
     - whitespace # Whitespace is a linter that checks for unnecessary newlines at the start and end of functions, if, for, etc.
     - wrapcheck # Checks that errors returned from external packages are wrapped.
     # NOTE: wsl isn't bad necessarily, but it can be very noisy.
-    # TODO(#1678): Enable wsl linter.
-    # - wsl # Add or remove empty lines.
+    - wsl # Add or remove empty lines.
     - zerologlint # Detects the wrong usage of zerolog that a user forgets to dispatch with Send or Msg.
 
     # Duplicate feature in another linter. Replaced by usetesting.

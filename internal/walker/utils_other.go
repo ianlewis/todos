@@ -33,5 +33,6 @@ func isHidden(path string) (bool, error) {
 	if base == "." || base == ".." {
 		return false, nil
 	}
+
 	return strings.HasPrefix(base, "."), nil
 }

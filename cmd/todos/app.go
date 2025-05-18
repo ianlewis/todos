@@ -59,6 +59,7 @@ func init() {
 func newTODOsApp() *cli.App {
 	defaultOutput := "default"
 	gha := os.Getenv("GITHUB_ACTIONS")
+
 	if gha == "true" {
 		defaultOutput = "github"
 	}
@@ -212,14 +213,17 @@ func outCLI(w io.Writer) walker.TODOHandler {
 		if o == nil {
 			return nil
 		}
+
 		var blameInfo string
 		if o.GitUser != nil {
 			blameInfo = color.GreenString(o.GitUser.Name)
 			if o.GitUser.Email != "" {
 				blameInfo += color.GreenString(" <" + o.GitUser.Email + ">")
 			}
+
 			blameInfo += color.CyanString(":")
 		}
+
 		_ = utils.Must(fmt.Fprintf(w, "%s%s%s%s%s%s\n",
 			color.MagentaString(o.FileName),
 			color.CyanString(":"),
@@ -228,6 +232,7 @@ func outCLI(w io.Writer) walker.TODOHandler {
 			blameInfo,
 			o.TODO.Text,
 		))
+
 		return nil
 	}
 }
@@ -237,14 +242,18 @@ func outGithub(w io.Writer) walker.TODOHandler {
 		if o == nil {
 			return nil
 		}
+
 		typ := "notice"
+
 		switch o.TODO.Type {
 		case "TODO", "HACK", "COMBAK":
 			typ = "warning"
 		case "FIXME", "XXX", "BUG":
 			typ = "error"
 		}
+
 		_ = utils.Must(fmt.Fprintf(w, "::%s file=%s,line=%d::%s\n", typ, o.FileName, o.TODO.Line, o.TODO.Text))
+
 		return nil
 	}
 }
@@ -333,14 +342,17 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 		if charset == "GB-18030" {
 			charset = "GB18030"
 		}
+
 		e, err := ianaindex.IANA.Encoding(charset)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %s: unsupported character set: %w", ErrFlagParse, charset, err)
 		}
+
 		if e == nil {
 			return nil, fmt.Errorf("%w: %s: unsupported character set", ErrFlagParse, charset)
 		}
 	}
+
 	opts.Charset = charset
 
 	for _, gs := range cliCtx.StringSlice("exclude") {
@@ -348,6 +360,7 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%w: exclude: %w", ErrFlagParse, err)
 		}
+
 		opts.ExcludeGlobs = append(opts.ExcludeGlobs, g)
 	}
 
@@ -356,6 +369,7 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%w: exclude-dir: %w", ErrFlagParse, err)
 		}
+
 		opts.ExcludeDirGlobs = append(opts.ExcludeDirGlobs, g)
 	}
 
@@ -375,11 +389,13 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%w: label: %w", ErrFlagParse, err)
 		}
+
 		opts.LabelGlobs = append(opts.LabelGlobs, g)
 	}
 
 	outType := cliCtx.String("output")
 	outFunc, ok := outTypes[outType]
+
 	if !ok {
 		return nil, fmt.Errorf("%w: invalid output type: %v", ErrFlagParse, outType)
 	}

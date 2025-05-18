@@ -3128,12 +3128,14 @@ func TestCommentScanner(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
 			s := New(strings.NewReader(tc.src), LanguagesConfig[tc.config])
 
 			var comments []*Comment
 			for s.Scan() {
 				comments = append(comments, s.Next())
 			}
+
 			if err := s.Err(); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -3519,10 +3521,12 @@ func TestFromFile(t *testing.T) {
 
 			var w io.Writer
 			w = f
+
 			if testCase.charset != "" {
 				e := testutils.Must(ianaindex.IANA.Encoding(testCase.charset))
 				w = e.NewEncoder().Writer(f)
 			}
+
 			_ = testutils.Must(w.Write(testCase.src))
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
@@ -3531,6 +3535,7 @@ func TestFromFile(t *testing.T) {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 				}
+
 				return
 			} else if want != nil {
 				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
@@ -3540,6 +3545,7 @@ func TestFromFile(t *testing.T) {
 			if s != nil {
 				config = s.Config()
 			}
+
 			if got, want := config, LanguagesConfig[testCase.expectedConfig]; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
@@ -3557,6 +3563,7 @@ func TestFromBytes(t *testing.T) {
 			t.Parallel()
 
 			text := tc.src
+
 			if tc.charset != "" {
 				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
 				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
@@ -3567,6 +3574,7 @@ func TestFromBytes(t *testing.T) {
 				if !errors.Is(got, want) {
 					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
 				}
+
 				return
 			} else if want != nil {
 				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
@@ -3576,6 +3584,7 @@ func TestFromBytes(t *testing.T) {
 			if s != nil {
 				config = s.Config()
 			}
+
 			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
 				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
 			}
@@ -3783,9 +3792,11 @@ func TestOverlappingConfig(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			s := New(strings.NewReader(tc.src), tc.config)
 
 			var comments []expectedComment
+
 			for s.Scan() {
 				c := s.Next()
 				comments = append(comments, expectedComment{
@@ -3793,6 +3804,7 @@ func TestOverlappingConfig(t *testing.T) {
 					Line: c.Line,
 				})
 			}
+
 			if err := s.Err(); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

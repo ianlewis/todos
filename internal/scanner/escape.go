@@ -30,13 +30,16 @@ func NoEscape(_ *CommentScanner, _ []rune) ([]rune, error) {
 func CharEscape(c rune) EscapeFunc {
 	return func(s *CommentScanner, stringEnd []rune) ([]rune, error) {
 		b := append([]rune{c}, stringEnd...)
+
 		eq, err := s.peekEqual(b)
 		if err != nil {
 			return nil, err
 		}
+
 		if eq {
 			return b, nil
 		}
+
 		return nil, nil
 	}
 }
@@ -45,12 +48,15 @@ func CharEscape(c rune) EscapeFunc {
 func DoubleEscape(s *CommentScanner, stringEnd []rune) ([]rune, error) {
 	b := slices.Clone(stringEnd)
 	b = append(b, stringEnd...)
+
 	eq, err := s.peekEqual(b)
 	if err != nil {
 		return nil, err
 	}
+
 	if eq {
 		return b, nil
 	}
+
 	return nil, nil
 }

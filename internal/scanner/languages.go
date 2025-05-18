@@ -22,11 +22,15 @@ func concat[T any](slices ...[]T) []T {
 	for _, s := range slices {
 		tLen += len(s)
 	}
+
 	newS := make([]T, tLen)
+
 	var i int
+
 	for _, s := range slices {
 		i += copy(newS[i:], s)
 	}
+
 	return newS
 }
 

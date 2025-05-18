@@ -44,10 +44,13 @@ func IsVendor(path string) bool {
 func init() {
 	// TODO(#1545): Generate Go code rather than loading YAML at runtime.
 	var rawRegex []string
+
 	utils.Check(yaml.Unmarshal(vendorRaw, &rawRegex))
 
 	var startPrefix []string
+
 	var slashPrefix []string
+
 	var noPrefix []string
 
 	for _, s := range rawRegex {
