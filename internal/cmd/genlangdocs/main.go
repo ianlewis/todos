@@ -68,7 +68,7 @@ func main() {
 	fmt.Printf("%d languages are currently supported.\n", len(scanner.LanguagesConfig))
 	fmt.Println("")
 
-	fmt.Println("| File type | Extension | Supported comments |")
+	fmt.Println("| Language | Files | Supported comments |")
 	fmt.Println("| -- | -- | -- |")
 
 	for _, l := range langs {
@@ -81,11 +81,15 @@ func main() {
 			supported = append(supported, s)
 		}
 
-		var extensions []string
-		for _, ext := range l.info.Extensions {
-			extensions = append(extensions, fmt.Sprintf("`%s`", ext))
+		var names []string
+		for _, name := range l.info.Filenames {
+			names = append(names, fmt.Sprintf("`%s`", name))
 		}
 
-		fmt.Printf("| %s | %s | %s |\n", l.lang, strings.Join(extensions, ", "), strings.Join(supported, ", "))
+		for _, ext := range l.info.Extensions {
+			names = append(names, fmt.Sprintf("`*%s`", ext))
+		}
+
+		fmt.Printf("| %s | %s | %s |\n", l.lang, strings.Join(names, ", "), strings.Join(supported, ", "))
 	}
 }
