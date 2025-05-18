@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package vendoring implements methods for checking if a path is vendored code.
 package vendoring
 
 import (

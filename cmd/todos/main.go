@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Command todos parses programming language files and prints references to any
+// "TODO" comments it finds. It can act as a linter to prevent leaving work
+// undone unintentially and can output in various formats.
 package main
 
 import (

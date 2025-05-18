@@ -134,8 +134,7 @@ linters:
     - protogetter # Reports direct reads from proto message fields when getters should be used.
     - reassign # Checks that package variables are not reassigned.
     - recvcheck # Checks for receiver type consistency.
-    # TODO(#1678): Enable revive linter.
-    # - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint.
+    - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint.
     - rowserrcheck # Checks whether Rows.Err of rows is checked successfully.
     - sloglint # Ensure consistent code style when using log/slog.
     - spancheck # Checks for mistakes with OpenTelemetry/Census spans.

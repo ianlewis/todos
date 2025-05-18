@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package walker implements a file and directory walker that scans programming
+// language files for TODO comments. It can handle scanning single files or
+// walking a directory tree.
 package walker
 
 import (

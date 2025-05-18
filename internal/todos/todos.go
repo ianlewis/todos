@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package todos implements a TODO scanner which scans programming language
+// files for TODO comments. It is designed to be used with the scanner package.
 package todos
 
 import (
