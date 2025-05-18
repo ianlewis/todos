@@ -156,7 +156,7 @@ func Test_TODOsApp_Walk_no_todos(t *testing.T) {
 	}
 }
 
-//nolint:paralleltest // modifies cli.OsExiter
+//nolint:paralleltest // modifies cli.OsExiter and cli.ErrWriter.
 func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	oldExiter := cli.OsExiter
 	var exitCode *int
@@ -174,8 +174,10 @@ func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	app.ErrWriter = &b
 
 	oldErrWriter := cli.ErrWriter
+	//nolint:reassign // Required for testing.
 	cli.ErrWriter = &b
 	defer func() {
+		//nolint:reassign // Required for testing.
 		cli.ErrWriter = oldErrWriter
 	}()
 
@@ -194,7 +196,7 @@ func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	}
 }
 
-//nolint:paralleltest // modifies cli.OsExiter
+//nolint:paralleltest // modifies cli.OsExiter and cli.ErrWriter
 func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	oldExiter := cli.OsExiter
 	var exitCode *int
@@ -212,8 +214,10 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	app.ErrWriter = &b
 
 	oldErrWriter := cli.ErrWriter
+	//nolint:reassign // Required for testing.
 	cli.ErrWriter = &b
 	defer func() {
+		//nolint:reassign // Required for testing.
 		cli.ErrWriter = oldErrWriter
 	}()
 
