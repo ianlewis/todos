@@ -92,7 +92,7 @@ jobs:
       id-token: write # To sign.
       contents: write # To upload release assets.
       actions: read # To read workflow path.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.1.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
     with:
       go-version-file: "go.mod"
       config-file: ".slsa-goreleaser/todos-${{matrix.os}}-${{matrix.arch}}.yml"
@@ -189,7 +189,7 @@ jobs:
           name: todos-windows-arm64.exe.intoto.jsonl
 
       - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+        uses: slsa-framework/slsa-verifier/actions/installer@6657aada084353c65e5dde35394b1a010289fab0 # v2.7.0
 
       - name: Verify artifact provenance
         env:
@@ -283,7 +283,7 @@ jobs:
           name: todos-linux-arm64.intoto.jsonl
 
       - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+        uses: slsa-framework/slsa-verifier/actions/installer@6657aada084353c65e5dde35394b1a010289fab0 # v2.7.0
 
       - name: Verify artifact provenance
         env:
@@ -351,7 +351,7 @@ jobs:
       id-token: write # for creating OIDC tokens for signing.
       packages: write # for uploading attestations.
     if: startsWith(github.ref, 'refs/tags/')
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
     with:
       image: ${{ needs.docker-build.outputs.image }}
       digest: ${{ needs.docker-build.outputs.digest }}
