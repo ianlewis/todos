@@ -41,7 +41,10 @@
   packageRules: [
     {
       matchManagers: ["github-actions"],
-      matchPackageNames: ["slsa-framework/slsa-verifier/actions/installer"],
+      matchPackageNames: [
+        "slsa-framework/slsa-github-generator",
+        "slsa-framework/slsa-verifier",
+      ],
       pinDigests: false,
     },
     {
