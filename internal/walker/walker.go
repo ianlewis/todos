@@ -209,15 +209,7 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		return w.handleErr(path, err)
 	}
 
-	fullPath, err := filepath.EvalSymlinks(filepath.Join(w.path, path))
-	if err != nil {
-		// NOTE: If the symbolic link couldn't be evaluated just skip it.
-		if dirEntry.IsDir() {
-			return fs.SkipDir
-		}
-
-		return nil
-	}
+	fullPath := filepath.Join(w.path, path)
 
 	file, err := os.Open(fullPath)
 	if err != nil {
@@ -465,6 +457,21 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting absolute path: %w", errGit, err)
+	}
+
+	// Check if the file is a symbolic link. If it is, we need to resolve it to
+	// it's target because git.Blame will not.
+	info, err := os.Lstat(absPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w: Lstat: %w", errGit, err)
+	}
+	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+		// Resolve the symbolic link to its target.
+		targetPath, evalErr := filepath.EvalSymlinks(absPath)
+		if evalErr != nil {
+			return nil, fmt.Errorf("%w: evaluating symlink: %w", evalErr, err)
+		}
+		absPath = targetPath
 	}
 
 	// Get relative path from git repo root to path

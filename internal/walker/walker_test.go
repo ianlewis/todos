@@ -34,6 +34,7 @@ type testCase struct {
 	name string
 
 	files []*testutils.File
+	links []*testutils.Symlink
 	opts  *Options
 
 	expected []*TODORef
@@ -1274,6 +1275,57 @@ var testCases = []testCase{
 		expected: nil,
 		err:      true,
 	},
+	{
+		name: "code is symlinked",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "symlink.go",
+				Target: "line_comments.go",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset: "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+			{
+				FileName: "symlink.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
 }
 
 type blameTestCase struct {
@@ -1315,6 +1367,7 @@ func init() {
 				name: tc.name,
 
 				files:    tc.files,
+				links:    tc.links,
 				opts:     &opts,
 				expected: expected,
 				err:      tc.err,
@@ -1338,8 +1391,8 @@ func (f *fixture) cleanup() {
 	f.dir.Cleanup()
 }
 
-func newFixture(files []*testutils.File, opts *Options) (*fixture, *TODOWalker) {
-	dir := testutils.NewTempDir(files)
+func newFixture(files []*testutils.File, links []*testutils.Symlink, opts *Options) (*fixture, *TODOWalker) {
+	dir := testutils.NewTempDir(files, links)
 
 	cleanup, cancel := testutils.WithCancel(func() {
 		dir.Cleanup()
@@ -1402,8 +1455,11 @@ func (f *repoFixture) cleanup() {
 // newRepoFixture creates a fixture with a temporary directory with a git
 // repository created at the root. Files are created and committed into the git
 // repository.
-func newRepoFixture(author, email string, files []*testutils.File, opts *Options) (*repoFixture, *TODOWalker) {
-	return newDirRepoFixture(author, email, ".", files, nil, opts)
+func newRepoFixture(author, email string,
+	files []*testutils.File, links []*testutils.Symlink,
+	opts *Options,
+) (*repoFixture, *TODOWalker) {
+	return newDirRepoFixture(author, email, ".", files, nil, links, nil, opts)
 }
 
 // newDirRepoFixture creates a fixture with a temporary directory and a git
@@ -1416,11 +1472,16 @@ func newRepoFixture(author, email string, files []*testutils.File, opts *Options
 func newDirRepoFixture(
 	author, email, repoSubPath string,
 	repoFiles, dirFiles []*testutils.File,
+	repoLinks, dirLinks []*testutils.Symlink,
 	opts *Options,
 ) (*repoFixture, *TODOWalker) {
-	tmpDir := testutils.NewTempDir(dirFiles)
+	tmpDir := testutils.NewTempDir(dirFiles, dirLinks)
 
-	repo := testutils.NewTestRepo(filepath.Join(tmpDir.Dir(), repoSubPath), author, email, repoFiles)
+	repo := testutils.NewTestRepo(
+		filepath.Join(tmpDir.Dir(), repoSubPath),
+		author, email,
+		repoFiles, repoLinks,
+	)
 
 	cleanup, cancel := testutils.WithCancel(func() {
 		tmpDir.Cleanup()
@@ -1476,7 +1537,7 @@ func TestTODOWalker(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			f, w := newFixture(tc.files, tc.opts)
+			f, w := newFixture(tc.files, tc.links, tc.opts)
 			defer f.cleanup()
 
 			if got, want := w.Walk(), tc.err; got != want {
@@ -1495,7 +1556,7 @@ func TestTODOWalker(t *testing.T) {
 func TestTODOWalker_git(t *testing.T) {
 	for _, tc := range blameTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			f, w := newRepoFixture(tc.author, tc.email, tc.files, tc.opts)
+			f, w := newRepoFixture(tc.author, tc.email, tc.files, tc.links, tc.opts)
 			defer f.cleanup()
 
 			if got, want := w.Walk(), tc.err; got != want {
@@ -1547,7 +1608,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		Paths:   []string{"line_comments.go", notExistsPath},
 	}
 
-	f, w := newFixture(files, opts)
+	f, w := newFixture(files, nil, opts)
 	defer f.cleanup()
 
 	if got, want := w.Walk(), true; got != want {
@@ -1617,7 +1678,7 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		},
 	}
 
-	f, w := newFixture([]*testutils.File{file}, opts)
+	f, w := newFixture([]*testutils.File{file}, nil, opts)
 	defer f.cleanup()
 
 	if got, want := w.Walk(), false; got != want {
@@ -1713,7 +1774,7 @@ func TestTODOWalker_gitSubDir(t *testing.T) {
 		},
 	}
 
-	f, w := newDirRepoFixture(author, email, repoSubPath, repoFiles, dirFiles, opts)
+	f, w := newDirRepoFixture(author, email, repoSubPath, repoFiles, dirFiles, nil, nil, opts)
 
 	if got, want := w.Walk(), false; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)

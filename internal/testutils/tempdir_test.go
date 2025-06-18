@@ -27,6 +27,7 @@ func TestTempDir(t *testing.T) {
 
 	testCases := map[string]struct {
 		files       []*File
+		links       []*Symlink
 		expectPanic bool
 	}{
 		"no files": {},
@@ -100,6 +101,21 @@ func TestTempDir(t *testing.T) {
 				},
 			},
 		},
+		"file with symlink": {
+			files: []*File{
+				{
+					Path:     "linktarget.txt",
+					Contents: []byte("foo"),
+					Mode:     0o600,
+				},
+			},
+			links: []*Symlink{
+				{
+					Path:   "link.txt",
+					Target: "linktarget.txt",
+				},
+			},
+		},
 	}
 
 	for name, tc := range testCases {
@@ -112,7 +128,7 @@ func TestTempDir(t *testing.T) {
 				}
 			}()
 
-			tempDir := NewTempDir(tc.files)
+			tempDir := NewTempDir(tc.files, tc.links)
 			baseDir := tempDir.Dir()
 
 			defer func() {
@@ -153,6 +169,19 @@ func TestTempDir(t *testing.T) {
 				got, want := b, f.Contents
 				if diff := cmp.Diff(want, got); diff != "" {
 					t.Errorf("unexpected contents: (-want, +got): %s", diff)
+				}
+			}
+
+			for _, link := range tc.links {
+				fullPath := filepath.Join(baseDir, link.Path)
+
+				info, err := os.Lstat(fullPath)
+				if err != nil {
+					t.Fatalf("os.Stat: %v", err)
+				}
+
+				if info.Mode()&os.ModeSymlink != os.ModeSymlink {
+					t.Fatalf("expected symbolic link, got: %v", info.Mode())
 				}
 			}
 
