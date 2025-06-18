@@ -87,6 +87,9 @@ type Options struct {
 	// ExcludeDirGlobs is a list of Glob that matches excluded dirs.
 	ExcludeDirGlobs []glob.Glob
 
+	// FollowSymlinks indicates whether symbolic links should be followed.
+	FollowSymlinks bool
+
 	// IgnoreFileNames is the name of files that, if present in each directory,
 	// will be read for ignore patterns.
 	IgnoreFileNames []string
@@ -151,14 +154,7 @@ func (w *TODOWalker) Walk() bool {
 	for _, path := range w.options.Paths {
 		var err error
 
-		w.path, err = filepath.EvalSymlinks(path)
-		if err != nil {
-			if herr := w.handleErr(path, err); herr != nil {
-				break
-			}
-
-			continue
-		}
+		w.path = path
 
 		f, err := os.Open(path)
 		if err != nil {
@@ -209,13 +205,10 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		return w.handleErr(path, err)
 	}
 
-	// TODO(#1756): Traverse symlinked directories.
-
-	fullPath := filepath.Join(w.path, path)
-
-	file, err := os.Open(fullPath)
-	if err != nil {
-		if herr := w.handleErr(path, err); herr != nil {
+	// Error handling. We need to make sure that we don't recurse into
+	// directories if an error occurs.
+	check := func(cErr error) error {
+		if herr := w.handleErr(path, cErr); herr != nil {
 			return herr
 		}
 
@@ -224,25 +217,54 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		}
 
 		return nil
+	}
+
+	fullPath := filepath.Join(w.path, path)
+
+	isLink, err := isSymlink(fullPath)
+	if err != nil {
+		return check(err)
+	}
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		return check(err)
 	}
 	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
-		if herr := w.handleErr(path, err); herr != nil {
-			return herr
+		return check(err)
+	}
+
+	// NOTE(github.com/ianlewis/todos/issues/40): d.IsDir sometimes returns false for some directories.
+	if info.IsDir() {
+		// fmt.Println("Walking directory:", fullPath)
+		// Make sure we should process this directory.
+		if err := w.processDir(path, fullPath); err != nil {
+			return err
 		}
 
-		if dirEntry.IsDir() {
-			return fs.SkipDir
+		// NOTE: If we are processing the "." directory then fs.WalkDir has
+		// already followed the symlink.
+		if isLink && w.options.FollowSymlinks && path != "." {
+			// If the directory is a symlink and we're following symlinks, we
+			// need to recursively call fs.WalkDir on the symlink target.
+			oldPath := w.path
+			w.path = fullPath
+			defer func() {
+				w.path = oldPath
+			}()
+			return fs.WalkDir(os.DirFS(fullPath), ".", w.walkFunc)
 		}
 
 		return nil
 	}
 
-	// NOTE(github.com/ianlewis/todos/issues/40): d.IsDir sometimes returns false for some directories.
-	if info.IsDir() {
-		return w.processDir(path, fullPath)
+	// Don't process the file if it's a symlink and we're not following
+	// symlinks.
+	if isLink && !w.options.FollowSymlinks {
+		return nil
 	}
 
 	return w.processFile(path, fullPath, file)
@@ -454,7 +476,10 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
 	return r, path, nil
 }
 
-func (w *TODOWalker) gitBlame(repo *git.Repository, repoRoot, path string) (*git.BlameResult, error) {
+func (w *TODOWalker) gitBlame(
+	repo *git.Repository,
+	repoRoot, path string,
+) (*git.BlameResult, error) {
 	// NOTE: Path may have been supplied by the user from outside the repository root.
 	absPath, err := filepath.Abs(path)
 	if err != nil {
@@ -463,19 +488,20 @@ func (w *TODOWalker) gitBlame(repo *git.Repository, repoRoot, path string) (*git
 
 	// Check if the file is a symbolic link. If it is, we need to resolve it to
 	// it's target because git.Blame will not.
-	info, err := os.Lstat(absPath)
-	if err != nil {
-		return nil, fmt.Errorf("%w: Lstat: %w", errGit, err)
-	}
-
-	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-		// Resolve the symbolic link to its target.
-		targetPath, evalErr := filepath.EvalSymlinks(absPath)
-		if evalErr != nil {
-			return nil, fmt.Errorf("%w: evaluating symlink: %w", evalErr, err)
+	if w.options.FollowSymlinks {
+		isLink, symErr := isSymlink(absPath)
+		if symErr != nil {
+			return nil, fmt.Errorf("symlink: %w", symErr)
 		}
+		if isLink {
+			// Resolve the symbolic link to its target.
+			targetPath, evalErr := filepath.EvalSymlinks(absPath)
+			if evalErr != nil {
+				return nil, fmt.Errorf("%w: evaluating symlink: %w", evalErr, err)
+			}
 
-		absPath = targetPath
+			absPath = targetPath
+		}
 	}
 
 	// Get relative path from git repo root to path
@@ -687,4 +713,14 @@ func pathSplit(path string) []string {
 	parts = append(parts, file)
 
 	return parts
+}
+
+// isSymlink checks if the given path is a symbolic link.
+func isSymlink(path string) (bool, error) {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return info.Mode()&os.ModeSymlink == os.ModeSymlink, nil
 }

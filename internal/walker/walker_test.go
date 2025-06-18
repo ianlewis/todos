@@ -1301,7 +1301,8 @@ var testCases = []testCase{
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Charset: "UTF-8",
+			FollowSymlinks: true,
+			Charset:        "UTF-8",
 		},
 		expected: []*TODORef{
 			{
@@ -1316,6 +1317,142 @@ var testCases = []testCase{
 			},
 			{
 				FileName: "symlink.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "code is symlinked no follow",
+		files: []*testutils.File{
+			{
+				Path: "line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "symlink.go",
+				Target: "line_comments.go",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: false, // Do not follow symlinks.
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: "line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "symlinked dir",
+		files: []*testutils.File{
+			{
+				Path: "sub-dir/line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "sym-dir",
+				Target: "sub-dir",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: true,
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: "sub-dir/line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+			{
+				FileName: "sym-dir/line_comments.go",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "symlinked dir no follow",
+		files: []*testutils.File{
+			{
+				Path: "sub-dir/line_comments.go",
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "sym-dir",
+				Target: "sub-dir",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: false, // Do not follow symlinks.
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: "sub-dir/line_comments.go",
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
