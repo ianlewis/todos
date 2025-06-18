@@ -58,6 +58,7 @@ rules:
       - "JavaDoc"
       - "JSDoc"
       - "SLSA"
+      - "/[Ss]ymlink/"
       - "TSDoc"
       - "/[Uu]nixy/"
       - "UTF"

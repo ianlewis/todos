@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed handling for symlinked files
+- A new option `--follow` was added to specify whether `todos` should follow
+  symlinks when traversing directories.
   ([#1752](https://github.com/ianlewis/todos/issues/1752)).
 
 ## [`0.13.0`] - 2025-05-18

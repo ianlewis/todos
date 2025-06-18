@@ -252,10 +252,15 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 			// need to recursively call fs.WalkDir on the symlink target.
 			oldPath := w.path
 			w.path = fullPath
-			defer func() {
-				w.path = oldPath
-			}()
-			return fs.WalkDir(os.DirFS(fullPath), ".", w.walkFunc)
+
+			if err := fs.WalkDir(os.DirFS(fullPath), ".", w.walkFunc); err != nil {
+				// This shouldn't happen. Errors are all handled in the WalkDir.
+				panic(err)
+			}
+
+			// Return the path to the original directory when recursive WalkDir
+			// is finished.
+			w.path = oldPath
 		}
 
 		return nil
@@ -486,25 +491,6 @@ func (w *TODOWalker) gitBlame(
 		return nil, fmt.Errorf("%w: getting absolute path: %w", errGit, err)
 	}
 
-	// Check if the file is a symbolic link. If it is, we need to resolve it to
-	// it's target because git.Blame will not.
-	if w.options.FollowSymlinks {
-		isLink, symErr := isSymlink(absPath)
-		if symErr != nil {
-			return nil, fmt.Errorf("symlink: %w", symErr)
-		}
-		if isLink {
-			// Resolve the symbolic link to its target.
-			targetPath, evalErr := filepath.EvalSymlinks(absPath)
-			if evalErr != nil {
-				return nil, fmt.Errorf("%w: evaluating symlink: %w", evalErr, err)
-			}
-
-			absPath = targetPath
-		}
-	}
-
-	// Get relative path from git repo root to path
 	relPath, err := filepath.Rel(repoRoot, absPath)
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting relative path: %w", errGit, err)
@@ -719,6 +705,7 @@ func pathSplit(path string) []string {
 func isSymlink(path string) (bool, error) {
 	info, err := os.Lstat(path)
 	if err != nil {
+		//nolint:wrapcheck // Lstat error messages include lstat context.
 		return false, err
 	}
 

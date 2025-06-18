@@ -1275,6 +1275,12 @@ var testCases = []testCase{
 		expected: nil,
 		err:      true,
 	},
+}
+
+// symlinkTestCases contains test cases for symlinked files and directories.
+//
+//nolint:gochecknoglobals // allow global table-driven tests.
+var symlinkTestCases = []testCase{
 	{
 		name: "code is symlinked",
 		files: []*testutils.File{
@@ -1672,6 +1678,27 @@ func newDirRepoFixture(
 func TestTODOWalker(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			f, w := newFixture(tc.files, tc.links, tc.opts)
+			defer f.cleanup()
+
+			if got, want := w.Walk(), tc.err; got != want {
+				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			got, want := f.out, tc.expected
+			if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
+				t.Errorf("unexpected output (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_symlink(t *testing.T) {
+	for i := range symlinkTestCases {
+		tc := symlinkTestCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
 			f, w := newFixture(tc.files, tc.links, tc.opts)
