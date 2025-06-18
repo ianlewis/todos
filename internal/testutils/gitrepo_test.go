@@ -150,12 +150,12 @@ func TestTempRepo(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
+	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			defer func() {
-				if r := recover(); r != nil && !tc.expectPanic {
+				if r := recover(); r != nil && !testCase.expectPanic {
 					t.Fatalf("unexpected panic: %v", r)
 				}
 			}()
@@ -163,7 +163,7 @@ func TestTempRepo(t *testing.T) {
 			tmpDir := NewTempDir(nil, nil)
 			defer tmpDir.Cleanup()
 
-			d := NewTestRepo(tmpDir.Dir(), tc.author, tc.email, tc.files, tc.links)
+			d := NewTestRepo(tmpDir.Dir(), testCase.author, testCase.email, testCase.files, testCase.links)
 			baseDir := d.Dir()
 
 			// Check that the temporary directory exists.
@@ -172,7 +172,7 @@ func TestTempRepo(t *testing.T) {
 			// Check the .git/ directory exists.
 			checkDir(t, filepath.Join(baseDir, ".git"))
 
-			for _, f := range tc.files {
+			for _, f := range testCase.files {
 				fullPath := filepath.Join(baseDir, f.Path)
 
 				info, err := os.Stat(fullPath)
@@ -199,7 +199,7 @@ func TestTempRepo(t *testing.T) {
 				}
 			}
 
-			for _, link := range tc.links {
+			for _, link := range testCase.links {
 				fullPath := filepath.Join(baseDir, link.Path)
 
 				info, err := os.Lstat(fullPath)

@@ -209,6 +209,8 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		return w.handleErr(path, err)
 	}
 
+	// TODO(#1756): Traverse symlinked directories.
+
 	fullPath := filepath.Join(w.path, path)
 
 	file, err := os.Open(fullPath)
@@ -452,7 +454,7 @@ func (w *TODOWalker) gitRepo(path string) (*git.Repository, string, error) {
 	return r, path, nil
 }
 
-func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.BlameResult, error) {
+func (w *TODOWalker) gitBlame(repo *git.Repository, repoRoot, path string) (*git.BlameResult, error) {
 	// NOTE: Path may have been supplied by the user from outside the repository root.
 	absPath, err := filepath.Abs(path)
 	if err != nil {
@@ -465,12 +467,14 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 	if err != nil {
 		return nil, fmt.Errorf("%w: Lstat: %w", errGit, err)
 	}
+
 	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 		// Resolve the symbolic link to its target.
 		targetPath, evalErr := filepath.EvalSymlinks(absPath)
 		if evalErr != nil {
 			return nil, fmt.Errorf("%w: evaluating symlink: %w", evalErr, err)
 		}
+
 		absPath = targetPath
 	}
 
@@ -480,14 +484,14 @@ func (w *TODOWalker) gitBlame(r *git.Repository, repoRoot, path string) (*git.Bl
 		return nil, fmt.Errorf("%w: getting relative path: %w", errGit, err)
 	}
 
-	ref, err := r.Head()
+	ref, err := repo.Head()
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting HEAD ref: %w", errGit, err)
 	}
 
 	hash := ref.Hash()
 
-	c, err := r.CommitObject(hash)
+	c, err := repo.CommitObject(hash)
 	if err != nil {
 		return nil, fmt.Errorf("%w: getting commit object for hash %s, %w", errGit, hash, err)
 	}
