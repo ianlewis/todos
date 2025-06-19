@@ -243,7 +243,7 @@ hack/lib/util.sh:337:# TODO(lavalamp): Simplify this by moving pkg/api/v1 and sp
 ...
 ```
 
-### Outputting JSON
+#### Outputting JSON
 
 `todos` can produce output in JSON format for more complicated processing.
 
