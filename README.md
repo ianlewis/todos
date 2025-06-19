@@ -86,6 +86,19 @@ cosign verify-attestation \
   ghcr.io/ianlewis/todos:v0.13.0
 ```
 
+### Aqua package
+
+`todos` is available as an [Aqua](https://aquaproj.github.io/) package. You can
+install it with the `aqua` CLI tool:
+
+```shell
+# Initialize Aqua configuration if you haven't already.
+aqua init
+
+# Add todos to your aqua.yaml.
+aqua generate ianlewis/todos
+```
+
 ### Install from source
 
 If you already have Go 1.20+ you can install the latest version using `go install`:
