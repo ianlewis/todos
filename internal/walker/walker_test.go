@@ -1431,7 +1431,7 @@ var symlinkTestCases = []testCase{
 		name: "symlinked dir no follow",
 		files: []*testutils.File{
 			{
-				FileName: filepath.Join("sub-dir", "line_comments.go"),
+				Path: filepath.Join("sub-dir", "line_comments.go"),
 				Contents: []byte(`package foo
 				// package comment
 
