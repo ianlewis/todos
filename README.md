@@ -23,6 +23,7 @@ See the [FAQ] for more info on the philosophy behind the project.
 - [JSON output format](#outputting-json).
 - [`.gitignore`, vendored code, generated code, and VCS file aware](#-usage).
 - [GitHub Actions integration](#running-on-github-actions).
+- [Editor integration via `efm-langserver`](#show-todos-in-your-editor).
 - [Git blame support (experimental)](#finding-authors-of-todos-experimental).
 - Character set detection.
 
@@ -385,6 +386,55 @@ still exist in the code.
 ```
 
 See [`ianlewis/todo-issue-reopener`] for more information.
+
+#### Show TODOs in your editor
+
+You can use `todos` with
+[`efm-langserver`](https://github.com/mattn/efm-langserver) find and manage
+TODOs in files opened in your favorite editor with LSP server support. This is
+useful for quickly finding and jumping to TODOs in your code.
+
+For example, in Neovim you can use the following configuration to show TODOs in
+the quickfix window and jump to them. Install `efm-langserver` (via Mason etc.)
+and add the following to your LSP server Neovim configuration.
+
+```lua
+local lspconfig = require("lspconfig")
+
+local todos = {
+    prefix = "todos",
+    lintCommand = "todos",
+    lintStdin = true,
+    lintIgnoreExitCode = true,
+    lintSeverity = 2, -- 2 = warning
+    lintFormats = {
+        "%f:%l:%m",
+    },
+}
+
+lspconfig.efm.setup({
+    settings = {
+        rootMarkers = { ".git/" },
+
+        languages = {
+            -- Add todos to each language.
+            sh = { todos },
+            bash = { todos },
+            conf = { todos },
+            gitignore = { todos },
+            -- Merge with any existing configuration.
+            html = { --[[ prettier, ]] todos },
+            css = { --[[ prettier, stylelint, ]] todos },
+            lua = { --[[ stylua, selene, ]] todos },
+            python = { todos },
+            rust = { todos },
+            go = { todos },
+            javascript = { --[[ prettier, ]] todos },
+            -- ...
+        },
+    }
+})
+```
 
 ## 🔧 Related projects
 

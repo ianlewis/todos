@@ -52,14 +52,19 @@ rules:
       - "/[0-9]+/"
       - ":white_check_mark:"
 
-      # Terminology
-      - "/[Cc]odebase/"
+      # Common names
       - "Codecov"
       - "JavaDoc"
       - "JSDoc"
+      - "TSDoc"
+      - "Neovim"
+      - "quickfix" # Neovim quickfix
+
+      # Terminology
+      - "/[Cc]odebase/"
+      - "LSP" # Language Server Protocol
       - "SLSA"
       - "/[Ss]ymlink/"
-      - "TSDoc"
       - "/[Uu]nixy/"
       - "UTF"
       - "/[Ww]hitespace/"
