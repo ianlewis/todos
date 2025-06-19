@@ -262,7 +262,51 @@ kubernetes$ # Get all the unique files with TODOs that Tim Hockin owns.
 kubernetes$ todos -o json | jq -r '. | select(.label = "thockin") | .path' | uniq
 ```
 
-### Running on GitHub Actions
+#### Finding authors of TODOs (EXPERIMENTAL)
+
+You can use the `--blame` flag to find the author of a TODO comment. This will
+use `git blame` to find the latest author of the line where the TODO comment
+occurs. However, this can be slow for large repositories
+([#1519](https://github.com/ianlewis/todos/issues/1519)).
+
+```shell
+$ todos --blame
+.github/workflows/schedule.scorecard.yml:80:Ian Lewis <ian@ianlewis.org>:# TODO: Remove the next line for private repositories with GitHub Advanced Security.
+.golangci.yml:172:Ian Lewis <ian@ianlewis.org>:# TODO(#1725): Reduce package average complexity.
+Makefile:525:Ian Lewis <ian@ianlewis.org>:# TODO: remove when todos v0.13.0 is released. \
+cmd/todos/app.go:42:Ian Lewis <ianlewis@google.com>:// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
+internal/scanner/languages.go:37:Ian Lewis <ian@ianlewis.org>:// TODO(#1686): Refactor language config global variables.
+internal/scanner/languages.go:143:Ian Lewis <ian@ianlewis.org>:// TODO(#1686): Refactor LanguagesConfig global variable.
+...
+```
+
+#### Documenting tasks
+
+You can use the output of `todos` to create documentation of tasks.
+
+For example, this creates a simple markdown document:
+
+```shell
+$ (
+    echo "# TODOs" && \
+    echo && \
+    todos --exclude-dir .venv --output json | \
+        jq -r 'if (.label | startswith("#")) then "- [ ] \(.label) \(.message)" else empty end' | \
+        uniq
+) > todos.md
+
+$ cat todos.md
+# TODOs
+
+- [ ] #1546 Support @moduledoc
+- [ ] #96 Use a *Config
+- [ ] #96 Use []*Comment and go-cmp
+- [ ] #1627 Support OCaml nested comments.
+- [ ] #1540 Read this closed string as a comment.
+- [ ] #1545 Generate Go code rather than loading YAML at runtime.
+```
+
+#### Running on GitHub Actions
 
 If run as part of a GitHub action `todos` will function much like a linter and
 output GitHub workflow commands which will add check comments to PRs.
@@ -310,50 +354,6 @@ jobs:
             - name: run todos
               run: |
                   ./todos .
-```
-
-#### Finding authors of TODOs (EXPERIMENTAL)
-
-You can use the `--blame` flag to find the author of a TODO comment. This will
-use `git blame` to find the latest author of the line where the TODO comment
-occurs. However, this can be slow for large repositories
-([#1519](https://github.com/ianlewis/todos/issues/1519)).
-
-```shell
-$ todos --blame
-.github/workflows/schedule.scorecard.yml:80:Ian Lewis <ian@ianlewis.org>:# TODO: Remove the next line for private repositories with GitHub Advanced Security.
-.golangci.yml:172:Ian Lewis <ian@ianlewis.org>:# TODO(#1725): Reduce package average complexity.
-Makefile:525:Ian Lewis <ian@ianlewis.org>:# TODO: remove when todos v0.13.0 is released. \
-cmd/todos/app.go:42:Ian Lewis <ianlewis@google.com>:// TODO(github.com/urfave/cli/issues/1809): Remove init func when upstream bug is fixed.
-internal/scanner/languages.go:37:Ian Lewis <ian@ianlewis.org>:// TODO(#1686): Refactor language config global variables.
-internal/scanner/languages.go:143:Ian Lewis <ian@ianlewis.org>:// TODO(#1686): Refactor LanguagesConfig global variable.
-...
-```
-
-#### Documenting tasks
-
-You can use the output of `todos` to create documentation of tasks.
-
-For example, this creates a simple markdown document:
-
-```shell
-$ (
-    echo "# TODOs" && \
-    echo && \
-    todos --exclude-dir .venv --output json | \
-        jq -r 'if (.label | startswith("#")) then "- [ ] \(.label) \(.message)" else empty end' | \
-        uniq
-) > todos.md
-
-$ cat todos.md
-# TODOs
-
-- [ ] #1546 Support @moduledoc
-- [ ] #96 Use a *Config
-- [ ] #96 Use []*Comment and go-cmp
-- [ ] #1627 Support OCaml nested comments.
-- [ ] #1540 Read this closed string as a comment.
-- [ ] #1545 Generate Go code rather than loading YAML at runtime.
 ```
 
 #### Re-open prematurely closed GitHub issues
