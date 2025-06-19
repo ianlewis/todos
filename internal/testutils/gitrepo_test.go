@@ -42,6 +42,7 @@ func TestTempRepo(t *testing.T) {
 		author      string
 		email       string
 		files       []*File
+		links       []*Symlink
 		expectPanic bool
 	}{
 		"no files": {
@@ -130,22 +131,39 @@ func TestTempRepo(t *testing.T) {
 				},
 			},
 		},
+		"file with symlink": {
+			author: "John Doe",
+			email:  "john@doe.com",
+			files: []*File{
+				{
+					Path:     "linktarget.txt",
+					Contents: []byte("foo"),
+					Mode:     0o600,
+				},
+			},
+			links: []*Symlink{
+				{
+					Path:   "link.txt",
+					Target: "linktarget.txt",
+				},
+			},
+		},
 	}
 
-	for name, tc := range testCases {
+	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			defer func() {
-				if r := recover(); r != nil && !tc.expectPanic {
+				if r := recover(); r != nil && !testCase.expectPanic {
 					t.Fatalf("unexpected panic: %v", r)
 				}
 			}()
 
-			tmpDir := NewTempDir(nil)
+			tmpDir := NewTempDir(nil, nil)
 			defer tmpDir.Cleanup()
 
-			d := NewTestRepo(tmpDir.Dir(), tc.author, tc.email, tc.files)
+			d := NewTestRepo(tmpDir.Dir(), testCase.author, testCase.email, testCase.files, testCase.links)
 			baseDir := d.Dir()
 
 			// Check that the temporary directory exists.
@@ -154,7 +172,7 @@ func TestTempRepo(t *testing.T) {
 			// Check the .git/ directory exists.
 			checkDir(t, filepath.Join(baseDir, ".git"))
 
-			for _, f := range tc.files {
+			for _, f := range testCase.files {
 				fullPath := filepath.Join(baseDir, f.Path)
 
 				info, err := os.Stat(fullPath)
@@ -178,6 +196,19 @@ func TestTempRepo(t *testing.T) {
 				got, want := b, f.Contents
 				if diff := cmp.Diff(want, got); diff != "" {
 					t.Errorf("unexpected contents: (-want, +got): %s", diff)
+				}
+			}
+
+			for _, link := range testCase.links {
+				fullPath := filepath.Join(baseDir, link.Path)
+
+				info, err := os.Lstat(fullPath)
+				if err != nil {
+					t.Fatalf("os.Stat: %v", err)
+				}
+
+				if info.Mode()&os.ModeSymlink != os.ModeSymlink {
+					t.Fatalf("expected symbolic link, got: %v", info.Mode())
 				}
 			}
 		})

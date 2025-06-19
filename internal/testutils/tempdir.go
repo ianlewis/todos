@@ -37,11 +37,21 @@ type File struct {
 	Mode os.FileMode
 }
 
+// Symlink is a test symbolic link.
+type Symlink struct {
+	// Path is the path to the symbolic link.
+	Path string
+
+	// Target is path to the target of the symbolic link relative to the
+	// symbolic link.
+	Target string
+}
+
 // NewTempDir creates a new TempDir. This creates a new temporary directory and
 // fills it with the files given. Intermediate directories are created
 // automatically with 0700 permissions. This function panics if an error occurs
 // when creating the files.
-func NewTempDir(files []*File) *TempDir {
+func NewTempDir(files []*File, links []*Symlink) *TempDir {
 	d := &TempDir{}
 
 	d.dir = Must(os.MkdirTemp("", "testutils"))
@@ -57,6 +67,12 @@ func NewTempDir(files []*File) *TempDir {
 		fullPath := filepath.Join(d.dir, file.Path)
 		Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
 		Check(os.WriteFile(fullPath, file.Contents, file.Mode))
+	}
+
+	for _, link := range links {
+		fullPath := filepath.Join(d.dir, link.Path)
+		Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+		Check(os.Symlink(link.Target, fullPath))
 	}
 
 	cancel()

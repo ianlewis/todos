@@ -31,14 +31,14 @@ type TestRepo struct {
 
 // NewTestRepo creates a new TestRepo with the given files committed into a
 // single commit in the repo.
-func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
+func NewTestRepo(dir, author, email string, files []*File, links []*Symlink) *TestRepo {
 	testRepo := &TestRepo{
 		dir: dir,
 	}
 
 	testRepo.repo = Must(git.PlainInit(testRepo.dir, false))
 
-	w := Must(testRepo.repo.Worktree())
+	worktree := Must(testRepo.repo.Worktree())
 
 	const readWriteExec = os.FileMode(0o700)
 
@@ -53,11 +53,35 @@ func NewTestRepo(dir, author, email string, files []*File) *TestRepo {
 			Check(os.WriteFile(fullPath, f.Contents, f.Mode))
 
 			// git add <file>
-			_ = Must(w.Add(f.Path))
+			_ = Must(worktree.Add(f.Path))
 		}
 
 		// git commit <file>
-		_ = Must(w.Commit("test commit", &git.CommitOptions{
+		_ = Must(worktree.Commit("add files", &git.CommitOptions{
+			Author: &object.Signature{
+				Name:  author,
+				Email: email,
+				When:  time.Now(),
+			},
+		}))
+	}
+
+	if len(links) > 0 {
+		for _, link := range links {
+			fullPath := filepath.Join(testRepo.dir, link.Path)
+
+			// Create necessary sub-directories.
+			Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+
+			// Create the symbolic link.
+			Check(os.Symlink(link.Target, fullPath))
+
+			// git add <file>
+			_ = Must(worktree.Add(link.Path))
+		}
+
+		// git commit <file>
+		_ = Must(worktree.Commit("add links", &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  author,
 				Email: email,

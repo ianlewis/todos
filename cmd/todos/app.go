@@ -99,6 +99,11 @@ func newTODOsApp() *cli.App {
 				Usage:              "exclude hidden files and directories",
 				DisableDefaultText: true,
 			},
+			&cli.BoolFlag{
+				Name:               "follow",
+				Usage:              "follow symlinks while traversing directories",
+				DisableDefaultText: true,
+			},
 			&cli.StringSliceFlag{
 				Name:  "ignore-file-name",
 				Usage: "name of files with ignore patterns (.gitignore format)",
@@ -372,6 +377,8 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 
 		opts.ExcludeDirGlobs = append(opts.ExcludeDirGlobs, g)
 	}
+
+	opts.FollowSymlinks = cliCtx.Bool("follow")
 
 	opts.Blame = cliCtx.Bool("blame")
 
