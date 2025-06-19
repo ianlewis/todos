@@ -132,10 +132,7 @@ Be aware though that there are a few downsides to using the Go tools approach.
 ## 📖 Usage
 
 Simply running `todos` will search TODO comments starting in the current
-directory. By default it ignores files that are in "VCS" directories (such as`.git`
-or `.hg`) and vendored code (such as `node_modules`, `vendor`, and `third_party`).
-
-Here is an example running in a checkout of the
+directory.Here is an example running in a checkout of the
 [`Kubernetes`](https://github.com/kubernetes/kubernetes) codebase.
 
 ```shell
@@ -147,6 +144,8 @@ cluster/addons/calico-policy-controller/ipamblock-crd.yaml:41:# TODO: This nulla
 cluster/addons/dns/kube-dns/kube-dns.yaml.base:119:# TODO: Set memory limits when we've profiled the container for large
 ...
 ```
+
+See the [use cases](#use-cases) for more examples of how to use `todos`.
 
 ### Supported Languages
 
@@ -168,6 +167,19 @@ For example:
 // TODO(label): message text
 ```
 
+For TODO comments to be more easily parsed keep in mind the following:
+
+- Spaces between the comment start and 'TODO' is optional
+  (e.g. `//TODO: some comment`)
+- TODOs should have a colon if a message is present so it can be distinguished
+  from normal comments.
+- TODOs can be prefixed with `@` (e.g. `// @TODO: comment`)
+- Comments can be on the same line with other code
+  (e.g. `x = f() // TODO: call f`)
+- Line comment start sequences can be repeated (e.g. `//// TODO: some comment`)
+- TODO comments can be in multi-line comments, however only the single line
+  where the TODO occurs is printed for multi-line comments.
+
 #### TODO type variants
 
 There a few variants of this type of comment that are in wide use.
@@ -180,6 +192,9 @@ There a few variants of this type of comment that are in wide use.
   code. It could use a cleanup.
 - **`XXX`**: Danger! Similar to "HACK". Modifying this code is dangerous. It
 - **`COMBAK`**: Something you should "come back" to.
+
+`TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can
+change this with the `--todo-types` flag.
 
 #### TODO examples
 
@@ -212,34 +227,24 @@ TODO comments can include some optional metadata. Here are some examples:
     // TODO(ianlewis): Do something.
     ```
 
-### Use Cases
+### Use cases
 
 Tracking TODOs in code can help you have a cleaner and healthier code base. Here
 are some basic use cases.
 
-#### Finding TODOs in your code
+#### Finding all TODOs in your project
 
 You can use the `todos` to find TODO comments in your code and print them out.
 Running it will search the directory tree starting at the current directory by
-default.
+default. By default, it ignores files that are in "VCS" directories (such
+as`.git` or `.hg`) and vendored code (such as `node_modules`, `vendor`, and
+`third_party`).
 
 ```shell
 $ todos
 main.go:27:// TODO(#123): Return a proper exit code.
 main.go:28:// TODO(ianlewis): Implement the main method.
 ```
-
-In order for the comments to be more easily parsed keep in mind the following:
-
-- Spaces between the comment start and 'TODO' is optional (e.g. `//TODO: some comment`)
-- TODOs should have a colon if a message is present so it can be distinguished
-  from normal comments.
-- TODOs can be prefixed with `@` (e.g. `// @TODO: comment`)
-- Comments can be on the same line with other code (e.g. `x = f() // TODO: call f`
-- Line comment start sequences can be repeated (e.g. `//// TODO: some comment`)
-- Only the single line where the TODO occurs is printed for multi-line comments.
-- `TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can
-  change this with the `--todo-types` flag.
 
 #### Running on sub-directories or files
 
