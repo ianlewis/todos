@@ -152,7 +152,7 @@ func checkTempSymlink(t *testing.T, baseDir string, l *Symlink) {
 
 	info, err := os.Lstat(fullPath)
 	if err != nil {
-		t.Fatalf("os.Stat: %v", err)
+		t.Fatalf("os.Lstat: %v", err)
 	}
 
 	if info.Mode()&os.ModeSymlink != os.ModeSymlink {
