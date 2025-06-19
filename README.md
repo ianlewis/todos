@@ -386,15 +386,16 @@ still exist in the code.
 
 See [`ianlewis/todo-issue-reopener`] for more information.
 
-#### Show TODOs in Neovim
+#### Show TODOs in your editor
 
 You can use `todos` with
 [`efm-langserver`](https://github.com/mattn/efm-langserver) find and manage
-TODOs in files opened in Neovim. This is useful for quickly finding and jumping
-to TODOs in your code.
+TODOs in files opened in your favorite editor with LSP server support. This is
+useful for quickly finding and jumping to TODOs in your code.
 
-Install `efm-langserver` (via Mason etc.) and add the following to your LSP
-server Neovim configuration.
+For example, in Neovim you can use the following configuration to show TODOs in
+the quickfix window and jump to them. Install `efm-langserver` (via Mason etc.)
+and add the following to your LSP server Neovim configuration.
 
 ```lua
 local lspconfig = require("lspconfig")
