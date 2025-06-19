@@ -1379,7 +1379,7 @@ var symlinkTestCases = []testCase{
 		name: "symlinked dir",
 		files: []*testutils.File{
 			{
-				Path: "sub-dir/line_comments.go",
+				Path: filepath.Join("sub-dir", "line_comments.go"),
 				Contents: []byte(`package foo
 				// package comment
 
@@ -1406,7 +1406,7 @@ var symlinkTestCases = []testCase{
 		},
 		expected: []*TODORef{
 			{
-				FileName: "sub-dir/line_comments.go",
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
@@ -1416,7 +1416,7 @@ var symlinkTestCases = []testCase{
 				},
 			},
 			{
-				FileName: "sym-dir/line_comments.go",
+				FileName: filepath.Join("sym-dir", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
@@ -1431,7 +1431,7 @@ var symlinkTestCases = []testCase{
 		name: "symlinked dir no follow",
 		files: []*testutils.File{
 			{
-				Path: "sub-dir/line_comments.go",
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
 				Contents: []byte(`package foo
 				// package comment
 
@@ -1458,7 +1458,7 @@ var symlinkTestCases = []testCase{
 		},
 		expected: []*TODORef{
 			{
-				FileName: "sub-dir/line_comments.go",
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
