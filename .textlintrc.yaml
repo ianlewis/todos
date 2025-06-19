@@ -21,6 +21,10 @@ rules:
   spelling:
     language: "en"
     skipPatterns:
+      - "LSP" # Language Server Protocol
+      - "Neovim"
+      - "quickfix" # Neovim quickfix
+
       - "CHANGELOG"
       - "CODEOWNER"
       - "CLI"
