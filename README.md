@@ -23,6 +23,7 @@ See the [FAQ] for more info on the philosophy behind the project.
 - [JSON output format](#outputting-json).
 - [`.gitignore`, vendored code, generated code, and VCS file aware](#-usage).
 - [GitHub Actions integration](#running-on-github-actions).
+- [Editor integration via `efm-langserver`](#show-todos-in-your-editor).
 - [Git blame support (experimental)](#finding-authors-of-todos-experimental).
 - Character set detection.
 
