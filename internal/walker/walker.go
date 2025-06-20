@@ -38,7 +38,10 @@ import (
 	"github.com/ianlewis/todos/internal/vendoring"
 )
 
-var errGit = errors.New("git")
+var (
+	errGit         = errors.New("git")
+	errSymlinkLoop = errors.New("symlink loop detected")
+)
 
 // GitUser is a git user (e.g. committer).
 type GitUser struct {
@@ -239,7 +242,6 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 
 	// NOTE(github.com/ianlewis/todos/issues/40): d.IsDir sometimes returns false for some directories.
 	if info.IsDir() {
-		// fmt.Println("Walking directory:", fullPath)
 		// Make sure we should process this directory.
 		if err := w.processDir(path, fullPath); err != nil {
 			return err
@@ -248,11 +250,15 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		// NOTE: If we are processing the "." directory then fs.WalkDir has
 		// already followed the symlink.
 		if isLink && w.options.FollowSymlinks && path != "." {
-			// If the directory is a symlink and we're following symlinks, we
-			// need to recursively call fs.WalkDir on the symlink target.
+			if err := checkSymlinkLoop(filepath.Join(w.path, path)); err != nil {
+				return check(err)
+			}
+
 			oldPath := w.path
 			w.path = fullPath
 
+			// If the directory is a symlink and we're following symlinks, we
+			// need to recursively call fs.WalkDir on the symlink target.
 			if err := fs.WalkDir(os.DirFS(fullPath), ".", w.walkFunc); err != nil {
 				// This shouldn't happen. Errors are all handled in the WalkDir.
 				panic(err)
@@ -699,6 +705,41 @@ func pathSplit(path string) []string {
 	parts = append(parts, file)
 
 	return parts
+}
+
+// checkSymlinkLoop checks if the given path is a symlink to one of its parents.
+func checkSymlinkLoop(path string) error {
+	var err error
+	if path, err = filepath.Abs(path); err != nil {
+		return fmt.Errorf("getting absolute path %q: %w", path, err)
+	}
+
+	// Resolve all symlinks in the path to get the absolute path of the child.
+	childAbsPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return fmt.Errorf("evaluating symlinks: %q: %w", path, err)
+	}
+
+	// Resolve all symlinks in the parent path.
+	parentAbsPath, err := filepath.EvalSymlinks(filepath.Dir(path))
+	if err != nil {
+		return fmt.Errorf("evaluating symlinks: %q: %w", path, err)
+	}
+
+	// Compute the relative path from the parent's resolved path to the
+	// child's resolved path.
+	relPath, err := filepath.Rel(parentAbsPath, childAbsPath)
+	if err != nil {
+		return fmt.Errorf("computing relative path: %w", err)
+	}
+
+	// If the child refers directly to the parent or if the relative path is to
+	// a parent directory of the parent then this indicates a symlink loop.
+	if parentAbsPath == childAbsPath || strings.HasPrefix(relPath, "..") {
+		return fmt.Errorf("%w: %q -> %q", errSymlinkLoop, path, childAbsPath)
+	}
+
+	return nil
 }
 
 // isSymlink checks if the given path is a symbolic link.
