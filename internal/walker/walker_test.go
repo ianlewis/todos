@@ -25,7 +25,9 @@ import (
 
 	"github.com/gobwas/glob"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/testutils"
 	"github.com/ianlewis/todos/internal/todos"
 )
@@ -38,7 +40,7 @@ type testCase struct {
 	opts  *Options
 
 	expected []*TODORef
-	err      bool
+	err      error
 }
 
 //nolint:gochecknoglobals // allow global table-driven tests.
@@ -1273,7 +1275,7 @@ var testCases = []testCase{
 			Paths:   []string{"unsupported_lang.coq"},
 		},
 		expected: nil,
-		err:      true,
+		err:      scanner.ErrUnsupportedLanguage,
 	},
 }
 
@@ -1459,6 +1461,150 @@ var symlinkTestCases = []testCase{
 		expected: []*TODORef{
 			{
 				FileName: filepath.Join("sub-dir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+	},
+	{
+		name: "symlink loop",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("sub-dir", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "sub-dir/sym-dir",
+				Target: "../sub-dir/",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: true,
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			// NOTE: line_comments.go should only appear once.
+			{
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+		err: errSymlinkLoop,
+	},
+	{
+		name: "complex symlink loop",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("sub-dir", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "sub-dir/sym-dir",
+				Target: "../sub-dir2/",
+			},
+			{
+				Path:   "sub-dir2/sym-dir",
+				Target: "../sub-dir/",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: true,
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			// NOTE: line_comments.go should only appear once.
+			{
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+		},
+		err: errSymlinkLoop,
+	},
+	{
+		name: "symlink prefix loop",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("sub-dir", "line_comments.go"),
+				Contents: []byte(`package foo
+				// package comment
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return // Random comment
+				}`),
+				Mode: 0o600,
+			},
+		},
+		links: []*testutils.Symlink{
+			{
+				Path:   "sub-dir-sym",
+				Target: "sub-dir",
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			FollowSymlinks: true,
+			Charset:        "UTF-8",
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("sub-dir", "line_comments.go"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        5,
+					CommentLine: 5,
+				},
+			},
+			{
+				FileName: filepath.Join("sub-dir-sym", "line_comments.go"),
 				TODO: &todos.TODO{
 					Type:        "TODO",
 					Text:        "// TODO: some task.",
@@ -1683,8 +1829,12 @@ func TestTODOWalker(t *testing.T) {
 			f, w := newFixture(tc.files, tc.links, tc.opts)
 			defer f.cleanup()
 
-			if got, want := w.Walk(), tc.err; got != want {
+			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			if diff := cmp.Diff(tc.err, w.err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 			}
 
 			got, want := f.out, tc.expected
@@ -1704,8 +1854,12 @@ func TestTODOWalker_symlink(t *testing.T) {
 			f, w := newFixture(tc.files, tc.links, tc.opts)
 			defer f.cleanup()
 
-			if got, want := w.Walk(), tc.err; got != want {
+			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			if diff := cmp.Diff(tc.err, w.err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 			}
 
 			got, want := f.out, tc.expected
@@ -1723,8 +1877,12 @@ func TestTODOWalker_git(t *testing.T) {
 			f, w := newRepoFixture(tc.author, tc.email, tc.files, tc.links, tc.opts)
 			defer f.cleanup()
 
-			if got, want := w.Walk(), tc.err; got != want {
+			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+			}
+
+			if diff := cmp.Diff(tc.err, w.err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected error (-want, +got): \n%s", diff)
 			}
 
 			for i := range tc.expected {
