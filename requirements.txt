@@ -1,24 +1,20 @@
 # Hashes retrieved using instructions here:
 # https://pip.pypa.io/en/stable/cli/pip_hash/#example
-yamllint==1.36.2 \
-    --hash=sha256:6ba19800513d86c987ed3cf48c0aba4e82b3624596e1dab55723b3733e11f35c \
-    --hash=sha256:c9ccc818659736e7b13f7e2f9c3c9bb9ac77445be13e789e7d843e92cb8428ef
-zizmor==1.5.1 \
-    --hash=sha256:16ccd5be7823b8dfc77e365f634b32dd59124d5437b9c984cda6d794f20e2718 \
-    --hash=sha256:2ae4a4985bdf2070103855cd6ebbf83252f0395d126ff164dc579241f2797129 \
-    --hash=sha256:2f1577803bc90845bb6be696dbc39cb8906bf549ddf98ed69bb8033bc30132c1 \
-    --hash=sha256:4aac5d95820a0fed40f1c06b053b21b1ac09d68512af7d4626b515d7cf9ab372 \
-    --hash=sha256:6e3815df2d4e62df7d1d001ddd8359400362803432a6d9082b3a88e9e8120c51 \
-    --hash=sha256:8734f8c2f93575d1d0f1a7a6196b90e74bbbb2dfe1e7b7fa690c7dac1be2e959 \
-    --hash=sha256:8b37942aa10aa91def98dcae9829624c5a083f5dcb6f10def5a7f4de7652956a \
-    --hash=sha256:939cd53ac54728a07bbda9ea2db4901caefe8109d27e3022130548142db5b2a2 \
-    --hash=sha256:95507fa0a626ccd63761bb0816b64b6669ffa85b932641074f082358c8c5f487 \
-    --hash=sha256:9d35dfbc47874bf37c560bb1628f5258333a3a2962e1ca2af4a7283f9368de65 \
-    --hash=sha256:9dee012adfca32c8cf3823a964e0bf4197d1c86b36098fccc25582dbb8fa9e12 \
-    --hash=sha256:a21e9ed724c2048fd7edd6ec70eb89059c314e7ebbb121dc1898c01ad7a7d2ac \
-    --hash=sha256:be4efbb593f879c4b2b7fa30a0c103f65474b0b3d2edd9ce78fee69068e850c3 \
-    --hash=sha256:cec0c96bc13541203aa3bc4d52db275c8d9479bc681efebfe45044ee47da6609 \
-    --hash=sha256:d3f6dda5f6bc30476bf18f0ce94f3f2c41f670c82f9260f237d9c9244fb11f61
+yamllint==1.37.1 \
+    --hash=sha256:364f0d79e81409f591e323725e6a9f4504c8699ddf2d7263d8d2b539cd66a583 \
+    --hash=sha256:81f7c0c5559becc8049470d86046b36e96113637bcbe4753ecef06977c00245d
+zizmor==1.11.0 \
+    --hash=sha256:1b15da53f9b4ded85435282c20c55a653b4b5c79872a63f63fc03d2e7474f041 \
+    --hash=sha256:1e8b5d75ca53a7f48dff3d6b991aaee3a7f5f7875d7d3134bbc04a91c8a464ea \
+    --hash=sha256:3697e0b5f531dafccb1c4e1adb5db0c15c403136afec351a30385321b423f392 \
+    --hash=sha256:49e30e1a15e979841c87b7cb334fcf8e15460e303df650fe769e1f509dfe8e76 \
+    --hash=sha256:5b3c842fde26a8e05137736a78c836ba37706831a6fbf67111b33e39586d2003 \
+    --hash=sha256:861cf4ec28df79903c18523c8084d2afe6b244baac133dcec06f696d0bcd7ba6 \
+    --hash=sha256:9b6732c92eac7de521c074ae4fdcee11d5887f56cbaf2d2f345ec9746122fe6d \
+    --hash=sha256:bde08b33ad6e57c8ff3b0a24fd1e3c06ec16f8dca4a754cab55833789894bc09 \
+    --hash=sha256:c5a9021ebf353e76f2d93f25762cb4a51665db48f39a446ffff5db3af8fe6293 \
+    --hash=sha256:d8270027912b227216a9a38c837e6a070ea3a7a9ea062f6cbc88249a851c1a10 \
+    --hash=sha256:f9d276aa71e24cae13c2d666fae90f1abd9af438c2e8fc351b3d083b3d437676
 
 # NOTE: The following dependencies are included because it is not pinned using
 # '==' by yamllint and this is required by pip --require-hashes.
