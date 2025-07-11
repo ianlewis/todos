@@ -36,13 +36,13 @@
   },
   "devDependencies": {
     "dictionary-en": "4.0.0",
-    "eslint": "9.26.0",
+    "eslint": "9.31.0",
     "eslint-plugin-github": "6.0.0",
-    "eslint-plugin-prettier": "5.4.0",
+    "eslint-plugin-prettier": "5.5.1",
     "markdownlint-cli": "0.45.0",
-    "prettier": "3.5.3",
-    "renovate": "40.40.3",
-    "textlint": "14.7.2",
+    "prettier": "3.6.2",
+    "renovate": "40.62.1",
+    "textlint": "14.8.4",
     "textlint-filter-rule-comments": "1.2.2",
     "textlint-rule-spelling": "0.3.0"
   },
