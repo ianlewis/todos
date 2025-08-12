@@ -35,7 +35,7 @@ jobs:
       version: ${{ steps.ldflags.outputs.version }}
     steps:
       - id: checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -105,7 +105,7 @@ jobs:
       id-token: write # To sign.
     steps:
       - id: checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -189,7 +189,7 @@ jobs:
           name: todos-windows-arm64.exe.intoto.jsonl
 
       - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.1
 
       - name: Verify artifact provenance
         env:
@@ -253,7 +253,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: true
           persist-credentials: false
@@ -283,7 +283,7 @@ jobs:
           name: todos-linux-arm64.intoto.jsonl
 
       - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.1
 
       - name: Verify artifact provenance
         env:
@@ -304,14 +304,14 @@ jobs:
           done
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         with:
           # NOTE: Do not use the cached binary for buildx to avoid potential
           # cache poisoning.
           cache-binary: false
 
       - name: Authenticate Docker
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           username: ${{ github.actor }}
@@ -319,12 +319,12 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
         with:
           images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         id: build
         with:
           # Use the existing directory as the build context
