@@ -27,7 +27,7 @@ registries:
 packages:
   - name: rhysd/actionlint@v1.7.7
   - name: koalaman/shellcheck@v0.10.0
-  - name: jqlang/jq@jq-1.7.1
+  - name: jqlang/jq@jq-1.8.1
   - name: golangci/golangci-lint@v1.64.8
   - name: daixiang0/gci@v0.13.6
   - name: mvdan/gofumpt@v0.8.0
