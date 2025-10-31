@@ -20,6 +20,8 @@ on:
 
 permissions: {}
 
+concurrency: production
+
 env:
   IMAGE_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -29,7 +31,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # To checkout the code.
     outputs:
       tag: ${{ steps.ldflags.outputs.tag }}
       version: ${{ steps.ldflags.outputs.version }}
@@ -101,8 +103,10 @@ jobs:
   npm-publish:
     needs: [validate, build-todos]
     runs-on: ubuntu-latest
+    environment: npm-production
     permissions:
-      id-token: write # To sign.
+      contents: read # Needed to checkout the repo.
+      id-token: write # Needed to sign provenance and publish to npm.
     steps:
       - id: checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -198,20 +202,23 @@ jobs:
           set -euo pipefail
 
           # Verify the provenance of the downloaded binaries.
-          for arch in amd64 arm64; do
-            artifact="todos-linux-${arch}"
-            provenance_file="${artifact}.intoto.jsonl"
-            slsa-verifier verify-artifact \
-              --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
-              --provenance-path "${provenance_file}" \
-              --source-uri "github.com/${GITHUB_REPOSITORY}" \
-              --source-tag "${TAG}" \
-              "${artifact}"
+          for os in linux darwin windows; do
+            for arch in amd64 arm64; do
+              artifact="todos-${os}-${arch}"
+              if [[ "${os}" == "windows" ]]; then
+                artifact="${artifact}.exe"
+              fi
+              provenance_file="${artifact}.intoto.jsonl"
+              slsa-verifier verify-artifact \
+                --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml" \
+                --provenance-path "${provenance_file}" \
+                --source-uri "github.com/${GITHUB_REPOSITORY}" \
+                --source-tag "${TAG}" \
+                "${artifact}"
+            done
           done
 
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
         run: |
           set -euo pipefail
 
