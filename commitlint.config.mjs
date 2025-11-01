@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2025 Ian Lewis
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package testutils implements utilities used for automated testing.
-package testutils
-
-// Check checks the error and panics if not nil.
-func Check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-// Must checks the error and panics if not nil.
-//
-//nolint:ireturn,nolintlint // this an intended use of generics.
-func Must[T any](val T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return val
-}
-
-// AsPtr returns the value as a pointer.
-func AsPtr[T any](i T) *T {
-	return &i
-}
+export default {
+  extends: ["@commitlint/config-conventional"],
+};

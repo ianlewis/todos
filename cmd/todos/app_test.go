@@ -71,6 +71,7 @@ func Test_TODOsApp_help_arg(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.Writer = &b
 	// NOTE: somearg should be ignored.
 	if err := app.Run([]string{"todos", "--help", "somearg"}); err != nil {
@@ -89,6 +90,7 @@ func Test_TODOsApp_version(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.Writer = &b
 	c := newContext(app, []string{"--version"})
 
@@ -124,6 +126,7 @@ func Test_TODOsApp_Walk(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
 
@@ -155,6 +158,7 @@ func Test_TODOsApp_Walk_no_todos(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.Writer = &b
 	c := newContext(app, []string{d.Dir()})
 
@@ -186,11 +190,14 @@ func Test_TODOsApp_ExitErrHandler_ErrFlagParse(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.ErrWriter = &b
 
 	oldErrWriter := cli.ErrWriter
+
 	//nolint:reassign // Required for testing.
 	cli.ErrWriter = &b
+
 	defer func() {
 		//nolint:reassign // Required for testing.
 		cli.ErrWriter = oldErrWriter
@@ -231,11 +238,13 @@ func Test_TODOsApp_ExitErrHandler_ErrWalk(t *testing.T) {
 	app := newTODOsApp()
 
 	var b strings.Builder
+
 	app.ErrWriter = &b
 
 	oldErrWriter := cli.ErrWriter
 	//nolint:reassign // Required for testing.
 	cli.ErrWriter = &b
+
 	defer func() {
 		//nolint:reassign // Required for testing.
 		cli.ErrWriter = oldErrWriter
@@ -297,6 +306,7 @@ func Test_outCLI(t *testing.T) {
 			t.Parallel()
 
 			var w strings.Builder
+
 			h := outCLI(&w)
 
 			err := h(tc.ref)
@@ -362,6 +372,7 @@ func Test_outGithub(t *testing.T) {
 			t.Parallel()
 
 			var w strings.Builder
+
 			h := outGithub(&w)
 
 			err := h(tc.ref)
@@ -442,6 +453,7 @@ func Test_outJSON(t *testing.T) {
 			t.Parallel()
 
 			var w bytes.Buffer
+
 			h := outJSON(&w)
 
 			err := h(tc.ref)

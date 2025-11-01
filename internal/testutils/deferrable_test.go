@@ -46,6 +46,7 @@ func TestWithCancel(t *testing.T) {
 				called++
 			})
 			defer d()
+
 			cancel()
 		}()
 
@@ -101,6 +102,7 @@ func TestWithCancel(t *testing.T) {
 
 			childDefer, cancel := WithCancel(parentDefer, c)
 			defer childDefer()
+
 			cancel()
 		}()
 
@@ -131,6 +133,7 @@ func TestWithCancel(t *testing.T) {
 
 			childDefer, _ := WithCancel(parentDefer, c)
 			defer childDefer()
+
 			cancel()
 		}()
 

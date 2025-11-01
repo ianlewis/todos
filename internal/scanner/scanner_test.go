@@ -15,13 +15,13 @@
 package scanner
 
 import (
-	"errors"
 	"io"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/text/encoding/ianaindex"
 
 	"github.com/ianlewis/todos/internal/testutils"
@@ -3520,6 +3520,7 @@ func TestFromFile(t *testing.T) {
 			defer f.Close()
 
 			var w io.Writer
+
 			w = f
 
 			if testCase.charset != "" {
@@ -3531,14 +3532,8 @@ func TestFromFile(t *testing.T) {
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
 			s, err := FromFile(f, testCase.scanCharset)
-			if got, want := err, testCase.err; got != nil {
-				if !errors.Is(got, want) {
-					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
-				}
-
-				return
-			} else if want != nil {
-				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+			if diff := cmp.Diff(testCase.err, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("FromFile: unexpected err (-want +got):\n%s", diff)
 			}
 
 			var config *Config
@@ -3570,14 +3565,8 @@ func TestFromBytes(t *testing.T) {
 			}
 
 			s, err := FromBytes(tc.name, text, tc.scanCharset)
-			if got, want := err, tc.err; got != nil {
-				if !errors.Is(got, want) {
-					t.Fatalf("unexpected err, got: %v, want: %v", got, want)
-				}
-
-				return
-			} else if want != nil {
-				t.Fatalf("unexpected err, got: %v, want: %v", got, want)
+			if diff := cmp.Diff(tc.err, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("FromBytes: unexpected err (-want +got):\n%s", diff)
 			}
 
 			var config *Config
@@ -3586,7 +3575,7 @@ func TestFromBytes(t *testing.T) {
 			}
 
 			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
-				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
+				t.Fatalf("unexpected LanguagesConfig, got: %#v, want: %#v", got, want)
 			}
 		})
 	}

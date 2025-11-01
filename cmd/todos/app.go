@@ -169,6 +169,7 @@ func newTODOsApp() *cli.App {
 
 			if c.Bool("version") {
 				versionInfo := version.GetVersionInfo()
+
 				copyright := ""
 				for _, name := range copyrightNames {
 					copyright += "Copyright (c) " + name + "\n"
@@ -178,6 +179,7 @@ func newTODOsApp() *cli.App {
 %s
 
 %s`, c.App.Name, versionInfo.GitVersion, copyright, versionInfo.String()))
+
 				return nil
 			}
 

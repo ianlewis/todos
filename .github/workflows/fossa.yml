@@ -26,6 +26,7 @@ jobs:
   ###############################
 
   fossa:
+    name: FOSSA Check
     runs-on: ubuntu-latest
     permissions:
       contents: read # Needed to check out the repo.

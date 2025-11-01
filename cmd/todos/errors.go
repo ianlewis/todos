@@ -107,6 +107,8 @@ func (err *exitCoderError) ExitCode() int {
 }
 
 // wrapExitCoder wraps an ExitCoder with another ExitCoder with different error message.
+//
+//nolint:ireturn // returning interface required for cli.HandleExitCoder.
 func wrapExitCoder(msg string, err cli.ExitCoder) cli.ExitCoder {
 	return &exitCoderError{
 		msg:      msg,

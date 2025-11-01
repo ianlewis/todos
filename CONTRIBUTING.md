@@ -2,19 +2,20 @@
 
 This doc describes how to contribute to this repository.
 
-First, We'd love to accept your patches and contributions to my projects!
+First, thank you for contributing! We're happy to accept your patches and
+contributions!
 
 ## How can I help?
 
-There are many areas repositories that need help. These are managed in GitHub
+There are many areas that need help. These are managed in GitHub
 issues. Please let us know if you are willing to work on the issue and how you
 can contribute.
 
 - For new developers and contributors, please see issues labeled
-  `good first issue`. These issues should require minimal background knowledge
-  to contribute.
+  [`good first issue`]. These issues should require minimal
+  background knowledge to contribute.
 - For slightly more involved changes that may require some background knowledge,
-  please see issues labeled `help wanted`
+  please see issues labeled [`help wanted`]
 - For experienced developers, any of the open issues are open to contribution.
 
 If you don't find an existing issue for your contribution feel free to
@@ -77,80 +78,28 @@ development.
 
 #### The Makefile
 
-Most of my repositories make heavy use of `make` during development. This helps
-with automation of tasks locally on your machine. Type `make` to see a full list
-of `Makefile` targets.
-
-Here is an example from the
-[`repo-template`](https://github.com/ianlewis/repo-template) repository.
-
-```shell
-$ make
-repo-template Makefile
-Usage: make [COMMAND]
-
-  help                 Shows all targets and help from the Makefile (this message).
-Tools
-  license-headers      Update license headers.
-Formatting
-  format               Format all files
-  md-format            Format Markdown files.
-  yaml-format          Format YAML files.
-Linting
-  lint                 Run all linters.
-  actionlint           Runs the actionlint linter.
-  zizmor               Runs the zizmor linter.
-  markdownlint         Runs the markdownlint linter.
-  yamllint             Runs the yamllint linter.
-Maintenance
-  clean                Delete temporary files.
-```
+This repository makes heavy use of `make` for executing commands during
+development. This helps with automation of tasks locally on your machine. These
+commands are also used by GitHub Actions for continuous integration. Type `make`
+to see a full list of `Makefile` targets.
 
 #### Linters
 
-Most projects use the following linters depending on the programming languages
-used.
-
-- [`actionlint`](https://github.com/rhysd/actionlint): For GitHub actions
-  workflows.
-- [`eslint`](https://eslint.org/): For JavaScript and TypeScript.
-- [`golangci-lint`](https://github.com/golangci/golangci-lint): For Go.
-- [`markdownlint`](https://github.com/DavidAnson/markdownlint): For markdown.
-- [`yamllint`](https://www.yamllint.com/): For YAML (GitHub Actions workflows,
-  configuration files etc.)
-
-You do not necessarily need to have all installed but you will need to install
-those that you want to run them locally.
+Linters are used to maintain code quality and check for common errors. Linters
+are installed locally to the project and do not need to be installed separately.
 
 You can run all linters with the `lint` make target:
 
 ```shell
+# Run all linters.
 make lint
 ```
 
 or individually by name:
 
 ```shell
+# Run markdownlint to lint markdown files.
 make markdownlint
-```
-
-#### Running tests
-
-Where unit tests exist, you can run all unit tests using the `unit-test` make
-target:
-
-```shell
-make unit-test
-```
-
-You can run unit tests for individual languages with the appropriate `make`
-target. These may vary a bit depending on the repository and code layout.
-Typing `make` or `make help` will show the full list of targets.
-
-For example, this runs Go unit tests.
-
-```shell
-make go-test
 ```
 
 #### Commit and push your code
@@ -162,13 +111,13 @@ git add .
 ```
 
 Commit your code to your branch. For most repositories, messages should follow
-the [Conventional Commits] format but this isn't always required.
+the [Conventional Commits] format.
 
 Commits should include a [Developer Certificate of Origin] (DCO). This can be
-included automatically in commits using the `-s` flag.
+included automatically in commits using the `-s`/`--signoff` flag.
 
 ```shell
-git commit -sm "feat: My new feature"
+git commit --signoff -m "feat: My new feature"
 ```
 
 You can now push your changes to your fork.
@@ -179,14 +128,16 @@ git push origin my-new-feature
 
 ### Pull requests
 
-Once you have your code pushed to your fork you can now created a new
-[pull request] (PR). This allows the project maintainers to review your submission.
+Once you have your code pushed to your fork you can now created a new [pull
+request] (PR). This allows the project maintainers to review your submission.
 
 #### Create a PR
 
-You can
-[create a new pull request via the GitHub UI](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=webui)
-or [via the `gh` CLI tool](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=cli). Create the PR as a
+You can [create a new pull request via the GitHub
+UI](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=webui)
+or [via the `gh` CLI
+tool](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request?tool=cli).
+Create the PR as a
 [draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests)
 to start.
 
@@ -202,17 +153,14 @@ checklist items as complete before finalizing your PR.
 
 Once you have finished you can mark the PR as "Ready for review".
 
-#### Pre-submits
+#### Status checks
 
-PRs perform number of [GitHub status checks] which run linters and tests. These
-tests must all pass before a PR will be accepted. These tests are located in
-the [`.github/workflows`](.github/workflows) directory and begin with the
-prefix `pre-sumbit`.
+PRs perform number of [GitHub status checks] which run linters, tests, etc.
+These tests must all pass before a PR will be accepted. These tests are located
+in the [`.github/workflows`](.github/workflows) directory.
 
-Unit tests are run as pre-submit tests in the
-[`pre-submit.units.yml`](.github/workflows/pre-submit.units.yml) file. To run
-these tests locally see the instructions in the [`Running
-Tests`](#running-tests) section.
+Most pull request status checks are run as status checks in the
+[`pull_request.tests.yml`] file.
 
 #### Code reviews
 
@@ -231,14 +179,22 @@ This section contains info on general conventions I use in my repositories.
 ### Code style and formatting
 
 Most code, scripts, and documentation should be auto-formatted using a
-formatting tool.
+formatting tool. Formatting tools are installed locally to the project and do
+not need to be installed separately.
 
-1. Go code should be is formatted using [`gofumpt`].
-2. TypeScript code should be [`prettier`].
-3. Python code should be formatted with [`black`].
-4. Rust code should be formatted with [`rustfmt`].
-5. YAML should be formatted using [`prettier`].
-6. Markdown should be formatted using [`prettier`].
+Code formatting for all files can be run with the `format` make target:
+
+```shell
+# Format all project files.
+make format
+```
+
+Individual formatting tools can also be run by name:
+
+```shell
+# Format markdown files.
+make md-format
+```
 
 ### Semantic Versioning
 
@@ -253,15 +209,18 @@ number MAJOR.MINOR.PATCH, increment the:
 
 ### Conventional Commits
 
-PR titles should be in [Conventional Commits] format. Usually this is required
-by not always.
+PR titles and commit messages should be in [Conventional Commits] format.
+Usually this is required by not always.
 
-In general, the following prefixes are supported:
+The following prefixes are supported and are checked using the
+[`@commitlint/config-conventional`](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional)
+`commitlint` preset.
 
 1. `fix`: patches a bug
 2. `feat`: introduces a new feature
 3. `docs`: a change in the documentation.
-4. `chore`: a change that performs a task but doesn't change functionality, such as updating dependencies.
+4. `chore`: a change that performs a task but doesn't change functionality, such
+   as updating dependencies.
 5. `refactor`: a code change that improves code quality
 6. `style`: coding style or format changes
 7. `build`: changes that affect the build system
@@ -270,6 +229,8 @@ In general, the following prefixes are supported:
 10. `revert`: reverts a previous change
 11. `test`: adds missing tests or corrects existing tests
 
+[`good first issue`]: ../../labels/good%20first%20issue
+[`help wanted`]: ../../labels/help%20wanted
 [Security Policy]: SECURITY.md
 [Code of Conduct]: CODE_OF_CONDUCT.md
 [Developer Certificate of Origin]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
@@ -279,8 +240,5 @@ In general, the following prefixes are supported:
 [About pull request reviews]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews
 [Semantic Versioning]: https://semver.org/
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/
-[`gofumpt`]: https://github.com/mvdan/gofumpt
-[`prettier`]: https://prettier.io/
-[`black`]: https://github.com/psf/black
-[`rustfmt`]: https://github.com/rust-lang/rustfmt
+[`pull_request.tests.yml`]: .github/workflows/pull_request.tests.yml
 [GitHub status checks]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks

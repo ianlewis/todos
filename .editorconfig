@@ -13,17 +13,16 @@ charset = utf-8
 # and false to ensure it doesn't.
 trim_trailing_whitespace = true
 
-# 4 space indentation
+# tab-width of 4 is recommended for Markdown files.
 [*.md]
 indent_style = space
 indent_size = 4
 
-# Tab indentation (no size specified)
 [Makefile]
 indent_style = tab
 
 # Matches config files like package.json.
-[{*.json,*.yaml}]
+[{*.json,*.yml,*.yaml}]
 indent_style = space
 indent_size = 2
 

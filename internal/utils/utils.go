@@ -13,6 +13,8 @@
 // limitations under the License.
 
 // Package utils implements some generic utility functions.
+//
+//nolint:revive,nolintlint // utils package is an internal package.
 package utils
 
 // Check checks the error and panics if not nil.
@@ -23,6 +25,8 @@ func Check(err error) {
 }
 
 // Must checks the error and panics if not nil.
+//
+//nolint:ireturn,nolintlint // this an intended use of generics.
 func Must[T any](val T, err error) T {
 	if err != nil {
 		panic(err)

@@ -261,6 +261,8 @@ func (s *CommentScanner) Scan() bool {
 }
 
 // processCode processes source code and returns the next state.
+//
+//nolint:ireturn,nolintlint // returning interface required for state machine.
 func (s *CommentScanner) processCode(state *stateCode) (state, error) {
 	for {
 		// Check for line comment
@@ -405,6 +407,8 @@ func (s *CommentScanner) stringMatch() (int, *StringConfig, error) {
 }
 
 // processString processes strings and returns the next state.
+//
+//nolint:ireturn,nolintlint // returning interface required for state machine.
 func (s *CommentScanner) processString(state *stateString) (state, error) {
 	// Discard the string start characters.
 	if _, err := s.reader.Discard(len(s.config.Strings[state.index].Start)); err != nil {
@@ -447,6 +451,8 @@ func (s *CommentScanner) processString(state *stateString) (state, error) {
 }
 
 // processLineComment processes line comments and returns the next state.
+//
+//nolint:ireturn,nolintlint // returning interface required for state machine.
 func (s *CommentScanner) processLineComment(state *stateLineComment) (state, error) {
 	var b strings.Builder
 
@@ -481,6 +487,8 @@ func (s *CommentScanner) processLineComment(state *stateLineComment) (state, err
 
 // processLineCommentOrString processes strings or line comments when they have
 // the same start character. e.g. Vim Script.
+//
+//nolint:ireturn,nolintlint // returning interface required for state machine.
 func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrString) (bool, state, error) {
 	// Discard the string start characters.
 	if _, err := s.reader.Discard(len(s.config.Strings[state.sIndex].Start)); err != nil {
@@ -564,6 +572,8 @@ func (s *CommentScanner) processLineCommentOrString(state *stateLineCommentOrStr
 }
 
 // processMultilineComment processes multi-line comments and returns the next state.
+//
+//nolint:ireturn,nolintlint // returning interface required for state machine.
 func (s *CommentScanner) processMultilineComment(state *stateMultilineComment) (state, error) {
 	mlConfig := s.config.MultilineComments[state.index]
 
