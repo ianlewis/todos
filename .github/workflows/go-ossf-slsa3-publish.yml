@@ -29,6 +29,7 @@ env:
 jobs:
   # Validate the release and generate ldflags dynamically.
   validate:
+    name: Validate Release
     runs-on: ubuntu-latest
     permissions:
       contents: read # To checkout the code.
@@ -41,9 +42,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: ".node-version"
+
       - id: ldflags
         run: |
           set -euo pipefail
@@ -101,6 +104,7 @@ jobs:
       evaluated-envs: "VERSION:${{needs.validate.outputs.tag}}"
 
   npm-publish:
+    name: Publish to npm
     needs: [validate, build-todos]
     runs-on: ubuntu-latest
     environment: npm-production
@@ -250,6 +254,7 @@ jobs:
 
   # This step builds our image, pushes it, and outputs the repo hash digest.
   docker-build:
+    name: Build and Push Docker Image
     needs: [validate, build-todos]
     permissions:
       contents: read # for checking out the repo.

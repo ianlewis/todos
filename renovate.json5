@@ -14,28 +14,39 @@
     // Add Aqua present to allow updating CLI tools.
     // https://aquaproj.github.io/docs/guides/renovate/
     "github>aquaproj/aqua-renovate-config#2.9.0",
-  ],
 
-  // Security alerts/updates happen more frequently.
+    // Update version numbers in Makefile.
+    // https://docs.renovatebot.com/presets-customManagers/#custommanagersmakefileversions
+    "customManagers:makefileVersions",
+  ],
+  // NOTE: Set the prHourlyLimit to 0 to disable the hourly limit. This is done
+  // because we are using a monthly schedule and the default hourly limit of 2
+  // would cause Renovate to only create 2 PRs every month.
+  // Similarly set prConcurrentLimit to 0 to disable the concurrent PR limit.
+  prHourlyLimit: 0,
+  prConcurrentLimit: 0,
+
+  // Security alerts/updates.
   vulnerabilityAlerts: {
-    schedule: "* 0-4 * * *",
+    enabled: true,
+    // Explicitly set the schedule to "at any time" to ensure that security
+    // update PRs are created as soon as possible.
+    schedule: ["at any time"],
+  },
+  osvVulnerabilityAlerts: true,
+
+  // Enable the lock file maintenance feature to keep transitive dependencies up
+  // to date.
+  lockFileMaintenance: {
+    enabled: true,
+    // NOTE: Same as schedule:monthly preset.
+    schedule: ["* 0-3 1 * *"],
   },
 
   // Create a new issue for each config warning. By default, Renovate re-opens
   // an existing issue which can be very old and is easily missed. Opening new
   // issues is more intuitive.
   configWarningReuseIssue: false,
-
-  // Update the Aqua version set in the Makefile.
-  customManagers: [
-    {
-      customType: "regex",
-      managerFilePatterns: ["/Makefile/"],
-      matchStrings: ["AQUA_VERSION \\??= *(?<currentValue>\\S+)"],
-      depNameTemplate: "aquaproj/aqua",
-      datasourceTemplate: "github-releases",
-    },
-  ],
 
   // Group various ecosystem updates. Security updates are always separate.
   packageRules: [
@@ -46,6 +57,16 @@
         "slsa-framework/slsa-verifier",
       ],
       pinDigests: false,
+    },
+    {
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "aqua",
+      matchFileNames: [".aqua.yaml", ".aqua-checksums.yaml"],
+    },
+    {
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "makefile",
+      matchFileNames: ["Makefile"],
     },
     {
       matchManagers: ["github-actions"],

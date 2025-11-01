@@ -1,0 +1,88 @@
+# Copyright 2024 Ian Lewis
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["*"]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read # Needed to check out the repo.
+
+# NOTE: We use simple job names because these are used in branch rulesets and
+#       are matched by name. This makes the job names an identifier rather than
+#       just a human-readable label.
+
+jobs:
+  # tests
+  ###############################
+  unit-test:
+    uses: ./.github/workflows/workflow_call.unit-test.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # format-check
+  ###############################
+  format-check:
+    uses: ./.github/workflows/workflow_call.format-check.yml
+
+  # linters
+  ###############################
+  actionlint:
+    uses: ./.github/workflows/workflow_call.actionlint.yml
+
+  checkmake:
+    uses: ./.github/workflows/workflow_call.checkmake.yml
+
+  commitlint:
+    uses: ./.github/workflows/workflow_call.commitlint.yml
+
+  docs-check:
+    uses: ./.github/workflows/workflow_call.docs-check.yml
+
+  eslint:
+    uses: ./.github/workflows/workflow_call.eslint.yml
+
+  fixme:
+    uses: ./.github/workflows/workflow_call.fixme.yml
+
+  golangci-lint:
+    uses: ./.github/workflows/workflow_call.golangci-lint.yml
+
+  hadolint:
+    uses: ./.github/workflows/workflow_call.hadolint.yml
+
+  markdownlint:
+    uses: ./.github/workflows/workflow_call.markdownlint.yml
+
+  renovate-config-validator:
+    uses: ./.github/workflows/workflow_call.renovate-config-validator.yml
+
+  textlint:
+    uses: ./.github/workflows/workflow_call.textlint.yml
+
+  yamllint:
+    uses: ./.github/workflows/workflow_call.yamllint.yml
+
+  zizmor:
+    permissions:
+      contents: read # Needed for private repositories.
+      security-events: write # Needed to upload SARIF results.
+    uses: ./.github/workflows/workflow_call.zizmor.yml

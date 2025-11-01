@@ -34,6 +34,7 @@ func TestCheck(t *testing.T) {
 				t.Errorf("unexpected panic: %v", r)
 			}
 		}()
+
 		Check(nil)
 	})
 
@@ -53,6 +54,7 @@ func TestCheck(t *testing.T) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
 		}()
+
 		Check(errTest)
 	})
 }
@@ -90,6 +92,7 @@ func TestMust(t *testing.T) {
 				t.Errorf("expected panic, got: %v, want: %v", got, want)
 			}
 		}()
+
 		Must("test", errTest)
 	})
 }

@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Ian Lewis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: PR Title
+name: docs-check
 
 on:
-  pull_request:
-    types: [opened, edited, reopened, synchronize]
-  merge_group:
+  workflow_call:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  validate:
-    name: Validate PR Title
+  docs-check:
+    name: docs-check
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
     steps:
-      - uses: thehanimo/pr-title-checker@7fbfe05602bdd86f926d3fb3bccb6f3aed43bc70 # v1.4.3
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          configuration_path: ".github/pr-title-checker-config.json"
+          submodules: true
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: ".node-version"
+
+      - name: docs-check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          make docs-check
