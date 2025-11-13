@@ -1,4 +1,5 @@
 // Copyright 2023 Google LLC
+// Copyright 2025 Ian Lewis, Marcin Wiśniowski
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2740,6 +2741,54 @@ TODO is a function.
 			{
 				text: "# Random comment",
 				line: 3,
+			},
+		},
+	},
+	// Svelte
+	{
+		name: "Component.svelte",
+		src: `<!-- file comment -->
+		<script lang="ts">
+			// line comment
+			/*
+			block comment
+			*/
+		</script>
+		<style>
+			/*
+			block comment
+			*/
+		</style>
+		<div attribute="<!-- not a comment -->">
+			<Component attribute='<!-- also not a comment -->'>
+				<div>Hello World!</div>
+			</Component>
+		</div>
+		<!-- extra comment -->`,
+		config: "Svelte",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "<!-- file comment -->",
+				line: 1,
+			},
+			{
+				text: "// line comment",
+				line: 3,
+			},
+			{
+				text: "/*\n\t\t\tblock comment\n\t\t\t*/",
+				line: 4,
+			},
+			{
+				text: "/*\n\t\t\tblock comment\n\t\t\t*/",
+				line: 9,
+			},
+			{
+				text: "<!-- extra comment -->",
+				line: 18,
 			},
 		},
 	},
