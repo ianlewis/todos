@@ -14,4 +14,9 @@
 
 export default {
   extends: ["@commitlint/config-conventional"],
+
+  ignores: [
+    // Ignore the Initial plan commits created by the GitHub Copilot agent.
+    (commit) => /^[Ii]nitial plan/.test(commit),
+  ],
 };

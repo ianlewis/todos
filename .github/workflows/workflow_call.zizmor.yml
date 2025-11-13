@@ -19,6 +19,10 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: zizmor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   zizmor:
     name: zizmor
@@ -42,7 +46,7 @@ jobs:
         run: make zizmor
 
       - name: Upload artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: SARIF file
           path: zizmor.sarif.json
@@ -50,7 +54,7 @@ jobs:
 
       - name: Upload to code-scanning
         # NOTE: Uploading SARIF requires GitHub Enterprise and GitHub Advanced Security license for private repositories.
-        uses: github/codeql-action/upload-sarif@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/upload-sarif@0499de31b99561a6d14a36a5f662c2a54f91beee # v4.31.2
         with:
           sarif_file: zizmor.sarif.json
           category: zizmor

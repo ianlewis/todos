@@ -26,6 +26,10 @@ on:
 permissions:
   contents: read # Needed to check out the repo.
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # NOTE: We use simple job names because these are used in branch rulesets and
 #       are matched by name. This makes the job names an identifier rather than
 #       just a human-readable label.

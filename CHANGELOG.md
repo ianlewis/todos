@@ -7,15 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### Fixed
+### Added
+
+- Support was added for the [Svelte language](https://svelte.dev/)
+  ([#1805](https://github.com/ianlewis/todos/issues/1805)).
+
+### Changed
 
 - BREAKING CHANGE: `todos` no longer follows symlinks by default. Symlinks will
   be followed if the symlink is specified directly on the command line. A new
   option `--follow` was added to specify whether `todos` should follow symlinks
   when traversing directories.
   ([#1752](https://github.com/ianlewis/todos/issues/1752)).
-- Support was added for the [Svelte language](https://svelte.dev/)
-  ([#1805](https://github.com/ianlewis/todos/issues/1805)).
 
 ## [`0.13.0`] - 2025-05-18
 

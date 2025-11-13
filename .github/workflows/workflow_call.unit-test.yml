@@ -23,6 +23,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: unit-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit-test-matrix:
     name: unit tests
@@ -49,17 +53,22 @@ jobs:
         run: |
           make unit-test
 
-      - name: unit tests (macos)
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Install GNU tools (macOS)
+        if: runner.os == 'macOS'
         run: |
           brew install \
             make \
             grep \
             gawk \
-            coreutils \
-            libyaml \
-            xz
-          gmake unit-test
+            coreutils
+
+      - name: unit tests (macOS)
+        if: runner.os == 'macOS'
+        run: gmake unit-test
+
+      - name: unit tests (Linux/Windows)
+        if: runner.os == 'Linux' || runner.os == 'Windows'
+        run: make unit-test
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1

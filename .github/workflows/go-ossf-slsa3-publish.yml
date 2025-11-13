@@ -20,7 +20,9 @@ on:
 
 permissions: {}
 
-concurrency: production
+concurrency:
+  group: production
+  cancel-in-progress: true
 
 env:
   IMAGE_REGISTRY: ghcr.io
