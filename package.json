@@ -43,8 +43,8 @@
     "eslint-plugin-prettier": "5.4.0",
     "markdownlint-cli": "0.45.0",
     "prettier": "3.6.2",
-    "renovate": "41.135.5",
-    "textlint": "15.2.2",
+    "renovate": "41.169.1",
+    "textlint": "15.2.3",
     "textlint-filter-rule-comments": "1.2.2",
     "textlint-rule-spelling": "0.3.0"
   },

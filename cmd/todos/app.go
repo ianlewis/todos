@@ -65,8 +65,9 @@ func newTODOsApp() *cli.App {
 	}
 
 	copyrightNames := []string{
-		"Google LLC",
-		"Ian Lewis",
+		"2023 Google LLC",
+		"2024 Ian Lewis",
+		"2025 Marcin Wiśniowski",
 	}
 
 	app := &cli.App{
@@ -170,15 +171,15 @@ func newTODOsApp() *cli.App {
 			if c.Bool("version") {
 				versionInfo := version.GetVersionInfo()
 
-				copyright := ""
+				var copyright strings.Builder
 				for _, name := range copyrightNames {
-					copyright += "Copyright (c) " + name + "\n"
+					copyright.WriteString("Copyright (c) " + name + "\n")
 				}
 
 				_ = utils.Must(fmt.Fprintf(c.App.Writer, `%s %s
 %s
 
-%s`, c.App.Name, versionInfo.GitVersion, copyright, versionInfo.String()))
+%s`, c.App.Name, versionInfo.GitVersion, copyright.String(), versionInfo.String()))
 
 				return nil
 			}
