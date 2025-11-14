@@ -23,12 +23,12 @@ checksum:
     - all
 registries:
   - type: standard
-    ref: v4.432.0 # renovate: depName=aquaproj/aqua-registry
+    ref: v4.435.0 # renovate: depName=aquaproj/aqua-registry
 packages:
   - name: rhysd/actionlint@v1.7.8
   - name: koalaman/shellcheck@v0.11.0
   - name: jqlang/jq@jq-1.8.1
-  - name: golangci/golangci-lint@v2.6.0
+  - name: golangci/golangci-lint@v2.6.2
   - name: daixiang0/gci@v0.13.7
   - name: mvdan/gofumpt@v0.9.2
   - name: ianlewis/todos@v0.13.0
