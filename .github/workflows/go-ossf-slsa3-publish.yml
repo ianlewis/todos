@@ -128,73 +128,73 @@ jobs:
 
       - name: Download todos-linux-amd64
         id: download-linux-amd64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-amd64
 
       - name: Download todos-linux-amd64.intoto.jsonl
         id: download-linux-amd64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-amd64.intoto.jsonl
 
       - name: Download todos-linux-arm64
         id: download-linux-arm64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-arm64
 
       - name: Download todos-linux-arm64.intoto.jsonl
         id: download-linux-arm64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-arm64.intoto.jsonl
 
       - name: Download todos-darwin-amd64
         id: download-darwin-amd64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-darwin-amd64
 
       - name: Download todos-darwin-amd64.intoto.jsonl
         id: download-darwin-amd64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-darwin-amd64.intoto.jsonl
 
       - name: Download todos-darwin-arm64
         id: download-darwin-arm64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-darwin-arm64
 
       - name: Download todos-darwin-arm64.intoto.jsonl
         id: download-darwin-arm64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-darwin-arm64.intoto.jsonl
 
       - name: Download todos-windows-amd64.exe
         id: download-windows-amd64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-windows-amd64.exe
 
       - name: Download todos-windows-amd64.exe.intoto.jsonl
         id: download-windows-amd64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-windows-amd64.exe.intoto.jsonl
 
       - name: Download todos-windows-arm64.exe
         id: download-windows-arm64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-windows-arm64.exe
 
       - name: Download todos-windows-arm64.exe.intoto.jsonl
         id: download-windows-arm64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-windows-arm64.exe.intoto.jsonl
 
@@ -274,25 +274,25 @@ jobs:
 
       - name: Download todos-linux-amd64
         id: download-linux-amd64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-amd64
 
       - name: Download todos-linux-amd64.intoto.jsonl
         id: download-linux-amd64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-amd64.intoto.jsonl
 
       - name: Download todos-linux-arm64
         id: download-linux-arm64
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-arm64
 
       - name: Download todos-linux-arm64.intoto.jsonl
         id: download-linux-arm64-provenance
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           name: todos-linux-arm64.intoto.jsonl
 
