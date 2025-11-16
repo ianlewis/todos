@@ -84,6 +84,10 @@ type Options struct {
 	// for charset detection.
 	Charset string
 
+	// ErrorOnUnsupported indicates whether to return an error when an
+	// unsupported language is encountered.
+	ErrorOnUnsupported bool
+
 	// ExcludeGlobs is a list of Glob that matches excluded files.
 	ExcludeGlobs []glob.Glob
 
@@ -203,7 +207,8 @@ func (w *TODOWalker) walkDir(path string) {
 
 // walkFunc implements io.fs.WalkDirFunc.
 func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) error {
-	// If the path had an error then just skip it. WalkDir has likely hit the path already.
+	// If the path had an error then just skip it. WalkDir has likely hit the
+	// path already.
 	if err != nil {
 		return w.handleErr(path, err)
 	}
@@ -240,7 +245,7 @@ func (w *TODOWalker) walkFunc(path string, dirEntry fs.DirEntry, err error) erro
 		return check(err)
 	}
 
-	// NOTE(github.com/ianlewis/todos/issues/40): d.IsDir sometimes returns false for some directories.
+	// NOTE(#40): d.IsDir sometimes returns false for some directories.
 	if info.IsDir() {
 		// Make sure we should process this directory.
 		if err := w.processDir(path, fullPath); err != nil {
@@ -312,10 +317,10 @@ func (w *TODOWalker) processDir(path, fullPath string) error {
 		return fs.SkipDir
 	}
 
-	// NOTE: linguist regexs only matches paths with a *nix path separators.
+	// NOTE: linguist regex only match paths with a *nix path separators.
 	basePath := strings.ReplaceAll(filepath.Base(fullPath), string(os.PathSeparator), "/")
 
-	// NOTE: linguist regexs only matches paths with a path separator at the end.
+	// NOTE: linguist regex only matches paths with a path separator at the end.
 	if !strings.HasSuffix(basePath, "/") {
 		basePath += "/"
 	}
@@ -370,8 +375,9 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 	s, err := scanner.FromBytes(file.Name(), rawContents, w.options.Charset)
 	if errors.Is(err, scanner.ErrUnsupportedLanguage) || errors.Is(err, scanner.ErrBinaryFile) {
 		// Ignore unsupported languages and binary files.
-		if force {
-			// ...unless the file was explicitly specified in options.Paths.
+		if force && w.options.ErrorOnUnsupported {
+			// ...unless the file was explicitly specified in options.Paths and
+			// w.options.ErrorOnUnsupported is true.
 			//nolint:wrapcheck // error is for an explicitly specified file.
 			return err
 		}
