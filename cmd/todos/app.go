@@ -132,6 +132,12 @@ func newTODOsApp() *cli.App {
 				Usage:   "only output TODOs that match `GLOB`",
 				Aliases: []string{"l"},
 			},
+			&cli.BoolFlag{
+				Name:               "no-error-on-unsupported",
+				Usage:              "prevent errors on unsupported files",
+				Value:              false,
+				DisableDefaultText: true,
+			},
 			&cli.StringFlag{
 				Name:    "output",
 				Usage:   "output `TYPE` (default, github, json)",
@@ -390,6 +396,7 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 	opts.IncludeHidden = !cliCtx.Bool("exclude-hidden")
 	opts.IncludeVCS = cliCtx.Bool("include-vcs")
 	opts.IncludeVendored = cliCtx.Bool("include-vendored")
+	opts.ErrorOnUnsupported = !cliCtx.Bool("no-error-on-unsupported")
 
 	opts.IgnoreFileNames = cliCtx.StringSlice("ignore-file-name")
 

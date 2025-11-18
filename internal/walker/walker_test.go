@@ -1271,11 +1271,32 @@ var testCases = []testCase{
 			Config: &todos.Config{
 				Types: []string{"TODO"},
 			},
-			Charset: "UTF-8",
-			Paths:   []string{"unsupported_lang.coq"},
+			Charset:            "UTF-8",
+			Paths:              []string{"unsupported_lang.coq"},
+			ErrorOnUnsupported: true,
 		},
 		expected: nil,
 		err:      scanner.ErrUnsupportedLanguage,
+	},
+	{
+		name: "unsupported files don't generate error if ErrorOnUnsupported is false",
+		files: []*testutils.File{
+			{
+				Path:     "unsupported_lang.coq",
+				Contents: []byte{},
+				Mode:     0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:            "UTF-8",
+			Paths:              []string{"unsupported_lang.coq"},
+			ErrorOnUnsupported: false,
+		},
+		expected: nil,
+		err:      nil,
 	},
 }
 

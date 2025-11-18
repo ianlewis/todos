@@ -5,13 +5,13 @@ go 1.25.3
 require (
 	github.com/fatih/color v1.18.0
 	github.com/go-enry/go-enry/v2 v2.9.2
-	github.com/go-git/go-git/v5 v5.16.2
+	github.com/go-git/go-git/v5 v5.16.3
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.7.0
 	github.com/ianlewis/runeio v1.1.1
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/urfave/cli/v2 v2.27.7
-	golang.org/x/text v0.29.0
+	golang.org/x/text v0.31.0
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 	sigs.k8s.io/release-utils v0.12.2
 )
@@ -42,8 +42,8 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/net v0.45.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
