@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   option `--follow` was added to specify whether `todos` should follow symlinks
   when traversing directories.
   ([#1752](https://github.com/ianlewis/todos/issues/1752)).
+- The default TODO types were changed to add `FIXIT`, `ISSUE`, `WARN`, and
+  `WARNING` ([#1747](https://github.com/ianlewis/todos/issues/1747)).
 
 ## [`0.13.0`] - 2025-05-18
 
@@ -60,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING CHANGE:** `todos` now returns an exit status of 1 when TODOs are
   found ([#1657](https://github.com/ianlewis/todos/issues/1657)).
-- **BREAKING CHANGE:** `todos` now returns an exit status of 3 when an file of
+- **BREAKING CHANGE:** `todos` now returns an exit status of 3 when a file of
   an unsupported languages is passed via the command line
   ([#1668](https://github.com/ianlewis/todos/issues/1668)).
 
