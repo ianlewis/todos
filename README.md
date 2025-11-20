@@ -401,6 +401,7 @@ and add the following to your LSP server Neovim configuration.
 ```lua
 local lspconfig = require("lspconfig")
 
+-- Warning-level todos (TODO, FIXME, BUG, HACK, XXX, COMBAK)
 local todos = {
     prefix = "todos",
     lintCommand = "todos",
@@ -412,24 +413,36 @@ local todos = {
     },
 }
 
+-- Info-level todos (NOTE, INFO, PERF, OPTIMIZE, TEST)
+local todos_note = {
+    prefix = "todos",
+    lintCommand = "todos --todo-types NOTE,Note,note,INFO,Info,info,PERF,Perf,perf,OPTIM,Optim,optim,OPTIMIZE,Optimize,optimize,TEST,Test,test",
+    lintStdin = false,
+    lintIgnoreExitCode = true,
+    lintSeverity = 3, -- 3 = info
+    lintFormats = {
+        "%f:%l:%m",
+    },
+}
+
 lspconfig.efm.setup({
     settings = {
         rootMarkers = { ".git/" },
 
         languages = {
             -- Add todos to each language.
-            sh = { todos },
-            bash = { todos },
-            conf = { todos },
-            gitignore = { todos },
+            sh = { todos, todos_note },
+            bash = { todos, todos_note },
+            conf = { todos, todos_note },
+            gitignore = { todos, todos_note },
             -- Merge with any existing configuration.
-            html = { --[[ prettier, ]] todos },
-            css = { --[[ prettier, stylelint, ]] todos },
-            lua = { --[[ stylua, selene, ]] todos },
-            python = { todos },
-            rust = { todos },
-            go = { todos },
-            javascript = { --[[ prettier, ]] todos },
+            html = { --[[ prettier, ]] todos, todos_note },
+            css = { --[[ prettier, stylelint, ]] todos, todos_note },
+            lua = { --[[ stylua, selene, ]] todos, todos_note },
+            python = { todos, todos_note },
+            rust = { todos, todos_note },
+            go = { todos, todos_note },
+            javascript = { --[[ prettier, ]] todos, todos_note },
             -- ...
         },
     }
