@@ -1,5 +1,5 @@
 // Copyright 2024 Google LLC
-// Copyright 2025 Ian Lewis, Marcin Wiśniowski
+// Copyright 2025 Ian Lewis, Marcin Wiśniowski, Steffen Raabe
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -617,7 +617,7 @@ var LanguagesConfig = map[string]*Config{
 	"Rust": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
-		Strings:           cStrings,
+		Strings:           doubleQuoteString,
 	},
 	"SQL": {
 		LineComments: []LineCommentConfig{

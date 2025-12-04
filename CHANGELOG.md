@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The default TODO types were changed to add `FIXIT`, `ISSUE`, `WARN`, and
   `WARNING` ([#1747](https://github.com/ianlewis/todos/issues/1747)).
 
+### Fixed
+
+- In Rust sources (`.rs`, `.rs.in`), now only double quotes (`"`) are
+  interpreted as string termination characters. This fixes cases where `TODO`s
+  in files with lifetime specifiers (e.g. `&'static str`) would not be parsed
+  as expected.
+  ([#1829](https://github.com/ianlewis/todos/issues/1829)).
+
 ## [`0.13.0`] - 2025-05-18
 
 ### Added in `0.13.0`
