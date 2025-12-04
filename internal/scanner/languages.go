@@ -617,7 +617,7 @@ var LanguagesConfig = map[string]*Config{
 	"Rust": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
-		Strings:           cStrings,
+		Strings:           doubleQuoteString,
 	},
 	"SQL": {
 		LineComments: []LineCommentConfig{
