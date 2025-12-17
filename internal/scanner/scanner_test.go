@@ -1,5 +1,5 @@
 // Copyright 2023 Google LLC
-// Copyright 2025 Ian Lewis, Marcin Wiśniowski
+// Copyright 2025 Ian Lewis, Marcin Wiśniowski, Steffen Raabe
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2574,8 +2574,7 @@ TODO is a function.
 			// TODO is a function.
 			fn TODO() {
 				let x: String = "// Random comment";
-				let y: String = '// Random comment';
-				x + y
+				x
 			}`,
 		config: "Rust",
 		comments: []struct {
@@ -2599,8 +2598,7 @@ TODO is a function.
 			// TODO is a function.
 			fn TODO() {
 				let x: String "\"// Random comment";
-				let y: String '\'// Random comment';
-				x + y
+				x
 			}`,
 		config: "Rust",
 		comments: []struct {
@@ -2628,8 +2626,7 @@ TODO is a function.
 			fn TODO() -> String {
 				// Random comment
 				let x: String = "\"// Random comment";
-				let y: String = '\'// Random comment';
-				x + y
+				x
 			}`,
 		config: "Rust",
 		comments: []struct {
@@ -2643,6 +2640,34 @@ TODO is a function.
 			{
 				text: "// Random comment",
 				line: 8,
+			},
+		},
+	},
+	{
+		name: "lifetime_specifier.rs",
+		src: `// file comment
+
+			const A: &'static str = "some string";
+			// another file comment
+			const B: &'static str = "some other string";
+
+			// yet another file comment`,
+		config: "Rust",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// another file comment",
+				line: 4,
+			},
+			{
+				text: "// yet another file comment",
+				line: 7,
 			},
 		},
 	},
