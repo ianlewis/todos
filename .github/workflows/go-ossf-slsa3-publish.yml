@@ -16,7 +16,7 @@ name: Release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 permissions: {}
 
