@@ -1170,6 +1170,25 @@ func TestTODOScanner(t *testing.T) {
 				},
 			},
 		},
+
+		// Regression test for issue #1816
+		"regression_1816.lua": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "-- Info-level todos (NOTE, INFO, PERF, OPTIMIZE, TEST)",
+						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("--"),
+						},
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"Info"},
+			},
+			expected: nil,
+		},
 	}
 
 	for name, tc := range testCases {

@@ -29,9 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - In Rust sources (`.rs`, `.rs.in`), now only double quotes (`"`) are
   interpreted as string termination characters. This fixes cases where `TODO`s
-  in files with lifetime specifiers (e.g. `&'static str`) would not be parsed
-  as expected.
-  ([#1829](https://github.com/ianlewis/todos/issues/1829)).
+  in files with lifetime specifiers (e.g. `&'static str`) would not be parsed as
+  expected. ([#1829](https://github.com/ianlewis/todos/issues/1829)).
+- Fixed an issue where some comments were interpreted incorrectly as TODOs when
+  the TODO type was followed directly by a hyphen (`-`) without a space (e.g.
+  `// Info-level logging`)
+  ([#1816](https://github.com/ianlewis/todos/issues/1816)
 
 ## [`0.13.0`] - 2025-05-18
 
