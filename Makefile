@@ -23,6 +23,7 @@ SHELL := /usr/bin/env bash -ueo pipefail $(BASH_OPTIONS)
 uname_s := $(shell uname -s)
 uname_m := $(shell uname -m)
 arch.x86_64 := amd64
+arch.aarch64 := arm64
 arch.arm64 := arm64
 arch := $(arch.$(uname_m))
 kernel.Linux := linux
@@ -34,11 +35,12 @@ REPO_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 REPO_NAME := $(shell basename "$(REPO_ROOT)")
 
 # renovate: datasource=github-releases depName=aquaproj/aqua versioning=loose
-AQUA_VERSION ?= v2.55.1
+AQUA_VERSION ?= v2.55.2
 AQUA_REPO := github.com/aquaproj/aqua
-AQUA_CHECKSUM.Linux.x86_64 = 7371b9785e07c429608a21e4d5b17dafe6780dabe306ec9f4be842ea754de48a
-AQUA_CHECKSUM.Darwin.arm64 = cdaa13dd96187622ef5bee52867c46d4cf10765963423dc8e867c7c4decccf4d
-AQUA_CHECKSUM ?= $(AQUA_CHECKSUM.$(uname_s).$(uname_m))
+AQUA_CHECKSUM.linux.amd64 := 4b47965f71afee9bef6ac9ca4515dc2adc4bc1dfe279dceab8126e69ca3a6bc3
+AQUA_CHECKSUM.linux.arm64 := 75bef0c9e82480adb4c203b71b9af530945fda60b91f6f860b17791adf068158
+AQUA_CHECKSUM.darwin.arm64 := 040857e7f4eec6d468dedbad9a05a2409c2dfe13fc2e69c197f25bddec361793
+AQUA_CHECKSUM ?= $(AQUA_CHECKSUM.$(kernel).$(arch))
 AQUA_URL := https://$(AQUA_REPO)/releases/download/$(AQUA_VERSION)/aqua_$(kernel)_$(arch).tar.gz
 export AQUA_ROOT_DIR = $(REPO_ROOT)/.aqua
 
@@ -158,8 +160,8 @@ $(AQUA_ROOT_DIR)/.installed: .aqua.yaml .bin/aqua-$(AQUA_VERSION)/aqua
 		loglevel="debug"; \
 	fi; \
 	$(REPO_ROOT)/.bin/aqua-$(AQUA_VERSION)/aqua \
+		--config "$(REPO_ROOT)/.aqua.yaml" \
 		--log-level "$${loglevel}" \
-		--config .aqua.yaml \
 		install; \
 	touch $@
 
@@ -458,13 +460,10 @@ checkmake: $(AQUA_ROOT_DIR)/.installed ## Runs the checkmake linter.
 	if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
 		# TODO: Remove newline from the format string after updating checkmake. \
 		checkmake \
-			--config .checkmake.ini \
 			--format '::error file={{.FileName}},line={{.LineNumber}}::{{.Rule}}: {{.Violation}}'$$'\n' \
 			$${files}; \
 	else \
-		checkmake \
-			--config .checkmake.ini \
-			$${files}; \
+		checkmake $${files}; \
 	fi
 
 .PHONY: commitlint
@@ -492,7 +491,6 @@ commitlint: node_modules/.installed ## Run commitlint linter.
 		commitlint_to="HEAD"; \
 	fi; \
 	$(REPO_ROOT)/node_modules/.bin/commitlint \
-		--config commitlint.config.mjs \
 		--from "$${commitlint_from}" \
 		--to "$${commitlint_to}" \
 		--verbose \
@@ -645,60 +643,12 @@ markdownlint: node_modules/.installed $(AQUA_ROOT_DIR)/.installed ## Runs the ma
 	files=$$( \
 		git ls-files --deduplicate \
 			'*.md' \
-			':!:.github/pull_request_template.md' \
-			':!:.github/ISSUE_TEMPLATE/*.md' \
 			| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
 	); \
 	if [ "$${files}" == "" ]; then \
 		exit 0; \
 	fi; \
-	if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-		exit_code=0; \
-		while IFS="" read -r p && [ -n "$$p" ]; do \
-			file=$$(echo "$$p" | jq -cr '.fileName // empty'); \
-			line=$$(echo "$$p" | jq -cr '.lineNumber // empty'); \
-			endline=$${line}; \
-			message=$$(echo "$$p" | jq -cr '.ruleNames[0] + "/" + .ruleNames[1] + " " + .ruleDescription + " [Detail: \"" + .errorDetail + "\", Context: \"" + .errorContext + "\"]"'); \
-			exit_code=1; \
-			echo "::error file=$${file},line=$${line},endLine=$${endline}::$${message}"; \
-		done <<< "$$($(REPO_ROOT)/node_modules/.bin/markdownlint --config .markdownlint.yaml --dot --json $${files} 2>&1 | jq -c '.[]')"; \
-		if [ "$${exit_code}" != "0" ]; then \
-			exit "$${exit_code}"; \
-		fi; \
-	else \
-		$(REPO_ROOT)/node_modules/.bin/markdownlint \
-			--config .markdownlint.yaml \
-			--dot \
-			$${files}; \
-	fi; \
-	files=$$( \
-		git ls-files --deduplicate \
-			'.github/pull_request_template.md' \
-			'.github/ISSUE_TEMPLATE/*.md' \
-			| while IFS='' read -r f; do [ -f "$${f}" ] && echo "$${f}" || true; done \
-	); \
-	if [ "$${files}" == "" ]; then \
-		exit 0; \
-	fi; \
-	if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
-		exit_code=0; \
-		while IFS="" read -r p && [ -n "$$p" ]; do \
-			file=$$(echo "$$p" | jq -cr '.fileName // empty'); \
-			line=$$(echo "$$p" | jq -cr '.lineNumber // empty'); \
-			endline=$${line}; \
-			message=$$(echo "$$p" | jq -cr '.ruleNames[0] + "/" + .ruleNames[1] + " " + .ruleDescription + " [Detail: \"" + .errorDetail + "\", Context: \"" + .errorContext + "\"]"'); \
-			exit_code=1; \
-			echo "::error file=$${file},line=$${line},endLine=$${endline}::$${message}"; \
-		done <<< "$$($(REPO_ROOT)/node_modules/.bin/markdownlint --config .github/template.markdownlint.yaml --dot --json $${files} 2>&1 | jq -c '.[]')"; \
-		if [ "$${exit_code}" != "0" ]; then \
-			exit "$${exit_code}"; \
-		fi; \
-	else \
-		$(REPO_ROOT)/node_modules/.bin/markdownlint \
-			--config .github/template.markdownlint.yaml \
-			--dot \
-			$${files}; \
-	fi
+	$(REPO_ROOT)/node_modules/.bin/markdownlint-cli2 $${files}
 
 .PHONY: renovate-config-validator
 renovate-config-validator: node_modules/.installed ## Validate Renovate configuration.
@@ -721,23 +671,23 @@ textlint: node_modules/.installed $(AQUA_ROOT_DIR)/.installed ## Runs the textli
 	fi; \
 	if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
 		exit_code=0; \
+		textlint_out="$$($(REPO_ROOT)/node_modules/.bin/textlint --format json $${files} | jq -cr '.[]' || exit_code=\"$$?\")"; \
 		while IFS="" read -r p && [ -n "$$p" ]; do \
 			filePath=$$(echo "$$p" | jq -cr '.filePath // empty'); \
 			file=$$(realpath --relative-to="." "$${filePath}"); \
+			messages=$$(echo "$$p" | jq -cr '.messages[] // empty'); \
 			while IFS="" read -r m && [ -n "$$m" ]; do \
 				line=$$(echo "$$m" | jq -cr '.loc.start.line // empty'); \
 				endline=$$(echo "$$m" | jq -cr '.loc.end.line // empty'); \
 				col=$$(echo "$${m}" | jq -cr '.loc.start.column // empty'); \
 				endcol=$$(echo "$${m}" | jq -cr '.loc.end.column // empty'); \
 				message=$$(echo "$$m" | jq -cr '.message // empty'); \
-				exit_code=1; \
 				echo "::error file=$${file},line=$${line},endLine=$${endline},col=$${col},endColumn=$${endcol}::$${message}"; \
-			done <<<"$$(echo "$$p" | jq -cr '.messages[] // empty')"; \
-		done <<< "$$($(REPO_ROOT)/node_modules/.bin/textlint -c .textlintrc.yaml --format json $${files} 2>&1 | jq -c '.[]')"; \
+			done <<<"$${messages}"; \
+		done <<<"$${textlint_out}"; \
 		exit "$${exit_code}"; \
 	else \
 		$(REPO_ROOT)/node_modules/.bin/textlint \
-			--config .textlintrc.yaml \
 			$${files}; \
 	fi
 
@@ -759,7 +709,6 @@ yamllint: .venv/.installed ## Runs the yamllint linter.
 	fi; \
 	$(REPO_ROOT)/.venv/bin/yamllint \
 		--strict \
-		--config-file .yamllint.yaml \
 		--format "$${format}" \
 		$${files}
 
@@ -779,14 +728,14 @@ zizmor: .venv/.installed ## Runs the zizmor linter.
 	fi; \
 	if [ "$(OUTPUT_FORMAT)" == "github" ]; then \
 		$(REPO_ROOT)/.venv/bin/zizmor \
-			--config .zizmor.yml \
+			--config "$(REPO_ROOT)/.zizmor.yml" \
 			--quiet \
 			--pedantic \
 			--format sarif \
 			$${files} > zizmor.sarif.json; \
 	fi; \
 	$(REPO_ROOT)/.venv/bin/zizmor \
-		--config .zizmor.yml \
+		--config "$(REPO_ROOT)/.zizmor.yml" \
 		--quiet \
 		--pedantic \
 		--format plain \
