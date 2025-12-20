@@ -47,6 +47,13 @@ var (
 		},
 	}
 
+	// ini configuration files.
+	iniLineComments = []LineCommentConfig{
+		{
+			Start: []rune(";"),
+		},
+	}
+
 	// C-style languages.
 
 	// cLineComments are C-style line comments.
@@ -145,11 +152,7 @@ var (
 //nolint:gochecknoglobals // remove in the future.
 var LanguagesConfig = map[string]*Config{
 	"Assembly": {
-		LineComments: []LineCommentConfig{
-			{
-				Start: []rune{';'},
-			},
-		},
+		LineComments:      iniLineComments,
 		MultilineComments: cBlockComments,
 		// NOTE: Assembly doesn't have string escape characters.
 		Strings: []StringConfig{
@@ -180,9 +183,7 @@ var LanguagesConfig = map[string]*Config{
 		Strings:           cStrings,
 	},
 	"Clojure": {
-		LineComments: []LineCommentConfig{
-			{Start: []rune{';'}},
-		},
+		LineComments:      iniLineComments,
 		MultilineComments: nil,
 		Strings:           doubleQuoteString,
 	},
@@ -247,9 +248,7 @@ var LanguagesConfig = map[string]*Config{
 		),
 	},
 	"Emacs Lisp": {
-		LineComments: []LineCommentConfig{
-			{Start: []rune{';'}},
-		},
+		LineComments:      iniLineComments,
 		MultilineComments: nil,
 		Strings:           doubleQuoteString,
 	},
@@ -273,6 +272,14 @@ var LanguagesConfig = map[string]*Config{
 		},
 		MultilineComments: nil,
 		Strings:           fortranStrings,
+	},
+	"Git Config": {
+		LineComments: concat(
+			hashLineComments,
+			iniLineComments,
+		),
+		MultilineComments: nil,
+		Strings:           doubleQuoteString,
 	},
 	"Go": {
 		LineComments:      cLineComments,
@@ -681,11 +688,7 @@ var LanguagesConfig = map[string]*Config{
 		Strings:           cStrings,
 	},
 	"Unix Assembly": {
-		LineComments: []LineCommentConfig{
-			{
-				Start: []rune{';'},
-			},
-		},
+		LineComments:      iniLineComments,
 		MultilineComments: cBlockComments,
 		// NOTE: Assembly doesn't have string escape characters.
 		Strings: fortranStrings,
