@@ -2014,6 +2014,36 @@ end
 		},
 	},
 
+	// INI
+	{
+		name: "line_comments.ini",
+		src: `; last modified 1 April 2001 by John Doe
+[owner]
+name = John Doe
+organization = Acme Widgets Inc.
+
+[database]
+# use IP address in case network name resolution is not working
+server = 192.0.2.62
+port = 143
+file = "payroll.dat"
+value = "; Not a comment in string"`,
+		config: "INI",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "; last modified 1 April 2001 by John Doe",
+				line: 1,
+			},
+			{
+				text: "# use IP address in case network name resolution is not working",
+				line: 7,
+			},
+		},
+	},
+
 	// Lua
 	{
 		name: "line_comments.lua",
