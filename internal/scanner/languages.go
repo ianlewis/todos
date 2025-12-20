@@ -407,6 +407,12 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: cBlockComments,
 		Strings:           cStrings,
 	},
+	// https://json5.org/
+	"JSON5": {
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
+	},
 	"Java": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,

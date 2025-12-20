@@ -9,13 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support was added for [JSON5](https://json5.org/)
+  ([#1745](https://github.com/ianlewis/todos/issues/1745)).
 - Support was added for the [Svelte language](https://svelte.dev/)
   ([#1805](https://github.com/ianlewis/todos/issues/1805)).
-- Support was added for the [Git Config](https://git-scm.com/docs/git-config#_syntax)
+- Support was added for [Git Config](https://git-scm.com/docs/git-config#_syntax)
   ([#1743](https://github.com/ianlewis/todos/issues/1743)).
-- Support was added for the [INI files](https://en.wikipedia.org/wiki/INI_file)
+- Support was added for [INI files](https://en.wikipedia.org/wiki/INI_file)
   ([#1787](https://github.com/ianlewis/todos/issues/1787)).
-- Support was added for the [EditorConfig](https://editorconfig.org/)
+- Support was added for [EditorConfig](https://editorconfig.org/)
   ([#1744](https://github.com/ianlewis/todos/issues/1744)).
 - A new `--no-error-on-unsupported` flag was added to suppress errors when
   unsupported files are passed via the command line
