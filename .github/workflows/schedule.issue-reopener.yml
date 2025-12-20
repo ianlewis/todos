@@ -30,6 +30,8 @@ permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  # NOTE: Allow runs to execute sequentially. This prevents a push event from
+  #       canceling an issues event run when a merge to main closes an issue.
   cancel-in-progress: false
 
 jobs:

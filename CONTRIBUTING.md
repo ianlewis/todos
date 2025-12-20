@@ -25,10 +25,10 @@ create an issue.
 
 ### Review the community guidelines and Code of Conduct
 
-All of my repositories follow [Google's Open Source Community Guidelines] and
-contributors are also expected to follow my [Code of Conduct]. Please be
-familiar with them. Please see the Code of Conduct about how to report instances
-of abusive, harassing, or otherwise unacceptable behavior.
+For all of my repositories contributors are also expected to follow my [Code of
+Conduct]. Please take a few minutes to read over it. Please see the Code of
+Conduct about how to report instances of abusive, harassing, or otherwise
+unacceptable behavior.
 
 ## Providing feedback
 
@@ -234,7 +234,6 @@ The following prefixes are supported and are checked using the
 [Security Policy]: SECURITY.md
 [Code of Conduct]: CODE_OF_CONDUCT.md
 [Developer Certificate of Origin]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
-[Google's Open Source Community Guidelines]: https://opensource.google/conduct/
 [Connecting to GitHub with SSH]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
 [pull request]: https://docs.github.com/pull-requests
 [About pull request reviews]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews
