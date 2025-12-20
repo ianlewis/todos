@@ -68,6 +68,7 @@ func newTODOsApp() *cli.App {
 		"2023 Google LLC",
 		"2024 Ian Lewis",
 		"2025 Marcin Wiśniowski",
+		"2025 Steffen Raabe",
 	}
 
 	app := &cli.App{
