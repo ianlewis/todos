@@ -793,7 +793,7 @@ clean: ## Delete temporary files.
 	@$(RM) packages/todos-darwin-amd64/*.tgz \
 	@$(RM) packages/todos-darwin-arm64/todos \
 	@$(RM) packages/todos-darwin-arm64/*.tgz \
-	@$(RM) packages/todos-windows-amd64/todos \
+	@$(RM) packages/todos-windows-amd64/todos.exe \
 	@$(RM) packages/todos-windows-amd64/*.tgz \
-	@$(RM) packages/todos-windows-arm64/todos \
+	@$(RM) packages/todos-windows-arm64/todos.exe \
 	@$(RM) packages/todos-windows-arm64/*.tgz
