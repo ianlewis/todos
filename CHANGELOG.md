@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support was added for the [Svelte language](https://svelte.dev/)
   ([#1805](https://github.com/ianlewis/todos/issues/1805)).
+- Support was added for the [git config](https://git-scm.com/docs/git-config#_syntax)
+  ([#1743](https://github.com/ianlewis/todos/issues/1743)).
 - A new `--no-error-on-unsupported` flag was added to suppress errors when
   unsupported files are passed via the command line
   ([#1751](https://github.com/ianlewis/todos/issues/1751)).

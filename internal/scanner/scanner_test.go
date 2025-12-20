@@ -795,6 +795,82 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// Git Config
+	{
+		name: ".gitconfig",
+		src: `# This is the config file, and
+# a '#' or ';' character indicates
+# a comment
+
+; core variables
+[core]
+	; Don't trust file modes
+	filemode = false
+
+; Our diff algorithm
+[diff]
+	external = /usr/local/bin/diff-wrapper
+	renames = true
+
+; Proxy settings
+[core]
+	gitproxy=proxy-command for kernel.org
+	gitproxy=default-proxy ; for all the rest
+
+; HTTP
+[http]
+	sslVerify
+[http "https://weak.example.com"]
+	sslVerify = false
+	cookieFile = /tmp/cookie.txt
+
+[section "; TODO not a comment in section name"]
+	key = value
+`,
+		config: "Git Config",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# This is the config file, and",
+				line: 1,
+			},
+			{
+				text: "# a '#' or ';' character indicates",
+				line: 2,
+			},
+			{
+				text: "# a comment",
+				line: 3,
+			},
+			{
+				text: "; core variables",
+				line: 5,
+			},
+			{
+				text: "; Don't trust file modes",
+				line: 7,
+			},
+			{
+				text: "; Our diff algorithm",
+				line: 10,
+			},
+			{
+				text: "; Proxy settings",
+				line: 15,
+			},
+			{
+				text: "; for all the rest",
+				line: 18,
+			},
+			{
+				text: "; HTTP",
+				line: 20,
+			},
+		},
+	},
+
 	// Go
 	{
 		name: "line_comments.go",
