@@ -1407,6 +1407,92 @@ Author of questions and answers in a website
 		},
 	},
 
+	// JSON
+	{
+		name: "line_comments.json",
+		src: `// file comment
+		{
+			"// not a comment": "some_value", # another comment
+		}`,
+		config: "JSON",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "# another comment",
+				line: 3,
+			},
+		},
+	},
+
+	{
+		name: "multiline_comments.json",
+		src: `/*
+file comment
+*/
+{
+	"// not a comment": "/* not a comment */",
+}`,
+		config: "JSON",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "/*\nfile comment\n*/",
+				line: 1,
+			},
+		},
+	},
+
+	// JSON5
+	{
+		name: "line_comments.json5",
+		src: `// file comment
+		{
+			"// not a comment": "some_value", // another comment
+		}`,
+		config: "JSON5",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// another comment",
+				line: 3,
+			},
+		},
+	},
+
+	{
+		name: "multiline_comments.json5",
+		src: `/*
+file comment
+*/
+{
+	"// not a comment": "/* not a comment */",
+}`,
+		config: "JSON5",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "/*\nfile comment\n*/",
+				line: 1,
+			},
+		},
+	},
+
 	// Julia
 	{
 		name: "comments.jl",
