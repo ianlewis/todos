@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#1743](https://github.com/ianlewis/todos/issues/1743)).
 - Support was added for the [INI files](https://en.wikipedia.org/wiki/INI_file)
   ([#1787](https://github.com/ianlewis/todos/issues/1787)).
+- Support was added for the [EditorConfig](https://editorconfig.org/)
+  ([#1744](https://github.com/ianlewis/todos/issues/1744)).
 - A new `--no-error-on-unsupported` flag was added to suppress errors when
   unsupported files are passed via the command line
   ([#1751](https://github.com/ianlewis/todos/issues/1751)).

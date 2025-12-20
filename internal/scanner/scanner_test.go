@@ -390,6 +390,86 @@ var scannerTestCases = []*struct {
 		},
 	},
 
+	// EditorConfig
+	{
+		name: ".editorconfig",
+		src: `# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# Matches multiple files with brace expansion notation
+# Set default charset
+[*.{js,py}]
+charset = utf-8
+
+# 4 space indentation
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+# Indentation override for all JS under lib directory
+[lib/**.js]
+indent_style = space
+indent_size = 2
+
+# Matches the exact files either package.json or .travis.yml
+[{package.json,.travis.yml}]
+indent_style = space
+indent_size = 2`,
+		config: "EditorConfig",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "# EditorConfig is awesome: https://editorconfig.org",
+				line: 1,
+			},
+			{
+				text: "# top-most EditorConfig file",
+				line: 3,
+			},
+			{
+				text: "# Unix-style newlines with a newline ending every file",
+				line: 6,
+			},
+			{
+				text: "# Matches multiple files with brace expansion notation",
+				line: 11,
+			},
+			{
+				text: "# Set default charset",
+				line: 12,
+			},
+			{
+				text: "# 4 space indentation",
+				line: 16,
+			},
+			{
+				text: "# Tab indentation (no size specified)",
+				line: 21,
+			},
+			{
+				text: "# Indentation override for all JS under lib directory",
+				line: 25,
+			},
+			{
+				text: "# Matches the exact files either package.json or .travis.yml",
+				line: 30,
+			},
+		},
+	},
+
 	// Elixir
 	{
 		name: "line_comments.ex",
