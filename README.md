@@ -54,7 +54,9 @@ cp todos ~/bin/
 
 ### Install using `npm`
 
-Install `todos` by installing the `@ianlewis/todos` package from `npm`:
+You can install `todos` via the `@ianlewis/todos` package using `npm`. The
+package requires that optional dependencies are installed to detect the correct
+sub-package for your platform.
 
 ```shell
 npm install -g @ianlewis/todos
