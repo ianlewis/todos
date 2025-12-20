@@ -126,22 +126,48 @@ func NewTODOScanner(s CommentScanner, config *Config) *TODOScanner {
 	// match[0][1]
 	typesMatch := strings.Join(quotedTypes, "|")
 
+	// msgMatch matches the message and label parts when there is space between
+	// the comment marker and the comment itself (e.g. // TODO).
 	msgMatch := strings.Join([]string{
-		`\s*`,                       // Naked
-		`\s*[:\-/]+\s*(.*)`,         // With message (match[0][3])
-		`\((.*)\)\s*`,               // Naked w/ label (match[0][4])
-		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][5]) and message (match[0][6])
+		// Naked match.
+		// e.g. `// TODO`
+		`\s*`,
+
+		// With label (match[0][3]) and message (match[0][4])
+		// e.g. `// TODO(label): message` or `// TODO(label) - message`
+		`\((.*)\)(?:\s+[\-/]*|\s*:*)\s*(.*)`,
+
+		// Naked w/ label (match[0][5])
+		// e.g. `// TODO(label)`
+		`\((.*)\)\s*`,
+
+		// With message (match[0][6])
+		// e.g. `// TODO: message` or `// TODO - message`
+		`\s*(?::+|\s+[\-/]+)\s*(.*)`,
 	}, "|")
 
+	// msgMatch2 matches the message and label parts when there is no space
+	// between the comment marker and the comment itself (e.g. //TODO).
 	msgMatch2 := strings.Join([]string{
-		`\s*`,                       // Naked
-		`\s*[:\-/]*\s*(.*)`,         // With message (match[0][3])
-		`\((.*)\)\s*`,               // Naked w/ label (match[0][4])
-		`\((.*)\)\s*[:\-/]*\s*(.*)`, // With label (match[0][5]) and message (match[0][6])
+		// Naked match.
+		// e.g. `//TODO`
+		`\s*`,
+
+		// With label (match[0][3]) and message (match[0][4])
+		// e.g. `//TODO(label): message` or `//TODO(label) - message`
+		`\((.*)\)\s*(?:\s+[\-/]*|:*)\s*(.*)`,
+
+		// Naked w/ label (match[0][5])
+		// e.g. `//TODO(label)`
+		`\((.*)\)\s*`,
+
+		// With message (match[0][6])
+		// e.g. `//TODO: message` or `//TODO - message`
+		`\s*(?:\s+[\-/]*|:*)\s*(.*)`,
 	}, "|")
 
 	snr.lineMatch = []*regexp.Regexp{
-		regexp.MustCompile(`^\s*@?(` + typesMatch + `)(` + msgMatch + `)$`),
+		regexp.MustCompile(`^\s+@?(` + typesMatch + `)(` + msgMatch + `)$`),
 		regexp.MustCompile(`^@?(` + typesMatch + `)(` + msgMatch2 + `)$`),
 	}
 	snr.multilineMatch = regexp.MustCompile(
@@ -193,12 +219,12 @@ func (t *TODOScanner) findMultilineMatches(c *scanner.Comment) []*TODO {
 
 		match := t.multilineMatch.FindAllStringSubmatch(lineText, 1)
 		if len(match) != 0 && len(match[0]) > 2 && match[0][1] != "" {
-			label := match[0][4]
+			label := match[0][3]
 			if label == "" {
 				label = match[0][5]
 			}
 
-			message := match[0][3]
+			message := match[0][4]
 			if message == "" {
 				message = match[0][6]
 			}
@@ -228,12 +254,12 @@ func (t *TODOScanner) findLineMatch(c *scanner.Comment) *TODO {
 	for _, lnMatch := range t.lineMatch {
 		match := lnMatch.FindAllStringSubmatch(commentText, 1)
 		if len(match) != 0 && len(match[0]) > 2 && match[0][1] != "" {
-			label := match[0][4]
+			label := match[0][3]
 			if label == "" {
 				label = match[0][5]
 			}
 
-			message := match[0][3]
+			message := match[0][4]
 			if message == "" {
 				message = match[0][6]
 			}
