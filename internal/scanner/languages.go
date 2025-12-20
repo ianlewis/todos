@@ -221,6 +221,12 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: nil,
 		Strings:           cStrings,
 	},
+	// https://editorconfig.org/
+	"EditorConfig": {
+		LineComments:      hashLineComments,
+		MultilineComments: nil,
+		Strings:           nil,
+	},
 	"Elixir": {
 		LineComments: hashLineComments,
 		// Support function documentation.
