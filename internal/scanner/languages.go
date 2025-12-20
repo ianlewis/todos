@@ -273,6 +273,7 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: nil,
 		Strings:           fortranStrings,
 	},
+	// https://git-scm.com/docs/git-config#_syntax
 	"Git Config": {
 		LineComments: concat(
 			hashLineComments,
@@ -368,6 +369,15 @@ var LanguagesConfig = map[string]*Config{
 				End:   []rune("-}"),
 			},
 		},
+		Strings: cStrings,
+	},
+	// https://en.wikipedia.org/wiki/INI_file
+	"INI": {
+		LineComments: concat(
+			iniLineComments,
+			// Some INI parsers also support hash comments.
+			hashLineComments,
+		),
 		Strings: cStrings,
 	},
 	"Ignore List": {
