@@ -38,6 +38,7 @@ jobs:
     outputs:
       tag: ${{ steps.ldflags.outputs.tag }}
       version: ${{ steps.ldflags.outputs.version }}
+      npm_tag: ${{ steps.ldflags.outputs.npm_tag }}
     steps:
       - id: checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -54,7 +55,10 @@ jobs:
           set -euo pipefail
 
           version_tag=$(git describe --tags --always --dirty)
-          version=$(echo "${version_tag}" | sed -E 's/^v([0-9]+.[0-9]+.[0-9]+.*)/\1/')
+          version=$(echo "${version_tag}" | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+.*)/\1/')
+          npm_tag=$(echo "${version_tag}" | sed -E 's/^v?([0-9]+\.[0-9]+\.[0-9]+)(-([A-Za-z]+)\.[0-9]+)?/\3/')
+          npm_tag=${npm_tag:-latest}
+
           exit_code=0
           if ! grep "${version_tag}" CHANGELOG.md >/dev/null; then
             echo >&2 "${version_tag} must be included in the CHANGELOG.md"
@@ -79,8 +83,11 @@ jobs:
             done
           done
 
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "tag=${version_tag}" >> "$GITHUB_OUTPUT"
+          {
+            echo "version=${version}"
+            echo "tag=${version_tag}"
+            echo "npm_tag=${npm_tag}"
+          } >> "$GITHUB_OUTPUT"
           exit "${exit_code}"
 
   build-todos:
@@ -225,11 +232,14 @@ jobs:
           done
 
       - name: Publish to npm
+        env:
+          NPM_TAG: ${{ needs.validate.outputs.npm_tag }}
         run: |
           set -euo pipefail
 
           # Publish first package to npm.
           npm publish \
+            --tag="${NPM_TAG:-latest}" \
             --provenance \
             --access public
 
@@ -248,6 +258,7 @@ jobs:
               (
                 cd "packages/todos-${os}-${arch}"
                 npm publish \
+                  --tag="${NPM_TAG:-latest}" \
                   --provenance \
                   --access public
               )
