@@ -5,9 +5,9 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [`0.14.0-rc.2`] - 2025-12-20
+## [`0.14.0-rc.3`] - 2025-12-20
 
-### Added in `0.14.0-rc.2`
+### Added in `0.14.0-rc.3`
 
 - Support was added for [JSON5](https://json5.org/)
   ([#1745](https://github.com/ianlewis/todos/issues/1745)).
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unsupported files are passed via the command line
   ([#1751](https://github.com/ianlewis/todos/issues/1751)).
 
-### Changed in `0.14.0-rc.2`
+### Changed in `0.14.0-rc.3`
 
 - BREAKING CHANGE: `todos` no longer follows symlinks by default. Symlinks will
   be followed if the symlink is specified directly on the command line. A new
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The default TODO types were changed to add `FIXIT`, `ISSUE`, `WARN`, and
   `WARNING` ([#1747](https://github.com/ianlewis/todos/issues/1747)).
 
-### Fixed in `0.14.0-rc.2`
+### Fixed in `0.14.0-rc.3`
 
 - In Rust sources (`.rs`, `.rs.in`), now only double quotes (`"`) are
   interpreted as string termination characters. This fixes cases where `TODO`s
@@ -322,4 +322,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [`0.11.0`]: https://github.com/ianlewis/todos/releases/tag/v0.11.0
 [`0.12.0`]: https://github.com/ianlewis/todos/releases/tag/v0.12.0
 [`0.13.0`]: https://github.com/ianlewis/todos/releases/tag/v0.13.0
-[`0.14.0-rc.2`]: https://github.com/ianlewis/todos/releases/tag/v0.14.0-rc.2
+[`0.14.0-rc.3`]: https://github.com/ianlewis/todos/releases/tag/v0.14.0-rc.3
