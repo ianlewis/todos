@@ -124,7 +124,7 @@ package-lock.json: package.json $(AQUA_ROOT_DIR)/.installed
 			--package-lock-only \
 			--no-audit \
 			--no-fund; \
-	fi; \
+	fi
 
 node_modules/.installed: package-lock.json
 	@# bash \
