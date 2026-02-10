@@ -119,6 +119,9 @@ type Options struct {
 	// LabelGlobs is a list of Glob to filter TODOs by label.
 	LabelGlobs []glob.Glob
 
+	// Language parses files as the given programming language, if specified.
+	Language string
+
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
 }
@@ -372,7 +375,7 @@ func (w *TODOWalker) scanFile(file *os.File, force bool) error {
 		return nil
 	}
 
-	s, err := scanner.FromBytes(file.Name(), rawContents, w.options.Charset)
+	s, err := scanner.FromBytes(file.Name(), rawContents, w.options.Language, w.options.Charset)
 	if errors.Is(err, scanner.ErrUnsupportedLanguage) || errors.Is(err, scanner.ErrBinaryFile) {
 		// Ignore unsupported languages and binary files.
 		if force && w.options.ErrorOnUnsupported {

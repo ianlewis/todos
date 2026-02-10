@@ -3877,7 +3877,7 @@ func TestFromFile(t *testing.T) {
 			_ = testutils.Must(w.Write(testCase.src))
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
-			s, err := FromFile(f, testCase.scanCharset)
+			s, err := FromFile(f, "", testCase.scanCharset)
 			if diff := cmp.Diff(testCase.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("FromFile: unexpected err (-want +got):\n%s", diff)
 			}
@@ -3910,7 +3910,7 @@ func TestFromBytes(t *testing.T) {
 				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
 			}
 
-			s, err := FromBytes(tc.name, text, tc.scanCharset)
+			s, err := FromBytes(tc.name, text, "", tc.scanCharset)
 			if diff := cmp.Diff(tc.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("FromBytes: unexpected err (-want +got):\n%s", diff)
 			}
