@@ -50,8 +50,8 @@ type Symlink struct {
 
 // NewTempDir creates a new TempDir. This creates a new temporary directory and
 // fills it with the files given. Intermediate directories are created
-// automatically with 0700 permissions. This function panics if an error occurs
-// when creating the files.
+// automatically with 0700 permissions. This function calls t.Fatal if an error
+// occurs when creating the files.
 func NewTempDir(t *testing.T, files []*File, links []*Symlink) *TempDir {
 	t.Helper()
 
