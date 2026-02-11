@@ -17,6 +17,7 @@ package walker
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -1755,22 +1756,20 @@ type fixture struct {
 	err []error
 }
 
-func (f *fixture) cleanup() {
-	testutils.Check(os.Chdir(f.wd))
-	f.dir.Cleanup()
-}
+func newFixture(
+	t *testing.T,
+	files []*testutils.File,
+	links []*testutils.Symlink,
+	opts *Options,
+) (*fixture, *TODOWalker) {
+	t.Helper()
 
-func newFixture(files []*testutils.File, links []*testutils.Symlink, opts *Options) (*fixture, *TODOWalker) {
-	dir := testutils.NewTempDir(files, links)
+	dir := testutils.NewTempDir(t, files, links)
 
-	cleanup, cancel := testutils.WithCancel(func() {
-		dir.Cleanup()
-	}, nil)
-	defer cleanup()
+	wd, err := os.Getwd()
+	testutils.Check(t, err)
 
-	wd := testutils.Must(os.Getwd())
-
-	testutils.Check(os.Chdir(dir.Dir()))
+	t.Chdir(dir.Dir())
 
 	if len(opts.Paths) == 0 {
 		opts.Paths = []string{"."}
@@ -1803,8 +1802,6 @@ func newFixture(files []*testutils.File, links []*testutils.Symlink, opts *Optio
 		return nil
 	}
 
-	cancel()
-
 	return f, New(opts)
 }
 
@@ -1816,19 +1813,16 @@ type repoFixture struct {
 	err    []error
 }
 
-func (f *repoFixture) cleanup() {
-	testutils.Check(os.Chdir(f.wd))
-	f.tmpDir.Cleanup()
-}
-
 // newRepoFixture creates a fixture with a temporary directory with a git
 // repository created at the root. Files are created and committed into the git
 // repository.
-func newRepoFixture(author, email string,
+func newRepoFixture(t *testing.T, author, email string,
 	files []*testutils.File, links []*testutils.Symlink,
 	opts *Options,
 ) (*repoFixture, *TODOWalker) {
-	return newDirRepoFixture(author, email, ".", files, nil, links, nil, opts)
+	t.Helper()
+
+	return newDirRepoFixture(t, author, email, ".", files, nil, links, nil, opts)
 }
 
 // newDirRepoFixture creates a fixture with a temporary directory and a git
@@ -1839,27 +1833,27 @@ func newRepoFixture(author, email string,
 // repository. The fixture sets the working directory to the temporary
 // directory.
 func newDirRepoFixture(
+	t *testing.T,
 	author, email, repoSubPath string,
 	repoFiles, dirFiles []*testutils.File,
 	repoLinks, dirLinks []*testutils.Symlink,
 	opts *Options,
 ) (*repoFixture, *TODOWalker) {
-	tmpDir := testutils.NewTempDir(dirFiles, dirLinks)
+	t.Helper()
+
+	tmpDir := testutils.NewTempDir(t, dirFiles, dirLinks)
 
 	repo := testutils.NewTestRepo(
+		t,
 		filepath.Join(tmpDir.Dir(), repoSubPath),
 		author, email,
 		repoFiles, repoLinks,
 	)
 
-	cleanup, cancel := testutils.WithCancel(func() {
-		tmpDir.Cleanup()
-	}, nil)
-	defer cleanup()
+	wd, err := os.Getwd()
+	testutils.Check(t, err)
 
-	wd := testutils.Must(os.Getwd())
-
-	testutils.Check(os.Chdir(tmpDir.Dir()))
+	t.Chdir(tmpDir.Dir())
 
 	if len(opts.Paths) == 0 {
 		opts.Paths = []string{"."}
@@ -1895,8 +1889,6 @@ func newDirRepoFixture(
 
 	opts.Blame = true
 
-	cancel()
-
 	return fixture, New(opts)
 }
 
@@ -1906,8 +1898,7 @@ func TestTODOWalker(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			f, w := newFixture(tc.files, tc.links, tc.opts)
-			defer f.cleanup()
+			f, w := newFixture(t, tc.files, tc.links, tc.opts)
 
 			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
@@ -1931,8 +1922,7 @@ func TestTODOWalker_symlink(t *testing.T) {
 		tc := symlinkTestCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			f, w := newFixture(tc.files, tc.links, tc.opts)
-			defer f.cleanup()
+			f, w := newFixture(t, tc.files, tc.links, tc.opts)
 
 			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
@@ -1954,8 +1944,7 @@ func TestTODOWalker_symlink(t *testing.T) {
 func TestTODOWalker_git(t *testing.T) {
 	for _, tc := range blameTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			f, w := newRepoFixture(tc.author, tc.email, tc.files, tc.links, tc.opts)
-			defer f.cleanup()
+			f, w := newRepoFixture(t, tc.author, tc.email, tc.files, tc.links, tc.opts)
 
 			if got, want := w.Walk(), tc.err != nil; got != want {
 				t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
@@ -2010,8 +1999,7 @@ func TestTODOWalker_PathNotExists(t *testing.T) {
 		Paths:   []string{"line_comments.go", notExistsPath},
 	}
 
-	f, w := newFixture(files, nil, opts)
-	defer f.cleanup()
+	f, w := newFixture(t, files, nil, opts)
 
 	if got, want := w.Walk(), true; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
@@ -2080,8 +2068,7 @@ func TestTODOWalker_StopEarly(t *testing.T) {
 		},
 	}
 
-	f, w := newFixture([]*testutils.File{file}, nil, opts)
-	defer f.cleanup()
+	f, w := newFixture(t, []*testutils.File{file}, nil, opts)
 
 	if got, want := w.Walk(), false; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
@@ -2176,7 +2163,65 @@ func TestTODOWalker_gitSubDir(t *testing.T) {
 		},
 	}
 
-	f, w := newDirRepoFixture(author, email, repoSubPath, repoFiles, dirFiles, nil, nil, opts)
+	f, w := newDirRepoFixture(t, author, email, repoSubPath, repoFiles, dirFiles, nil, nil, opts)
+
+	if got, want := w.Walk(), false; got != want {
+		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)
+	}
+
+	got, want := f.out, expected
+	if diff := cmp.Diff(want, got, cmp.AllowUnexported(TODORef{})); diff != "" {
+		t.Errorf("unexpected output (-want +got):\n%s", diff)
+	}
+}
+
+//nolint:paralleltest // fixture uses Chdir and cannot be run in parallel.
+func TestTODOWalker_Stdin(t *testing.T) {
+	tempFile, err := os.CreateTemp(t.TempDir(), "stdin")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer tempFile.Close()
+
+	if _, err := tempFile.WriteString(`// package comment
+	package foo
+
+	// TODO is a function.
+	// TODO: some task.
+	func TODO() {
+		return // Random comment
+	}`); err != nil {
+		t.Fatalf("failed to write to temp file: %v", err)
+	}
+
+	if _, err := tempFile.Seek(0, io.SeekStart); err != nil {
+		t.Fatalf("failed to seek to start of temp file: %v", err)
+	}
+
+	opts := &Options{
+		Paths: []string{"-"},
+		Config: &todos.Config{
+			Types: []string{"TODO"},
+		},
+		Charset:  "UTF-8",
+		Language: "go",
+		Stdin:    tempFile,
+	}
+
+	expected := []*TODORef{
+		{
+			FileName: tempFile.Name(),
+			TODO: &todos.TODO{
+				Type:        "TODO",
+				Text:        "// TODO: some task.",
+				Message:     "some task.",
+				Line:        5,
+				CommentLine: 5,
+			},
+		},
+	}
+
+	f, w := newFixture(t, nil, nil, opts)
 
 	if got, want := w.Walk(), false; got != want {
 		t.Errorf("unexpected error code, got: %v, want: %v\nw.err: %v", got, want, w.err)

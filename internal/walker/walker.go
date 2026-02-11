@@ -38,6 +38,8 @@ import (
 	"github.com/ianlewis/todos/internal/vendoring"
 )
 
+const stdinMarker = "-"
+
 var (
 	errGit         = errors.New("git")
 	errSymlinkLoop = errors.New("symlink loop detected")
@@ -122,6 +124,10 @@ type Options struct {
 	// Language parses files as the given programming language, if specified.
 	Language string
 
+	// Stdin is the file to read from for standard input. If nil, os.Stdin is
+	// used.
+	Stdin *os.File
+
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
 }
@@ -134,6 +140,10 @@ func New(opts *Options) *TODOWalker {
 				Types: []string{"TODO"},
 			},
 		}
+	}
+
+	if opts.Stdin == nil {
+		opts.Stdin = os.Stdin
 	}
 
 	return &TODOWalker{
@@ -162,43 +172,70 @@ type TODOWalker struct {
 // if errors were encountered.
 func (w *TODOWalker) Walk() bool {
 	for _, path := range w.options.Paths {
-		var err error
-
 		w.path = path
 
-		f, err := os.Open(path)
-		if err != nil {
-			if herr := w.handleErr(path, err); herr != nil {
-				break
-			}
-
-			continue
-		}
-		defer f.Close()
-
-		fInfo, err := f.Stat()
-		if err != nil {
-			if herr := w.handleErr(path, err); herr != nil {
+		if path == stdinMarker {
+			if w.scanStdin() {
 				break
 			}
 
 			continue
 		}
 
-		if fInfo.IsDir() {
-			// Walk the directory
-			w.walkDir(path)
-		} else {
-			// Single file. Always scan this file since it was explicitly specified.
-			if err := w.scanFile(f, true); err != nil {
-				if herr := w.handleErr(path, err); herr != nil {
-					break
-				}
-			}
+		if w.walkPath(path) {
+			break
 		}
 	}
 
 	return w.err != nil
+}
+
+// scanStdin scans standard input. Returns true if walking/scanning should stop.
+func (w *TODOWalker) scanStdin() bool {
+	// Read from standard input.
+	if scanErr := w.scanFile(w.options.Stdin, true); scanErr != nil {
+		if herr := w.handleErr(w.options.Stdin.Name(), scanErr); herr != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
+// walkPath walks the given path. Returns true if walking should stop.
+func (w *TODOWalker) walkPath(path string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		if herr := w.handleErr(path, err); herr != nil {
+			return true
+		}
+
+		return false
+	}
+	defer f.Close()
+
+	fInfo, err := f.Stat()
+	if err != nil {
+		if herr := w.handleErr(path, err); herr != nil {
+			return true
+		}
+
+		return false
+	}
+
+	if fInfo.IsDir() {
+		// Walk the directory
+		w.walkDir(path)
+	} else {
+		// Single file. Always scan this file since it was explicitly specified.
+		if err := w.scanFile(f, true); err != nil {
+			if herr := w.handleErr(path, err); herr != nil {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (w *TODOWalker) walkDir(path string) {

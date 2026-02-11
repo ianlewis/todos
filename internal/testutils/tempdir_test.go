@@ -24,9 +24,8 @@ import (
 
 //nolint:gochecknoglobals // Global table-driven test cases are ok.
 var tempDirTestCases = map[string]struct {
-	files       []*File
-	links       []*Symlink
-	expectPanic bool
+	files []*File
+	links []*Symlink
 }{
 	"no files": {},
 	"single file": {
@@ -46,16 +45,6 @@ var tempDirTestCases = map[string]struct {
 				Mode:     0o600,
 			},
 		},
-	},
-	"bad file": {
-		files: []*File{
-			{
-				Path:     "../../../../../../../testfile.txt",
-				Contents: []byte("foo"),
-				Mode:     0o600,
-			},
-		},
-		expectPanic: true,
 	},
 	"multi-file": {
 		files: []*File{
@@ -167,18 +156,8 @@ func TestTempDir(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			defer func() {
-				if r := recover(); r != nil && !testCase.expectPanic {
-					t.Fatalf("unexpected panic: %v", r)
-				}
-			}()
-
-			tempDir := NewTempDir(testCase.files, testCase.links)
+			tempDir := NewTempDir(t, testCase.files, testCase.links)
 			baseDir := tempDir.Dir()
-
-			defer func() {
-				_ = os.RemoveAll(baseDir)
-			}()
 
 			// Check that the temporary directory exists.
 			dirStat, err := os.Stat(baseDir)
@@ -196,12 +175,6 @@ func TestTempDir(t *testing.T) {
 
 			for _, link := range testCase.links {
 				checkTempSymlink(t, baseDir, link)
-			}
-
-			tempDir.Cleanup()
-
-			if _, err := os.Stat(baseDir); !os.IsNotExist(err) {
-				t.Fatalf("expected not exist error: %v", err)
 			}
 		})
 	}

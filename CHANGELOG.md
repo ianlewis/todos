@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A new `--language` flag was added to allow users to override the language of
   files being scanned ([#1850](https://github.com/ianlewis/todos/issues/1850)).
+- Support was added for reading from standard input with the '-' filename
+  ([#1782](https://github.com/ianlewis/todos/issues/1782)).
 
 ## [`0.14.0`] - 2025-12-20
 
