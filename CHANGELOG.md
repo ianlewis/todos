@@ -5,6 +5,13 @@ All notable changes will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- A new `--language` flag was added to allow users to override the language of
+  files being scanned ([#1850](https://github.com/ianlewis/todos/issues/1850)).
+
 ## [`0.14.0`] - 2025-12-20
 
 ### Added in `0.14.0`
