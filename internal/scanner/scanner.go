@@ -98,18 +98,18 @@ type Config struct {
 
 // FromFile returns an appropriate CommentScanner for the given file. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
-func FromFile(f *os.File, charset string) (*CommentScanner, error) {
+func FromFile(f *os.File, lang, charset string) (*CommentScanner, error) {
 	rawContents, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", f.Name(), err)
 	}
 
-	return FromBytes(f.Name(), rawContents, charset)
+	return FromBytes(f.Name(), rawContents, lang, charset)
 }
 
 // FromBytes returns an appropriate CommentScanner for the given contents. The
 // language is auto-detected and a relevant configuration is used to initialize the scanner.
-func FromBytes(fileName string, rawContents []byte, charset string) (*CommentScanner, error) {
+func FromBytes(fileName string, rawContents []byte, lang, charset string) (*CommentScanner, error) {
 	// Ignore binary files.
 	if enry.IsBinary(rawContents) {
 		return nil, ErrBinaryFile
@@ -152,7 +152,12 @@ func FromBytes(fileName string, rawContents []byte, charset string) (*CommentSca
 	}
 
 	// Detect the programming language.
-	lang := enry.GetLanguage(fileName, decodedContents)
+	if lang != "" {
+		lang, _ = enry.GetLanguageByAlias(lang)
+	} else {
+		lang = enry.GetLanguage(fileName, decodedContents)
+	}
+
 	if lang == enry.OtherLanguage {
 		return nil, fmt.Errorf("%w: %s", ErrUnsupportedLanguage, lang)
 	}

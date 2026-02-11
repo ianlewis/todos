@@ -133,6 +133,11 @@ func newTODOsApp() *cli.App {
 				Usage:   "only output TODOs that match `GLOB`",
 				Aliases: []string{"l"},
 			},
+			&cli.StringFlag{
+				Name:    "language",
+				Usage:   "parse input as `LANG`",
+				Aliases: []string{"g"},
+			},
 			&cli.BoolFlag{
 				Name:               "no-error-on-unsupported",
 				Usage:              "prevent errors on unsupported files",
@@ -391,6 +396,8 @@ func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 	opts.FollowSymlinks = cliCtx.Bool("follow")
 
 	opts.Blame = cliCtx.Bool("blame")
+
+	opts.Language = cliCtx.String("language")
 
 	// File Includes
 	opts.IncludeGenerated = cliCtx.Bool("include-generated")

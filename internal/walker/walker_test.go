@@ -1298,6 +1298,65 @@ var testCases = []testCase{
 		expected: nil,
 		err:      nil,
 	},
+	{
+		name: "language option",
+		files: []*testutils.File{
+			{
+				Path: filepath.Join("src", "some_file.md"),
+				Contents: []byte(`# TODO: Title
+
+				## TODO: Header 1
+
+				Some text
+
+				## TODO: Header 2
+
+				Some more Text`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:            "UTF-8",
+			ErrorOnUnsupported: true,
+			Language:           "shell",
+		},
+		expected: []*TODORef{
+			{
+				FileName: filepath.Join("src", "some_file.md"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "# TODO: Title",
+					Message:     "Title",
+					Line:        1,
+					CommentLine: 1,
+				},
+			},
+			{
+				FileName: filepath.Join("src", "some_file.md"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "## TODO: Header 1",
+					Message:     "Header 1",
+					Line:        3,
+					CommentLine: 3,
+				},
+			},
+			{
+				FileName: filepath.Join("src", "some_file.md"),
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "## TODO: Header 2",
+					Message:     "Header 2",
+					Line:        7,
+					CommentLine: 7,
+				},
+			},
+		},
+		err: nil,
+	},
 }
 
 // symlinkTestCases contains test cases for symlinked files and directories.
