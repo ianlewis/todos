@@ -102,7 +102,6 @@ func Test_isHidden(t *testing.T) {
 			if tc.hiddenAttr {
 				testutils.Check(t, setHidden(path))
 			}
-			defer os.RemoveAll(dir)
 
 			pathHidden, err := isHidden(path)
 			testutils.Check(t, err)
