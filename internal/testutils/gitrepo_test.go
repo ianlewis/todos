@@ -39,11 +39,10 @@ func TestTempRepo(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		author      string
-		email       string
-		files       []*File
-		links       []*Symlink
-		expectPanic bool
+		author string
+		email  string
+		files  []*File
+		links  []*Symlink
 	}{
 		"no files": {
 			author: "John Doe",
@@ -70,18 +69,6 @@ func TestTempRepo(t *testing.T) {
 					Mode:     0o600,
 				},
 			},
-		},
-		"bad file": {
-			author: "John Doe",
-			email:  "john@doe.com",
-			files: []*File{
-				{
-					Path:     "../../../../../../../testfile.txt",
-					Contents: []byte("foo"),
-					Mode:     0o600,
-				},
-			},
-			expectPanic: true,
 		},
 		"multi-file": {
 			author: "John Doe",
@@ -154,16 +141,17 @@ func TestTempRepo(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			defer func() {
-				if r := recover(); r != nil && !testCase.expectPanic {
-					t.Fatalf("unexpected panic: %v", r)
-				}
-			}()
+			tmpDir := NewTempDir(t, nil, nil)
 
-			tmpDir := NewTempDir(nil, nil)
-			defer tmpDir.Cleanup()
+			d := NewTestRepo(
+				t,
+				tmpDir.Dir(),
+				testCase.author,
+				testCase.email,
+				testCase.files,
+				testCase.links,
+			)
 
-			d := NewTestRepo(tmpDir.Dir(), testCase.author, testCase.email, testCase.files, testCase.links)
 			baseDir := d.Dir()
 
 			// Check that the temporary directory exists.

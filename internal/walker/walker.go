@@ -124,6 +124,10 @@ type Options struct {
 	// Language parses files as the given programming language, if specified.
 	Language string
 
+	// Stdin is the file to read from for standard input. If nil, os.Stdin is
+	// used.
+	Stdin *os.File
+
 	// Paths are the paths to walk to look for TODOs.
 	Paths []string
 }
@@ -136,6 +140,10 @@ func New(opts *Options) *TODOWalker {
 				Types: []string{"TODO"},
 			},
 		}
+	}
+
+	if opts.Stdin == nil {
+		opts.Stdin = os.Stdin
 	}
 
 	return &TODOWalker{
@@ -185,8 +193,8 @@ func (w *TODOWalker) Walk() bool {
 // scanStdin scans standard input. Returns true if walking/scanning should stop.
 func (w *TODOWalker) scanStdin() bool {
 	// Read from standard input.
-	if scanErr := w.scanFile(os.Stdin, true); scanErr != nil {
-		if herr := w.handleErr(os.Stdin.Name(), scanErr); herr != nil {
+	if scanErr := w.scanFile(w.options.Stdin, true); scanErr != nil {
+		if herr := w.handleErr(w.options.Stdin.Name(), scanErr); herr != nil {
 			return true
 		}
 	}

@@ -120,8 +120,7 @@ func Test_TODOsApp_Walk(t *testing.T) {
 		},
 	}
 
-	d := testutils.NewTempDir(files, nil)
-	defer d.Cleanup()
+	d := testutils.NewTempDir(t, files, nil)
 
 	app := newTODOsApp()
 
@@ -152,8 +151,7 @@ func Test_TODOsApp_Walk_no_todos(t *testing.T) {
 		},
 	}
 
-	d := testutils.NewTempDir(files, nil)
-	defer d.Cleanup()
+	d := testutils.NewTempDir(t, files, nil)
 
 	app := newTODOsApp()
 

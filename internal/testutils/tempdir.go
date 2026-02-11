@@ -17,6 +17,7 @@ package testutils
 import (
 	"os"
 	"path/filepath"
+	"testing"
 )
 
 // TempDir is a temporary directory which is set up with a directory structure
@@ -51,31 +52,26 @@ type Symlink struct {
 // fills it with the files given. Intermediate directories are created
 // automatically with 0700 permissions. This function panics if an error occurs
 // when creating the files.
-func NewTempDir(files []*File, links []*Symlink) *TempDir {
+func NewTempDir(t *testing.T, files []*File, links []*Symlink) *TempDir {
+	t.Helper()
+
 	d := &TempDir{}
 
-	d.dir = Must(os.MkdirTemp("", "testutils"))
-
-	cleanup, cancel := WithCancel(func() {
-		d.Cleanup()
-	}, nil)
-	defer cleanup()
+	d.dir = t.TempDir()
 
 	const readWriteExec = os.FileMode(0o700)
 
 	for _, file := range files {
 		fullPath := filepath.Join(d.dir, file.Path)
-		Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
-		Check(os.WriteFile(fullPath, file.Contents, file.Mode))
+		Check(t, os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+		Check(t, os.WriteFile(fullPath, file.Contents, file.Mode))
 	}
 
 	for _, link := range links {
 		fullPath := filepath.Join(d.dir, link.Path)
-		Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
-		Check(os.Symlink(link.Target, fullPath))
+		Check(t, os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+		Check(t, os.Symlink(link.Target, fullPath))
 	}
-
-	cancel()
 
 	return d
 }
@@ -83,9 +79,4 @@ func NewTempDir(files []*File, links []*Symlink) *TempDir {
 // Dir returns the path to the directory.
 func (d *TempDir) Dir() string {
 	return d.dir
-}
-
-// Cleanup deletes the test directory.
-func (d *TempDir) Cleanup() {
-	Check(os.RemoveAll(d.dir))
 }

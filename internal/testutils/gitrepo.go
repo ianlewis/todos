@@ -17,6 +17,7 @@ package testutils
 import (
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -31,14 +32,17 @@ type TestRepo struct {
 
 // NewTestRepo creates a new TestRepo with the given files committed into a
 // single commit in the repo.
-func NewTestRepo(dir, author, email string, files []*File, links []*Symlink) *TestRepo {
+func NewTestRepo(t *testing.T, dir, author, email string, files []*File, links []*Symlink) *TestRepo {
+	t.Helper()
+
 	testRepo := &TestRepo{
 		dir: dir,
 	}
+	repoDir, err := git.PlainInit(testRepo.dir, false)
+	testRepo.repo = Must(t, repoDir, err)
 
-	testRepo.repo = Must(git.PlainInit(testRepo.dir, false))
-
-	worktree := Must(testRepo.repo.Worktree())
+	worktree, err := testRepo.repo.Worktree()
+	Check(t, err)
 
 	const readWriteExec = os.FileMode(0o700)
 
@@ -47,23 +51,25 @@ func NewTestRepo(dir, author, email string, files []*File, links []*Symlink) *Te
 			fullPath := filepath.Join(testRepo.dir, f.Path)
 
 			// Create necessary sub-directories.
-			Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+			Check(t, os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
 
 			// Write the file
-			Check(os.WriteFile(fullPath, f.Contents, f.Mode))
+			Check(t, os.WriteFile(fullPath, f.Contents, f.Mode))
 
 			// git add <file>
-			_ = Must(worktree.Add(f.Path))
+			_, err := worktree.Add(f.Path)
+			Check(t, err)
 		}
 
 		// git commit <file>
-		_ = Must(worktree.Commit("add files", &git.CommitOptions{
+		_, err := worktree.Commit("add files", &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  author,
 				Email: email,
 				When:  time.Now(),
 			},
-		}))
+		})
+		Check(t, err)
 	}
 
 	if len(links) > 0 {
@@ -71,23 +77,25 @@ func NewTestRepo(dir, author, email string, files []*File, links []*Symlink) *Te
 			fullPath := filepath.Join(testRepo.dir, link.Path)
 
 			// Create necessary sub-directories.
-			Check(os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
+			Check(t, os.MkdirAll(filepath.Dir(fullPath), readWriteExec))
 
 			// Create the symbolic link.
-			Check(os.Symlink(link.Target, fullPath))
+			Check(t, os.Symlink(link.Target, fullPath))
 
 			// git add <file>
-			_ = Must(worktree.Add(link.Path))
+			_, err := worktree.Add(link.Path)
+			Check(t, err)
 		}
 
 		// git commit <file>
-		_ = Must(worktree.Commit("add links", &git.CommitOptions{
+		_, err := worktree.Commit("add links", &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  author,
 				Email: email,
 				When:  time.Now(),
 			},
-		}))
+		})
+		Check(t, err)
 	}
 
 	return testRepo

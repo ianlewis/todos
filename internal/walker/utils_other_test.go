@@ -55,7 +55,10 @@ func Test_isHidden(t *testing.T) {
 			t.Parallel()
 
 			// NOTE: For *nix we don't actually have to create the file.
-			if got, want := testutils.Must(isHidden(tc.name)), tc.hidden; got != want {
+			fileHidden, err := isHidden(tc.name)
+			testutils.Check(t, err)
+
+			if got, want := fileHidden, tc.hidden; got != want {
 				t.Errorf("unexpected result for %q, got: %v, want: %v", tc.name, got, want)
 			}
 		})

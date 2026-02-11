@@ -15,87 +15,10 @@
 package testutils
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
-
-var errTest = errors.New("error")
-
-func TestCheck(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
-
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("unexpected panic: %v", r)
-			}
-		}()
-
-		Check(nil)
-	})
-
-	t.Run("fail", func(t *testing.T) {
-		t.Parallel()
-
-		defer func() {
-			r := recover()
-			got, ok := r.(error)
-			want := errTest
-
-			if !ok {
-				t.Errorf("expected panic, got: %v, want: %v", r, want)
-			}
-
-			if !errors.Is(got, want) {
-				t.Errorf("expected panic, got: %v, want: %v", got, want)
-			}
-		}()
-
-		Check(errTest)
-	})
-}
-
-func TestMust(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
-
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("unexpected panic: %v", r)
-			}
-		}()
-
-		if got, want := Must("test", nil), "test"; got != want {
-			t.Errorf("unexpected return value, got: %v, want: %v", got, want)
-		}
-	})
-
-	t.Run("fail", func(t *testing.T) {
-		t.Parallel()
-
-		defer func() {
-			r := recover()
-			got, ok := r.(error)
-			want := errTest
-
-			if !ok {
-				t.Errorf("expected panic, got: %v, want: %v", r, want)
-			}
-
-			if !errors.Is(got, want) {
-				t.Errorf("expected panic, got: %v, want: %v", got, want)
-			}
-		}()
-
-		Must("test", errTest)
-	})
-}
 
 func TestAsPtr(t *testing.T) {
 	t.Parallel()

@@ -15,20 +15,23 @@
 // Package testutils implements utilities used for automated testing.
 package testutils
 
+import "testing"
+
 // Check checks the error and panics if not nil.
-func Check(err error) {
+func Check(t *testing.T, err error) {
+	t.Helper()
+
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 }
 
 // Must checks the error and panics if not nil.
 //
 //nolint:ireturn,nolintlint // this an intended use of generics.
-func Must[T any](val T, err error) T {
-	if err != nil {
-		panic(err)
-	}
+func Must[T any](t *testing.T, val T, err error) T {
+	t.Helper()
+	Check(t, err)
 
 	return val
 }

@@ -3878,7 +3878,9 @@ func TestFromFile(t *testing.T) {
 			t.Parallel()
 			// Create a temporary file.
 			// NOTE: File extensions are used as hints so the file name must be part of the suffix.
-			f := testutils.Must(os.CreateTemp(t.TempDir(), "*."+testCase.name))
+			f, err := os.CreateTemp(t.TempDir(), "*."+testCase.name)
+			testutils.Check(t, err)
+
 			defer f.Close()
 
 			var w io.Writer
@@ -3886,12 +3888,17 @@ func TestFromFile(t *testing.T) {
 			w = f
 
 			if testCase.charset != "" {
-				e := testutils.Must(ianaindex.IANA.Encoding(testCase.charset))
+				e, encErr := ianaindex.IANA.Encoding(testCase.charset)
+				testutils.Check(t, encErr)
+
 				w = e.NewEncoder().Writer(f)
 			}
 
-			_ = testutils.Must(w.Write(testCase.src))
-			_ = testutils.Must(f.Seek(0, io.SeekStart))
+			_, err = w.Write(testCase.src)
+			testutils.Check(t, err)
+
+			_, err = f.Seek(0, io.SeekStart)
+			testutils.Check(t, err)
 
 			s, err := FromFile(f, testCase.lang, testCase.scanCharset)
 			if diff := cmp.Diff(testCase.err, err, cmpopts.EquateErrors()); diff != "" {
@@ -3922,8 +3929,11 @@ func TestFromBytes(t *testing.T) {
 			text := tc.src
 
 			if tc.charset != "" {
-				e := testutils.Must(ianaindex.IANA.Encoding(tc.charset))
-				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
+				e, err := ianaindex.IANA.Encoding(tc.charset)
+				testutils.Check(t, err)
+
+				text, err = e.NewDecoder().Bytes(tc.src)
+				testutils.Check(t, err)
 			}
 
 			s, err := FromBytes(tc.name, text, tc.lang, tc.scanCharset)
