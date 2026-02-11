@@ -95,16 +95,18 @@ func Test_isHidden(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			dir := testutils.Must(os.MkdirTemp("", "utils_windows_test"))
+			dir := t.TempDir()
 			path := filepath.Join(dir, tc.name)
-			testutils.Check(os.MkdirAll(filepath.Dir(path), 0o600))
-			testutils.Check(os.WriteFile(path, nil, 0o600))
+			testutils.Check(t, os.MkdirAll(filepath.Dir(path), 0o600))
+			testutils.Check(t, os.WriteFile(path, nil, 0o600))
 			if tc.hiddenAttr {
-				testutils.Check(setHidden(path))
+				testutils.Check(t, setHidden(path))
 			}
 			defer os.RemoveAll(dir)
 
-			if got, want := testutils.Must(isHidden(path)), tc.expected; got != want {
+			pathHidden, err := isHidden(path)
+			testutils.Check(t, err)
+			if got, want := pathHidden, tc.expected; got != want {
 				t.Errorf("unexpected result for %q, got: %v, want: %v", tc.name, got, want)
 			}
 		})
