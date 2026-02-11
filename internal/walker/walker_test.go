@@ -2181,6 +2181,7 @@ func TestTODOWalker_Stdin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp file: %v", err)
 	}
+	defer tempFile.Close()
 
 	if _, err := tempFile.WriteString(`// package comment
 	package foo
