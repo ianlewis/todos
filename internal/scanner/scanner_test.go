@@ -3598,6 +3598,7 @@ func BenchmarkCommentScanner(b *testing.B) {
 var loaderTestCases = []struct {
 	name    string
 	charset string
+	lang    string
 	src     []byte
 
 	scanCharset    string
@@ -3850,6 +3851,21 @@ let () = print_endline "hello world"
 		scanCharset:    "UTF-8",
 		expectedConfig: "TeX",
 	},
+	{
+		name: "other_lang.md",
+		lang: "bash",
+		src: []byte(`# Title
+
+		## Header 1
+
+		Some text
+
+		## Header 2
+
+		Some more Text`),
+		scanCharset:    "UTF-8",
+		expectedConfig: "Shell",
+	},
 }
 
 func TestFromFile(t *testing.T) {
@@ -3877,7 +3893,7 @@ func TestFromFile(t *testing.T) {
 			_ = testutils.Must(w.Write(testCase.src))
 			_ = testutils.Must(f.Seek(0, io.SeekStart))
 
-			s, err := FromFile(f, "", testCase.scanCharset)
+			s, err := FromFile(f, testCase.lang, testCase.scanCharset)
 			if diff := cmp.Diff(testCase.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("FromFile: unexpected err (-want +got):\n%s", diff)
 			}
@@ -3910,7 +3926,7 @@ func TestFromBytes(t *testing.T) {
 				text = testutils.Must(e.NewDecoder().Bytes(tc.src))
 			}
 
-			s, err := FromBytes(tc.name, text, "", tc.scanCharset)
+			s, err := FromBytes(tc.name, text, tc.lang, tc.scanCharset)
 			if diff := cmp.Diff(tc.err, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("FromBytes: unexpected err (-want +got):\n%s", diff)
 			}

@@ -726,6 +726,20 @@ func Test_walkerOptionsFromContext(t *testing.T) {
 				Paths:              []string{"."},
 			},
 		},
+		"language": {
+			args: []string{"--language", "shell"},
+			expected: &walker.Options{
+				Config: &todos.Config{
+					Types: todos.DefaultTypes,
+				},
+				Charset:            defaultCharset,
+				IgnoreFileNames:    defaultIgnoreFilenames,
+				IncludeHidden:      true,
+				ErrorOnUnsupported: true,
+				Paths:              []string{"."},
+				Language:           "shell",
+			},
+		},
 	}
 
 	for name, tc := range testCases {
