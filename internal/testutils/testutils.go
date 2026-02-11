@@ -17,7 +17,7 @@ package testutils
 
 import "testing"
 
-// Check checks the error and panics if not nil.
+// Check checks the error and calles t.Fatal if not nil.
 func Check(t *testing.T, err error) {
 	t.Helper()
 
@@ -26,7 +26,7 @@ func Check(t *testing.T, err error) {
 	}
 }
 
-// Must checks the error and panics if not nil.
+// Must checks the error and calls t.Fatal if not nil.
 //
 //nolint:ireturn,nolintlint // this an intended use of generics.
 func Must[T any](t *testing.T, val T, err error) T {
