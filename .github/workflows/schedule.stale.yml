@@ -43,6 +43,7 @@ jobs:
           remove-stale-when-updated: true
           exempt-pr-labels: "no-auto-close"
           exempt-issue-labels: "no-auto-close,enhancement,good first issue,help wanted"
+          exempt-all-milestones: true
           operations-per-run: 1000
           close-issue-label: "auto-closed"
           close-pr-label: "auto-closed"
