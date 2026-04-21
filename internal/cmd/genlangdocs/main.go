@@ -76,7 +76,8 @@ func main() {
 	fmt.Println("| -- | -- | -- |")
 
 	for _, l := range langs {
-		var supported []string
+		supported := make([]string, 0, len(l.config.LineComments)+len(l.config.MultilineComments))
+
 		for _, c := range l.config.LineComments {
 			supported = append(supported, fmt.Sprintf("`%s`", string(c.Start)))
 		}
@@ -86,7 +87,8 @@ func main() {
 			supported = append(supported, s)
 		}
 
-		var names []string
+		names := make([]string, 0, len(l.info.Filenames)+len(l.info.Extensions))
+
 		for _, name := range l.info.Filenames {
 			names = append(names, fmt.Sprintf("`%s`", name))
 		}
