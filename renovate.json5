@@ -13,7 +13,7 @@
 
     // Add Aqua present to allow updating CLI tools.
     // https://aquaproj.github.io/docs/guides/renovate/
-    "github>aquaproj/aqua-renovate-config#2.9.0",
+    "github>aquaproj/aqua-renovate-config#2.12.0",
 
     // Update version numbers in Makefile.
     // https://docs.renovatebot.com/presets-customManagers/#custommanagersmakefileversions
