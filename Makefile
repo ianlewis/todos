@@ -37,9 +37,9 @@ REPO_NAME := $(shell basename "$(REPO_ROOT)")
 # renovate: datasource=github-releases depName=aquaproj/aqua versioning=loose
 AQUA_VERSION ?= v2.57.1
 AQUA_REPO := github.com/aquaproj/aqua
-AQUA_CHECKSUM.linux.amd64 := 4b47965f71afee9bef6ac9ca4515dc2adc4bc1dfe279dceab8126e69ca3a6bc3
-AQUA_CHECKSUM.linux.arm64 := 75bef0c9e82480adb4c203b71b9af530945fda60b91f6f860b17791adf068158
-AQUA_CHECKSUM.darwin.arm64 := 040857e7f4eec6d468dedbad9a05a2409c2dfe13fc2e69c197f25bddec361793
+AQUA_CHECKSUM.linux.amd64 := 685df389dd8bf4dd4442ca496a2db744d25871351d0edcb1a59dcfa6bd7e7b39
+AQUA_CHECKSUM.linux.arm64 := dbdb45eb8214937e1b02e748b2b6d96b0d84fc5868dfe4d6ca46cc3bd525f9bb
+AQUA_CHECKSUM.darwin.arm64 := 81f908c93263ba83bc06ba81d75e2594390b676ea131bb3f7691a0d4575948e4
 AQUA_CHECKSUM ?= $(AQUA_CHECKSUM.$(kernel).$(arch))
 AQUA_URL := https://$(AQUA_REPO)/releases/download/$(AQUA_VERSION)/aqua_$(kernel)_$(arch).tar.gz
 export AQUA_ROOT_DIR = $(REPO_ROOT)/.aqua
