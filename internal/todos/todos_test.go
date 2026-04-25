@@ -1189,6 +1189,25 @@ func TestTODOScanner(t *testing.T) {
 			},
 			expected: nil,
 		},
+
+		// Regression test for issue #1637
+		"regression_1637.go": {
+			s: &testScanner{
+				comments: []*scanner.Comment{
+					{
+						Text: "// hack/make-rules/test-integration.sh expects that all unit tests",
+						Line: 1,
+						LineConfig: &scanner.LineCommentConfig{
+							Start: []rune("//"),
+						},
+					},
+				},
+			},
+			config: &Config{
+				Types: []string{"hack"},
+			},
+			expected: nil,
+		},
 	}
 
 	for name, tc := range testCases {

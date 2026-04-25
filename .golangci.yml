@@ -581,3 +581,6 @@ linters:
           - errcheck
           - dupl
           - gosec
+
+    paths:
+      - "^node_modules/"
