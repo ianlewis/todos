@@ -413,6 +413,11 @@ var LanguagesConfig = map[string]*Config{
 		MultilineComments: cBlockComments,
 		Strings:           cStrings,
 	},
+	"JSON with Comments": {
+		LineComments:      cLineComments,
+		MultilineComments: cBlockComments,
+		Strings:           cStrings,
+	},
 	"Java": {
 		LineComments:      cLineComments,
 		MultilineComments: cBlockComments,
