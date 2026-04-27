@@ -1493,6 +1493,49 @@ file comment
 		},
 	},
 
+	// JSON with Comments
+	{
+		name: "line_comments.jsonc",
+		src: `// file comment
+		{
+			"// not a comment": "some_value", // another comment
+		}`,
+		config: "JSON with Comments",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "// file comment",
+				line: 1,
+			},
+			{
+				text: "// another comment",
+				line: 3,
+			},
+		},
+	},
+
+	{
+		name: "multiline_comments.jsonc",
+		src: `/*
+file comment
+*/
+{
+	"// not a comment": "/* not a comment */",
+}`,
+		config: "JSON with Comments",
+		comments: []struct {
+			text string
+			line int
+		}{
+			{
+				text: "/*\nfile comment\n*/",
+				line: 1,
+			},
+		},
+	},
+
 	// Julia
 	{
 		name: "comments.jl",
@@ -2103,7 +2146,7 @@ end
 				x = "\"-- Random comment";
 				y = '\'-- Random comment';
 				x + y
-			}`,
+			`,
 		config: "Haskell",
 		comments: []struct {
 			text string
@@ -2154,7 +2197,7 @@ end
 			-}
 			TODO = do
 				putStrLn "fizzbuzz" -- Random comment
-			}
+
 			{- extra comment -}`,
 		config: "Haskell",
 		comments: []struct {
@@ -3686,19 +3729,16 @@ var loaderTestCases = []struct {
 		scanCharset:    "detect",
 		expectedConfig: "Go",
 	},
+
+	// JSONC
 	{
-		name:        "binary.exe",
-		src:         []byte{0, 0, 0, 0, 0, 0},
-		scanCharset: "detect",
-		// Detected as binary
-		expectedConfig: "",
-		err:            ErrBinaryFile,
-	},
-	{
-		name:           "detect_by_filename.go",
-		src:            []byte{},
+		name: "line_comments.jsonc",
+		src: []byte(`// file comment
+		{
+			"// not a comment": "some_value", // another comment
+		}`),
 		scanCharset:    "UTF-8",
-		expectedConfig: "Go",
+		expectedConfig: "JSON with Comments",
 	},
 
 	// Julia
@@ -3865,6 +3905,24 @@ let () = print_endline "hello world"
 		Some more Text`),
 		scanCharset:    "UTF-8",
 		expectedConfig: "Shell",
+	},
+
+	// Binary final
+	{
+		name:        "binary.exe",
+		src:         []byte{0, 0, 0, 0, 0, 0},
+		scanCharset: "detect",
+		// Detected as binary
+		expectedConfig: "",
+		err:            ErrBinaryFile,
+	},
+
+	// File detection
+	{
+		name:           "detect_by_filename.go",
+		src:            []byte{},
+		scanCharset:    "UTF-8",
+		expectedConfig: "Go",
 	},
 }
 

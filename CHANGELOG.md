@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support was added for [JSON with Comments](https://jsonc.org/)
+  ([#1857](https://github.com/ianlewis/todos/issues/1857)).
 - A new `--language` flag was added to allow users to override the language of
   files being scanned ([#1850](https://github.com/ianlewis/todos/issues/1850)).
 - Support was added for reading from standard input with the '-' filename
