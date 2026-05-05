@@ -73,7 +73,7 @@ func main() {
 	fmt.Println("")
 	fmt.Println("# Supported Languages")
 	fmt.Println("")
-	fmt.Printf("%d languages are currently supported.\n", len(scanner.LanguagesConfig))
+	fmt.Printf("%d languages are currently supported.\n", len(langs))
 	fmt.Println("")
 
 	fmt.Println("| Language | Files | Supported comments |")
