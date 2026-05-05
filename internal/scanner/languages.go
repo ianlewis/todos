@@ -15,6 +15,8 @@
 
 package scanner
 
+import "github.com/go-enry/go-enry/v2"
+
 // Common config.
 
 func concat[T any](slices ...[]T) []T {
@@ -151,6 +153,17 @@ var (
 //
 //nolint:gochecknoglobals // remove in the future.
 var LanguagesConfig = map[string]*Config{
+	enry.OtherLanguage: { // Unknown language
+		LineComments: concat(
+			cLineComments,
+			hashLineComments,
+		),
+		MultilineComments: concat(
+			cBlockComments,
+			xmlBlockComments,
+		),
+		Strings: cStrings,
+	},
 	"Assembly": {
 		LineComments:      iniLineComments,
 		MultilineComments: cBlockComments,

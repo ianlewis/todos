@@ -1223,7 +1223,6 @@ var testCases = []testCase{
 			Charset:         "UTF-8",
 		},
 		expected: nil,
-		// expected: []*TODORef{},
 	},
 	{
 		name: "binary files are ignored",
@@ -1243,29 +1242,21 @@ var testCases = []testCase{
 		expected: nil,
 	},
 	{
-		name: "unsupported files are ignored",
+		name: "unsupported files fallback to generic config",
 		files: []*testutils.File{
 			{
-				Path:     "unsupported_lang.coq",
-				Contents: []byte{},
-				Mode:     0o600,
-			},
-		},
-		opts: &Options{
-			Config: &todos.Config{
-				Types: []string{"TODO"},
-			},
-			Charset: "UTF-8",
-		},
-		expected: nil,
-	},
-	{
-		name: "unsupported files generate error if specified",
-		files: []*testutils.File{
-			{
-				Path:     "unsupported_lang.coq",
-				Contents: []byte{},
-				Mode:     0o600,
+				Path: "unsupported_lang.coq",
+				Contents: []byte(`package foo
+				# TODO: hash comments
+
+				<!-- TODO: XML comment -->
+
+				// TODO is a function.
+				// TODO: some task.
+				func TODO() {
+					return /* TODO: C block comment */
+				}`),
+				Mode: 0o600,
 			},
 		},
 		opts: &Options{
@@ -1273,7 +1264,69 @@ var testCases = []testCase{
 				Types: []string{"TODO"},
 			},
 			Charset:            "UTF-8",
-			Paths:              []string{"unsupported_lang.coq"},
+			ErrorOnUnsupported: true,
+		},
+		expected: []*TODORef{
+			{
+				FileName: "unsupported_lang.coq",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "# TODO: hash comments",
+					Message:     "hash comments",
+					Line:        2,
+					CommentLine: 2,
+				},
+			},
+			{
+				FileName: "unsupported_lang.coq",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "<!-- TODO: XML comment -->",
+					Message:     "XML comment",
+					Line:        4,
+					CommentLine: 4,
+				},
+			},
+			{
+				FileName: "unsupported_lang.coq",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "// TODO: some task.",
+					Message:     "some task.",
+					Line:        7,
+					CommentLine: 7,
+				},
+			},
+			{
+				FileName: "unsupported_lang.coq",
+				TODO: &todos.TODO{
+					Type:        "TODO",
+					Text:        "/* TODO: C block comment */",
+					Message:     "C block comment",
+					Line:        9,
+					CommentLine: 9,
+				},
+			},
+		},
+	},
+	{
+		name: "unsupported files generate ErrorUnsupportedLanguage if specified",
+		files: []*testutils.File{
+			{
+				Path: "unsupported.txt",
+				Contents: []byte(`// TODO is a function.
+				// TODO: some task.
+
+				Text is prose.`),
+				Mode: 0o600,
+			},
+		},
+		opts: &Options{
+			Config: &todos.Config{
+				Types: []string{"TODO"},
+			},
+			Charset:            "UTF-8",
+			Paths:              []string{"unsupported.txt"},
 			ErrorOnUnsupported: true,
 		},
 		expected: nil,
@@ -1283,9 +1336,12 @@ var testCases = []testCase{
 		name: "unsupported files don't generate error if ErrorOnUnsupported is false",
 		files: []*testutils.File{
 			{
-				Path:     "unsupported_lang.coq",
-				Contents: []byte{},
-				Mode:     0o600,
+				Path: "unsupported.txt",
+				Contents: []byte(`// TODO is a function.
+				// TODO: some task.
+
+				Text is prose.`),
+				Mode: 0o600,
 			},
 		},
 		opts: &Options{
@@ -1293,7 +1349,7 @@ var testCases = []testCase{
 				Types: []string{"TODO"},
 			},
 			Charset:            "UTF-8",
-			Paths:              []string{"unsupported_lang.coq"},
+			Paths:              []string{"unsupported.txt"},
 			ErrorOnUnsupported: false,
 		},
 		expected: nil,

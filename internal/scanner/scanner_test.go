@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-enry/go-enry/v2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.org/x/text/encoding/ianaindex"
@@ -3844,11 +3845,16 @@ let () = print_endline "hello world"
 	//	expectedConfig: "Go",
 	// },
 	{
-		name:           "unsupported_lang.coq",
+		name:           "fallback.coq", // .coq is the Rocq prover
 		src:            []byte{},
 		scanCharset:    "UTF-8",
-		expectedConfig: "", // nil
-		err:            ErrUnsupportedLanguage,
+		expectedConfig: enry.OtherLanguage, // Other language
+	},
+	{
+		name:        "unsupported.txt", // .txt is prose.
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		err:         ErrUnsupportedLanguage,
 	},
 	{
 		name: "typescript_is_not_xml.ts",
@@ -3963,13 +3969,11 @@ func TestFromFile(t *testing.T) {
 				t.Fatalf("FromFile: unexpected err (-want +got):\n%s", diff)
 			}
 
-			var config *Config
 			if s != nil {
-				config = s.Config()
-			}
-
-			if got, want := config, LanguagesConfig[testCase.expectedConfig]; got != want {
-				t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
+				config := s.Config()
+				if got, want := config, LanguagesConfig[testCase.expectedConfig]; got != want {
+					t.Fatalf("unexpected config, got: %#v, want: %#v", got, want)
+				}
 			}
 		})
 	}
@@ -3999,13 +4003,11 @@ func TestFromBytes(t *testing.T) {
 				t.Fatalf("FromBytes: unexpected err (-want +got):\n%s", diff)
 			}
 
-			var config *Config
 			if s != nil {
-				config = s.Config()
-			}
-
-			if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
-				t.Fatalf("unexpected LanguagesConfig, got: %#v, want: %#v", got, want)
+				config := s.Config()
+				if got, want := config, LanguagesConfig[tc.expectedConfig]; got != want {
+					t.Fatalf("unexpected LanguagesConfig, got: %#v, want: %#v", got, want)
+				}
 			}
 		})
 	}
