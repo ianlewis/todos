@@ -53,7 +53,7 @@ var (
 
 // DetectCharset is a special character set indicating that the actual
 // character set should be detected from the file contents.
-var DetectCharset = "detect"
+const DetectCharset = "detect"
 
 // StringConfig is a configuration for a string literal.
 type StringConfig struct {
@@ -174,10 +174,11 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 	if !ok {
 		// Fall back to generic handling for programming or markup languages.
 		langType := enry.GetLanguageType(lang)
-		fmt.Println(fileName, langType)
+
 		if langType != enry.Programming && langType != enry.Markup {
 			return nil, fmt.Errorf("%w: %q", ErrUnsupportedLanguage, lang)
 		}
+
 		config = LanguagesConfig[enry.OtherLanguage]
 	}
 

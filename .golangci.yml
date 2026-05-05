@@ -419,6 +419,7 @@ linters:
             - "github.com/ianlewis/todos"
 
             # Dependencies.
+            - "github.com/go-enry/go-enry/v2"
             - "github.com/gobwas/glob"
             - "github.com/google/go-cmp/cmp"
             - "github.com/google/go-github"
