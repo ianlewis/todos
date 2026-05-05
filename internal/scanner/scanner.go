@@ -141,7 +141,7 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 		charset = "GB18030"
 	}
 
-	// Detect the language encoding.
+	// Look up the character-set encoding.
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
