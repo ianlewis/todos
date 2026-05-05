@@ -3844,11 +3844,36 @@ let () = print_endline "hello world"
 	//	expectedConfig: "Go",
 	// },
 	{
-		name:           "unsupported_lang.coq",
+		name:           "fallback.coq", // .coq is the Rocq prover
 		src:            []byte{},
 		scanCharset:    "UTF-8",
-		expectedConfig: "", // nil
-		err:            ErrUnsupportedLanguage,
+		expectedConfig: GenericLanguage, // Other language
+	},
+	{
+		name:        "unsupported_lang_unspecified.txt", // .txt is prose.
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "undetected_lang_unspecified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "unsupported_lang_specified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		lang:        "Text",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "unknown_lang_specified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		lang:        "<unsupported language>",
+		err:         ErrUnsupportedLanguage,
 	},
 	{
 		name: "typescript_is_not_xml.ts",

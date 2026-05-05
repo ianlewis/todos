@@ -135,7 +135,7 @@ Be aware though that there are a few downsides to using the Go tools approach.
 ## 📖 Usage
 
 Simply running `todos` will search TODO comments starting in the current
-directory.Here is an example running in a checkout of the
+directory. Here is an example running in a checkout of the
 [`Kubernetes`](https://github.com/kubernetes/kubernetes) codebase.
 
 ```shell
@@ -158,6 +158,10 @@ file.
 
 See [`SUPPORTED_LANGUAGES.md`] for a full list of supported languages and
 comment types.
+
+If a file is detected to be a programming or markup language file but is
+as-of-yet unsupported, `todos` will parse it using a generic configuration that
+supports C-style comments, shell (hash) comments, and XML/HTML comments.
 
 ### TODO format
 
@@ -193,7 +197,7 @@ There a few variants of this type of comment that are in wide use.
 - **`BUG`**: A bug in the code that needs to be fixed.
 - **`HACK`**: This code is a "hack"; a hard to understand or brittle piece of
   code. It could use a cleanup.
-- **`XXX`**: Danger! Similar to "HACK". Modifying this code is dangerous. It
+- **`XXX`**: Danger! Similar to "HACK". Modifying this code is dangerous.
 - **`COMBAK`**: Something you should "come back" to.
 
 `TODO`,`FIXME`,`BUG`,`HACK`,`XXX`,`COMBAK` are supported by default. You can

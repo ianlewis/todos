@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support was added for reading from standard input with the '-' filename
   ([#1782](https://github.com/ianlewis/todos/issues/1782)).
 
+### Changed
+
+- If a file is detected to be a programming or markup language but is
+  unsupported, `todos` will use a generic fallback configuration that supports
+  C-style comments, shell (hash) comments, and XML/HTML comments
+  ([#1208](https://github.com/ianlewis/todos/issues/1208)).
+
 ## [`0.14.0`] - 2025-12-20
 
 ### Added in `0.14.0`

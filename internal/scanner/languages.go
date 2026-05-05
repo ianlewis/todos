@@ -34,6 +34,9 @@ func concat[T any](slices ...[]T) []T {
 	return newS
 }
 
+// GenericLanguage specifies a genric language configuration.
+const GenericLanguage = "<generic>"
+
 // TODO(#1686): Refactor language config global variables.
 //
 //nolint:gochecknoglobals // remove in the future.
@@ -151,6 +154,17 @@ var (
 //
 //nolint:gochecknoglobals // remove in the future.
 var LanguagesConfig = map[string]*Config{
+	GenericLanguage: { // Unknown language
+		LineComments: concat(
+			cLineComments,
+			hashLineComments,
+		),
+		MultilineComments: concat(
+			cBlockComments,
+			xmlBlockComments,
+		),
+		Strings: cStrings,
+	},
 	"Assembly": {
 		LineComments:      iniLineComments,
 		MultilineComments: cBlockComments,

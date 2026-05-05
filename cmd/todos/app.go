@@ -29,6 +29,7 @@ import (
 	"golang.org/x/text/encoding/ianaindex"
 	"sigs.k8s.io/release-utils/version"
 
+	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/utils"
 	"github.com/ianlewis/todos/internal/walker"
@@ -352,9 +353,9 @@ var outTypes = map[string]func(io.Writer) walker.TODOHandler{
 func walkerOptionsFromContext(cliCtx *cli.Context) (*walker.Options, error) {
 	opts := walker.Options{}
 
-	// Valdidate the character set.
+	// Validate the character set.
 	charset := cliCtx.String("charset")
-	if charset != "detect" {
+	if charset != scanner.DetectCharset {
 		if charset == "ISO-8859-1" {
 			charset = "UTF-8"
 		}

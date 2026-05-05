@@ -51,6 +51,10 @@ var (
 	ErrBinaryFile = errors.New("binary file")
 )
 
+// DetectCharset is a special character set indicating that the actual
+// character set should be detected from the file contents.
+const DetectCharset = "detect"
+
 // StringConfig is a configuration for a string literal.
 type StringConfig struct {
 	// Start is the starting sequence for the string literal.
@@ -115,7 +119,7 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 		return nil, ErrBinaryFile
 	}
 
-	if charset == "detect" {
+	if charset == DetectCharset {
 		// Detect the character set.
 		det := chardet.NewTextDetector()
 
@@ -137,6 +141,7 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 		charset = "GB18030"
 	}
 
+	// Look up the character-set encoding.
 	e, err := ianaindex.IANA.Encoding(charset)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", errDecodeCharset, charset, err)
@@ -152,20 +157,33 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 	}
 
 	// Detect the programming language.
+	var found bool
 	if lang != "" {
-		lang, _ = enry.GetLanguageByAlias(lang)
+		lang, found = enry.GetLanguageByAlias(lang)
+		if !found {
+			// If the language was specified but isn't supported then return an
+			// error.
+			return nil, fmt.Errorf("%w: %q", ErrUnsupportedLanguage, lang)
+		}
 	} else {
+		// Detect the language from the filename and contents.
 		lang = enry.GetLanguage(fileName, decodedContents)
+		if lang == enry.OtherLanguage {
+			return nil, fmt.Errorf("%w: unknown language", ErrUnsupportedLanguage)
+		}
 	}
 
-	if lang == enry.OtherLanguage {
-		return nil, fmt.Errorf("%w: %s: language could not be detected", ErrUnsupportedLanguage, fileName)
-	}
-
-	// Detect the language encoding.
+	// Extract the language configuration.
 	config, ok := LanguagesConfig[lang]
 	if !ok {
-		return nil, fmt.Errorf("%w: %s", ErrUnsupportedLanguage, lang)
+		// Fall back to generic handling for programming or markup languages.
+		langType := enry.GetLanguageType(lang)
+
+		if langType != enry.Programming && langType != enry.Markup {
+			return nil, fmt.Errorf("%w: %q", ErrUnsupportedLanguage, lang)
+		}
+
+		config = LanguagesConfig[GenericLanguage]
 	}
 
 	return New(bytes.NewReader(decodedContents), config), nil
