@@ -3851,9 +3851,29 @@ let () = print_endline "hello world"
 		expectedConfig: enry.OtherLanguage, // Other language
 	},
 	{
-		name:        "unsupported.txt", // .txt is prose.
+		name:        "unsupported_lang_unspecified.txt", // .txt is prose.
 		src:         []byte{},
 		scanCharset: "UTF-8",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "undetected_lang_unspecified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "unsupported_lang_specified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		lang:        "Text",
+		err:         ErrUnsupportedLanguage,
+	},
+	{
+		name:        "unknown_lang_specified",
+		src:         []byte{},
+		scanCharset: "UTF-8",
+		lang:        "<unsupported language>",
 		err:         ErrUnsupportedLanguage,
 	},
 	{

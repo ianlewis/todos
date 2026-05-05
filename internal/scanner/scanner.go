@@ -169,6 +169,11 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 		lang = enry.GetLanguage(fileName, decodedContents)
 	}
 
+	// If the language was not detected at this point then it is unsupported.
+	if lang == enry.OtherLanguage {
+		return nil, fmt.Errorf("%w: %q", ErrUnsupportedLanguage, lang)
+	}
+
 	// Extract the language configuration.
 	config, ok := LanguagesConfig[lang]
 	if !ok {
