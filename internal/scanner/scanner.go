@@ -184,7 +184,7 @@ func FromBytes(fileName string, rawContents []byte, lang, charset string) (*Comm
 			return nil, fmt.Errorf("%w: %q", ErrUnsupportedLanguage, lang)
 		}
 
-		config = LanguagesConfig[enry.OtherLanguage]
+		config = LanguagesConfig[GenericLanguage]
 	}
 
 	return New(bytes.NewReader(decodedContents), config), nil

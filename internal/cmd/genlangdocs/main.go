@@ -51,7 +51,7 @@ func main() {
 	langs := langConfigs(make([]langConfig, 0, len(scanner.LanguagesConfig)))
 
 	for lang, config := range scanner.LanguagesConfig {
-		if lang == enry.OtherLanguage {
+		if lang == scanner.GenericLanguage {
 			continue
 		}
 

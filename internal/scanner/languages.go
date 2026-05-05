@@ -15,8 +15,6 @@
 
 package scanner
 
-import "github.com/go-enry/go-enry/v2"
-
 // Common config.
 
 func concat[T any](slices ...[]T) []T {
@@ -35,6 +33,9 @@ func concat[T any](slices ...[]T) []T {
 
 	return newS
 }
+
+// GenericLanguage specifies a genric language configuration.
+const GenericLanguage = "<generic>"
 
 // TODO(#1686): Refactor language config global variables.
 //
@@ -153,7 +154,7 @@ var (
 //
 //nolint:gochecknoglobals // remove in the future.
 var LanguagesConfig = map[string]*Config{
-	enry.OtherLanguage: { // Unknown language
+	GenericLanguage: { // Unknown language
 		LineComments: concat(
 			cLineComments,
 			hashLineComments,
