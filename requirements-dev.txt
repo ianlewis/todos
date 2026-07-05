@@ -1,20 +1,20 @@
 # Hashes retrieved using instructions here:
 # https://pip.pypa.io/en/stable/cli/pip_hash/#example
-yamllint==1.37.1 \
-    --hash=sha256:364f0d79e81409f591e323725e6a9f4504c8699ddf2d7263d8d2b539cd66a583 \
-    --hash=sha256:81f7c0c5559becc8049470d86046b36e96113637bcbe4753ecef06977c00245d
-zizmor==1.18.0 \
-    --hash=sha256:0339e0447c881299d6ef9861c483cff36f2ab718a80d8bdd7adef63c4042b6f8 \
-    --hash=sha256:08b44cb5fc2034ae5f0bb74cec9857993047e1ea68f36af730a3bc27a46d99b2 \
-    --hash=sha256:12b49d166c929d28711098245d725ad8d8df1eaccfc3ac6abd0eccf21f1ace17 \
-    --hash=sha256:2d9ceb5f63ee354abd08ac52f7ac9cd3db94e1afd802bc432a3fc3101b85be02 \
-    --hash=sha256:32374a9c62efe7045f4c76796dc6d36e7fd57982179ddcb88b232a2dadbdf8e7 \
-    --hash=sha256:40ac6d346aabc6a833511def528c41928105f323034078081cee75a94f448549 \
-    --hash=sha256:4860569c31e2ea92d3e9ad33f6601de3ae4a101592675e50d820eeb9d7f8d9b5 \
-    --hash=sha256:54954c749a6d6b759de4f178a90391916270451508912ad8ef31f18e3602917f \
-    --hash=sha256:7f3161f52be96046dc885aec35f59c1bb25544b1f22b0251c2e144a63a11e350 \
-    --hash=sha256:81c7acfd05cc255509569e7d4860409db66c49c7841c70d2644e5c0392d9a49a \
-    --hash=sha256:83439ed527caeb5b3187257adc6abdf6f91b4598b93be110bda08910c259a3c5
+yamllint==1.38.0 \
+    --hash=sha256:09e5f29531daab93366bb061e76019d5e91691ef0a40328f04c927387d1d364d \
+    --hash=sha256:fc394a5b3be980a4062607b8fdddc0843f4fa394152b6da21722f5d59013c220
+zizmor==1.26.1 \
+    --hash=sha256:0a05acf6068609fb6df3b137276cf18a686226a1e0e207941cb34a85929f16cf \
+    --hash=sha256:0c2cc575007a4db99d89d5acc6120cfa7b61504bc2394c3b50af348c73f1916e \
+    --hash=sha256:44099f426af9da750ff9f548a0084e11d7d83e0158fe1a2778672398d728efdd \
+    --hash=sha256:6a958d8a0941d7e1d0de8436670b5cb7fc64c8028b4d16e3f519ccc77f953cef \
+    --hash=sha256:78083b495593f8b0b9dec14036a0836a5afcddda8a40738336ff4e399476b741 \
+    --hash=sha256:7ea21ca959c8e888de238fee81d73a1fdf89a82067eac75b8f1acdbd23e2eeaf \
+    --hash=sha256:8313cc264dec792f00a7328eb7c8e89e7d62d54f950fc897d1e6a5a6e5762203 \
+    --hash=sha256:bb7ebbe565a3742eb49a590352127ad549bb122b9b4ff9424ebab7525fa3b6b6 \
+    --hash=sha256:c96d7787d69fb298eae939e00dfdf7f534d7dfbd9cc17ab442c0650a56851415 \
+    --hash=sha256:d2744cdf944436ca7a009ae8b626a017a40381ec990216abd6cf6b8beb23323a \
+    --hash=sha256:d3049010b6bd6f849413b6d20c28e0c677b90e0a5b2bc73cbee7f7bd86dc5828
 
 # NOTE: The following dependencies are included because it is not pinned using
 # '==' by yamllint and this is required by pip --require-hashes.
@@ -22,9 +22,9 @@ zizmor==1.18.0 \
 # Hashes for packages can be obtained with:
 #    pip download <package>
 #    pip hash <file>
-pathspec==1.0.4 \
-    --hash=sha256:0210e2ae8a21a9137c0d470578cb0e595af87edaa6ebf12ff176f14a02e0e645 \
-    --hash=sha256:fb6ae2fd4e7c921a165808a552060e722767cfa526f99ca5156ed2ce45a5c723
+pathspec==1.1.1 \
+    --hash=sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a \
+    --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
 PyYAML==6.0.3 \
     --hash=sha256:00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c \
     --hash=sha256:0150219816b6a1fa26fb4699fb7daa9caf09eb1999f3b70fb6e786805e80375a \
