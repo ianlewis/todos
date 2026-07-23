@@ -5,7 +5,7 @@ go 1.25.3
 require (
 	github.com/fatih/color v1.19.0
 	github.com/go-enry/go-enry/v2 v2.9.6
-	github.com/go-git/go-git/v5 v5.19.0
+	github.com/go-git/go-git/v5 v5.19.1
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.7.0
 	github.com/ianlewis/runeio v1.1.1
