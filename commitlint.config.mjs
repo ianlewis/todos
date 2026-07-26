@@ -15,8 +15,19 @@
 export default {
   extends: ["@commitlint/config-conventional"],
 
+  rules: {
+    // Enforce including a scope in the commit message. This is normally
+    // optional in the conventional commit specification, but we want to require
+    // it for better commit message clarity.
+    // https://sumnerevans.com/posts/software-engineering/stop-using-conventional-commits/
+    "scope-empty": [2, "never"],
+  },
+
   ignores: [
-    // Ignore the Initial plan commits created by the GitHub Copilot agent.
+    // Ignore the 'Initial plan' commits created by the GitHub Copilot agent.
+    // Currently the agent ignores any repository instructions when creating
+    // this commit and so it can't be changed.
+    // https://github.com/orgs/community/discussions/178992
     (commit) => /^[Ii]nitial plan/.test(commit),
   ],
 };

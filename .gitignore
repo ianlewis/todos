@@ -7,9 +7,15 @@ node_modules/
 .bin/
 .venv/
 .aqua/
+.uv/
 
 # SARIF files
 *.sarif.json
+
+# Python cache files
+__pycache__/
+*.egg-info/
+*.pyc
 
 # Binaries for programs and plugins
 *.exe

@@ -38,11 +38,25 @@
   // Apply a dependency cooldown of 14 days. This helps to avoid issues with
   // compromised releases.
   // https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns
+  // https://docs.renovatebot.com/configuration-options/#minimumreleaseage
   minimumReleaseAge: "14 days",
+  // internalChecksFilter suppress PR creation for dependencies that were
+  // released within minimumReleaseAge.
+  // strict: All pending releases will be filtered. PRs will be skipped unless a
+  // non-pending version is available.
+  // https://docs.renovatebot.com/configuration-options/#internalchecksfilter
+  internalChecksFilter: "strict",
 
   // Enable the lock file maintenance feature to keep transitive dependencies up
   // to date.
   lockFileMaintenance: {
+    enabled: true,
+    // NOTE: Same as schedule:monthly preset.
+    schedule: ["* 0-3 1 * *"],
+  },
+
+  // Enable git submodule updates.
+  "git-submodules": {
     enabled: true,
     // NOTE: Same as schedule:monthly preset.
     schedule: ["* 0-3 1 * *"],
@@ -56,14 +70,6 @@
   // Group various ecosystem updates. Security updates are always separate.
   packageRules: [
     {
-      matchManagers: ["github-actions"],
-      matchPackageNames: [
-        "slsa-framework/slsa-github-generator",
-        "slsa-framework/slsa-verifier",
-      ],
-      pinDigests: false,
-    },
-    {
       matchUpdateTypes: ["minor", "patch"],
       groupName: "aqua",
       matchFileNames: [".aqua.yaml", ".aqua-checksums.yaml"],
@@ -75,9 +81,22 @@
     },
     {
       matchManagers: ["github-actions"],
+      matchPackageNames: [
+        "slsa-framework/slsa-github-generator",
+        "slsa-framework/slsa-verifier",
+      ],
+      pinDigests: false,
+    },
+    {
+      matchManagers: ["github-actions"],
       matchUpdateTypes: ["minor", "patch"],
       groupName: "github-actions",
       pinDigests: true,
+    },
+    {
+      matchManagers: ["pep621"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "pep621",
     },
     {
       matchManagers: ["pip_requirements"],
