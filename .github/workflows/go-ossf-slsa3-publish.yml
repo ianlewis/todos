@@ -49,6 +49,9 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: ".node-version"
+          # NOTE: Do not use the package cache to avoid potential cache
+          #       poisoning.
+          package-manager-cache: false
 
       - id: ldflags
         run: |
@@ -132,6 +135,9 @@ jobs:
           node-version-file: ".node-version"
           # This is needed to publish the package to npm.
           registry-url: "https://registry.npmjs.org"
+          # NOTE: Do not use the package cache to avoid potential cache
+          #       poisoning.
+          package-manager-cache: false
 
       - name: Download todos-linux-amd64
         id: download-linux-amd64
@@ -332,7 +338,7 @@ jobs:
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
         with:
           # NOTE: Do not use the cached binary for buildx to avoid potential
-          # cache poisoning.
+          #       cache poisoning.
           cache-binary: false
 
       - name: Authenticate Docker

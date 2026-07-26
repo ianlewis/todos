@@ -18,13 +18,24 @@ extends: default
 ignore-from-file: [.gitignore]
 
 rules:
+  braces:
+    max-spaces-inside: 1
+
   comments:
     # prettier formats comments one space from content
     min-spaces-from-content: 1
+
+  comments-indentation: false
+
   document-start: disable
+
   line-length: disable
+
+  octal-values:
+    forbid-explicit-octal: true
+    forbid-implicit-octal: true
+
   truthy:
     allowed-values: ["true", "false"]
     # Allow Github Actions keys like 'on'
     check-keys: false
-  comments-indentation: false

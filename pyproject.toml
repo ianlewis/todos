@@ -1,0 +1,20 @@
+[project]
+name = "todos"
+version = "0.14.0"
+# NOTE: this should match the major/minor version in .python-version.
+requires-python = ">=3.14"
+
+[build-system]
+requires = ["setuptools ==83.0.0"]
+build-backend = "setuptools.build_meta"
+
+# This is required to prevent setuptools from trying to find packages in the
+# current directory.
+[tool.setuptools.packages.find]
+include = []
+
+[dependency-groups]
+dev = [
+    "yamllint==1.38.0",
+    "zizmor==1.25.2",
+]

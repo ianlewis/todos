@@ -5,7 +5,7 @@ This doc describes how to contribute to this repository.
 First, thank you for contributing! We're happy to accept your patches and
 contributions!
 
-## How can I help?
+## How Can I Help?
 
 There are many areas that need help. These are managed in GitHub
 issues. Please let us know if you are willing to work on the issue and how you
@@ -21,16 +21,15 @@ can contribute.
 If you don't find an existing issue for your contribution feel free to
 create an issue.
 
-## Before you begin
+## Before You Begin
 
-### Review the community guidelines and Code of Conduct
+### Review the Community Guidelines and Code of Conduct
 
-For all of my repositories contributors are also expected to follow my [Code of
-Conduct]. Please take a few minutes to read over it. Please see the Code of
-Conduct about how to report instances of abusive, harassing, or otherwise
-unacceptable behavior.
+Contributors are expected to follow the [Code of Conduct]. Please take a few
+minutes to read over it. Please see the Code of Conduct for how to report
+instances of abusive, harassing, or otherwise unacceptable behavior.
 
-## Providing feedback
+## Providing Feedback
 
 Feedback can include bug reports, feature requests, documentation change
 proposals, or just general feedback. The best way to provide feedback to the
@@ -39,11 +38,11 @@ your project feedback.
 
 For reporting a security vulnerability see the [Security Policy].
 
-## Code contribution process
+## Code Contribution Process
 
-This section describes how to make a contribution to my repositories.
+This section describes how to make a contribution to this repository.
 
-### Create a fork
+### Create a Fork
 
 You should start by
 [creating a fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
@@ -61,7 +60,7 @@ code. Substitute your username and repository name here.
 git clone git@github.com:myuser/myrepo.git
 ```
 
-### Create a local branch
+### Create a Local Branch
 
 Create a local branch to do development in. This will make it easier to create a
 pull request later. You can give this branch an appropriate name.
@@ -76,7 +75,7 @@ Next you can develop your new feature or bug-fix. Please see the following
 sections on how to use the various tools used by this project during
 development.
 
-#### The Makefile
+#### The `Makefile`
 
 This repository makes heavy use of `make` for executing commands during
 development. This helps with automation of tasks locally on your machine. These
@@ -102,9 +101,9 @@ or individually by name:
 make markdownlint
 ```
 
-#### Commit and push your code
+#### Commit and Push Your Code
 
-Make sure to stage any change or new files or new files.
+Make sure to stage any changes or new files.
 
 ```shell
 git add .
@@ -126,7 +125,7 @@ You can now push your changes to your fork.
 git push origin my-new-feature
 ```
 
-### Pull requests
+### Pull Requests
 
 Once you have your code pushed to your fork you can now created a new [pull
 request] (PR). This allows the project maintainers to review your submission.
@@ -145,7 +144,7 @@ to start.
 gh pr create --title "feat: My new feature" --draft
 ```
 
-#### Review the PR template/checklist
+#### Review the PR Template/Checklist
 
 Some repositories will have a PR template with instructions on how to document
 your PR. Some will include a checklist. Please review the template doc and mark
@@ -153,7 +152,7 @@ checklist items as complete before finalizing your PR.
 
 Once you have finished you can mark the PR as "Ready for review".
 
-#### Status checks
+#### Status Checks
 
 PRs perform number of [GitHub status checks] which run linters, tests, etc.
 These tests must all pass before a PR will be accepted. These tests are located
@@ -162,7 +161,7 @@ in the [`.github/workflows`](.github/workflows) directory.
 Most pull request status checks are run as status checks in the
 [`pull_request.tests.yml`] file.
 
-#### Code reviews
+#### Code Reviews
 
 All PR submissions require review. I use GitHub pull requests for this purpose.
 Consult [About pull request reviews] for more information on pull request code
@@ -174,9 +173,9 @@ After your code is approved it will be merged into the `main` branch! Congrats!
 
 ## Conventions
 
-This section contains info on general conventions I use in my repositories.
+This section contains info on general conventions used in this repository.
 
-### Code style and formatting
+### Code Style and Formatting
 
 Most code, scripts, and documentation should be auto-formatted using a
 formatting tool. Formatting tools are installed locally to the project and do
@@ -210,7 +209,6 @@ number MAJOR.MINOR.PATCH, increment the:
 ### Conventional Commits
 
 PR titles and commit messages should be in [Conventional Commits] format.
-Usually this is required by not always.
 
 The following prefixes are supported and are checked using the
 [`@commitlint/config-conventional`](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional)
@@ -228,6 +226,16 @@ The following prefixes are supported and are checked using the
 9. `perf`: change to improve performance
 10. `revert`: reverts a previous change
 11. `test`: adds missing tests or corrects existing tests
+
+The rules for this repository depart from the default Conventional Commits rules
+in that the scope is not optional. It should always be included in the commit
+message.
+
+There are a few exceptions to these rules:
+
+- Default git commit messages are allowed (e.g. "Merge ...", "Revert ...").
+- Initial commits made by GitHub Copilot are allowed. These have the commit
+  message "Initial plan" and contain no changes.
 
 [`good first issue`]: ../../labels/good%20first%20issue
 [`help wanted`]: ../../labels/help%20wanted

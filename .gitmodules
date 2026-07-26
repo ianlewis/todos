@@ -1,3 +1,6 @@
 [submodule "third_party/mbrukman/autogen"]
 	path = third_party/mbrukman/autogen
 	url = https://github.com/mbrukman/autogen.git
+[submodule "third_party/aquaproj/aqua-installer"]
+	path = third_party/aquaproj/aqua-installer
+	url = https://github.com/aquaproj/aqua-installer.git

@@ -1,0 +1,18 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "markdownlint-cli2",
+      "pattern": [
+        {
+          "regexp": "^([^\\s][^:]*):(\\d+)(?::(\\d+))?\\s+(error|warning|info)\\s+(MD\\d{3}\\/[a-zA-Z0-9-]+)\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      ]
+    }
+  ]
+}

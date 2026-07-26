@@ -21,6 +21,9 @@ rules:
         # Allow the use of official GitHub CodeQL Actions
         - github/codeql-action/*
 
+        # Allow the use of the autofix-ci action
+        - autofix-ci/action
+
         # Allow the use of the todo-issue-reopener action
         - ianlewis/todo-issue-reopener
 
@@ -45,5 +48,7 @@ rules:
   unpinned-uses:
     ignore:
       # Allow unpinned use of the slsa-verifier installer action.
-      - go-ossf-slsa3-publish.yml:209:9
-      - go-ossf-slsa3-publish.yml:311:9
+      - go-ossf-slsa3-publish.yml:112:11
+      - go-ossf-slsa3-publish.yml:215:15
+      - go-ossf-slsa3-publish.yml:317:15
+      - go-ossf-slsa3-publish.yml:385:11
