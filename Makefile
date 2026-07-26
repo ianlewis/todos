@@ -17,6 +17,8 @@ include include.mk
 BENCHTIME ?= 1s
 TESTCOUNT ?= 1
 
+IMAGE_NAME ?= ghcr.io/ianlewis/todos
+
 ## Build
 #####################################################################
 
@@ -39,26 +41,26 @@ build-with-pprof-all: todos-with-pprof-linux-amd64 todos-with-pprof-linux-arm64 
 
 .PHONY: build-npm
 build-npm: $(REPO_ROOT)/node_modules/.installed build-all ## Build npm package tarball.
-	@# bash \
-	# NOTE: npm tarball is for local use only and is not used in releases. \
-	npm pack; \
-	cp todos-linux-amd64 packages/todos-linux-amd64/todos; \
-	(cd packages/todos-linux-amd64 && npm pack); \
-	cp todos-linux-arm64 packages/todos-linux-arm64/todos; \
-	(cd packages/todos-linux-arm64 && npm pack); \
-	cp todos-darwin-amd64 packages/todos-darwin-amd64/todos; \
-	(cd packages/todos-darwin-amd64 && npm pack); \
-	cp todos-darwin-arm64 packages/todos-darwin-arm64/todos; \
-	(cd packages/todos-darwin-arm64 && npm pack); \
-	cp todos-windows-amd64 packages/todos-windows-amd64/todos.exe; \
-	(cd packages/todos-windows-amd64 && npm pack); \
-	cp todos-windows-arm64 packages/todos-windows-arm64/todos.exe; \
+	@echo "Building npm package tarballs..."
+	echo "NOTE: npm tarballs are for local use only and is not used in releases."
+	npm pack
+	cp todos-linux-amd64 packages/todos-linux-amd64/todos
+	(cd packages/todos-linux-amd64 && npm pack)
+	cp todos-linux-arm64 packages/todos-linux-arm64/todos
+	(cd packages/todos-linux-arm64 && npm pack)
+	cp todos-darwin-amd64 packages/todos-darwin-amd64/todos
+	(cd packages/todos-darwin-amd64 && npm pack)
+	cp todos-darwin-arm64 packages/todos-darwin-arm64/todos
+	(cd packages/todos-darwin-arm64 && npm pack)
+	cp todos-windows-amd64 packages/todos-windows-amd64/todos.exe
+	(cd packages/todos-windows-amd64 && npm pack)
+	cp todos-windows-arm64 packages/todos-windows-arm64/todos.exe
 	(cd packages/todos-windows-arm64 && npm pack)
 
 todos-with-pprof-%: $(GO_SOURCE_FILES)
-	# NOTE: $@ is for local use only and is not used in releases.
-	@# bash \
-	go mod vendor; \
+	@echo "Building todos with profiling for $*..."
+	echo "NOTE: $@ is for local use only and is not used in releases."
+	go mod vendor
 	CGO_ENABLED=0 \
 	GOOS=$(word 1,$(subst -, ,$*)) \
 	GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -71,9 +73,9 @@ todos-with-pprof-%: $(GO_SOURCE_FILES)
 			github.com/ianlewis/todos/cmd/todos
 
 todos-%: $(GO_SOURCE_FILES)
-	# NOTE: $@ is for local use only and is not used in releases.
-	@# bash \
-	go mod vendor; \
+	@echo "Building todos for $*..."
+	echo "NOTE: $@ is for local use only and is not used in releases."
+	go mod vendor
 	CGO_ENABLED=0 \
 	GOOS=$(word 1,$(subst -, ,$*)) \
 	GOARCH=$(word 2,$(subst -, ,$*)) \
@@ -87,9 +89,10 @@ todos-%: $(GO_SOURCE_FILES)
 
 .PHONY: docker-image
 docker-image: build-all ## Build Docker image.
-	# NOTE: The Docker image is for local use only and is not used in releases.
+	@echo "Building Docker image $(IMAGE_NAME)..."
+	echo "NOTE: The Docker image is for local use only and is not used in releases."
 	docker build \
-		-t ghcr.io/ianlewis/todos \
+		-t "$(IMAGE_NAME)" \
 		.
 
 ## Testing
