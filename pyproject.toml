@@ -1,6 +1,6 @@
 [project]
-name = "repo-template-go"
-version = "0.0.0"
+name = "todos"
+version = "0.14.0"
 # NOTE: this should match the major/minor version in .python-version.
 requires-python = ">=3.14"
 
