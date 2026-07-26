@@ -466,7 +466,7 @@ golangci-lint: $(AQUA_ROOT_DIR)/.installed ## Runs the golangci-lint linter.
 	@echo "Running golangci-lint..."
 	golangci-lint run -c .golangci.yml ./...
 
-..PHONY: hadolint
+.PHONY: hadolint
 hadolint: $(AQUA_ROOT_DIR)/.installed ## Runs the hadolint linter.
 	@echo "Running hadolint..."
 	files=$$(
