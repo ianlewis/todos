@@ -32,3 +32,23 @@ rules:
 
         # Allow the use of the codecov/codecov-action
         - codecov/codecov-action
+
+        # Allow the use of the slsa-verifier installer action
+        - slsa-framework/slsa-verifier/actions/installer
+
+        # Allow the use of the fossa-action
+        - fossas/fossa-action
+
+        # Allow the use of the docker actions
+        - docker/build-push-action
+        - docker/login-action
+        - docker/metadata-action
+        - docker/setup-buildx-action
+
+  unpinned-uses:
+    ignore:
+      # Allow unpinned use of the slsa-verifier installer action.
+      - go-ossf-slsa3-publish.yml:112:11
+      - go-ossf-slsa3-publish.yml:215:15
+      - go-ossf-slsa3-publish.yml:317:15
+      - go-ossf-slsa3-publish.yml:385:11
