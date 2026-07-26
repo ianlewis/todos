@@ -38,7 +38,7 @@
     "@commitlint/cli": "21.1.0",
     "@commitlint/config-conventional": "21.1.0",
     "dictionary-en": "4.0.0",
-    "eslint": "9.39.4",
+    "eslint": "10.7.0",
     "eslint-plugin-github": "6.0.0",
     "eslint-plugin-prettier": "5.5.5",
     "markdownlint-cli2": "0.22.1",
