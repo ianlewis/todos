@@ -96,7 +96,7 @@ MAKEFILE_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 MAKEFILE_NAME := $(shell basename "$(MAKEFILE_ROOT)")
 
 # renovate: datasource=github-releases depName=aquaproj/aqua versioning=loose
-AQUA_VERSION ?= v2.60.1
+AQUA_VERSION ?= v2.62.1
 export AQUA_ROOT_DIR = $(MAKEFILE_ROOT)/.aqua
 
 # Ensure that aqua and aqua installed tools are in the PATH.
