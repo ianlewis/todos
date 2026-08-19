@@ -16,5 +16,5 @@ include = []
 [dependency-groups]
 dev = [
     "yamllint==1.38.0",
-    "zizmor==1.25.2",
+    "zizmor==1.29.0",
 ]
