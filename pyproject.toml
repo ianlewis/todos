@@ -5,7 +5,7 @@ version = "0.14.0"
 requires-python = ">=3.14"
 
 [build-system]
-requires = ["setuptools ==84.1.0"]
+requires = ["setuptools ==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 # This is required to prevent setuptools from trying to find packages in the
@@ -16,5 +16,5 @@ include = []
 [dependency-groups]
 dev = [
     "yamllint==1.38.0",
-    "zizmor==1.29.0",
+    "zizmor==1.32.0",
 ]
