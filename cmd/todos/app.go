@@ -29,6 +29,7 @@ import (
 	"golang.org/x/text/encoding/ianaindex"
 	"sigs.k8s.io/release-utils/version"
 
+	"github.com/ianlewis/todos/internal/gitdiff"
 	"github.com/ianlewis/todos/internal/scanner"
 	"github.com/ianlewis/todos/internal/todos"
 	"github.com/ianlewis/todos/internal/utils"
@@ -77,6 +78,10 @@ func newTODOsApp() *cli.App {
 		Usage: "Search for TODOS in code.",
 		Flags: []cli.Flag{
 			// Flags for functionality are in alphabetical order.
+			&cli.StringFlag{
+				Name:  "base",
+				Usage: "base revision to compare against when using --fail-on-new",
+			},
 			&cli.BoolFlag{
 				Name:               "blame",
 				Usage:              "attempt to find committer info (experimental)",
@@ -100,6 +105,12 @@ func newTODOsApp() *cli.App {
 			&cli.BoolFlag{
 				Name:               "exclude-hidden",
 				Usage:              "exclude hidden files and directories",
+				DisableDefaultText: true,
+			},
+			&cli.BoolFlag{
+				Name:               "fail-on-new",
+				Usage:              "only fail on TODOs added or modified between --base and HEAD",
+				Value:              false,
 				DisableDefaultText: true,
 			},
 			&cli.BoolFlag{
@@ -202,9 +213,37 @@ func newTODOsApp() *cli.App {
 				return err
 			}
 
+			// added is non-nil only when --fail-on-new is set. In that mode a
+			// TODO counts towards the exit status only if it sits on a line
+			// introduced by the change under review; everything else is treated
+			// as pre-existing debt and left alone.
+			var added *gitdiff.Changes
+			var repoRoot string
+
+			if c.Bool("fail-on-new") {
+				base := c.String("base")
+				if base == "" {
+					base = os.Getenv("GITHUB_BASE_REF")
+				}
+				if base == "" {
+					return fmt.Errorf("%w: --fail-on-new requires --base, or GITHUB_BASE_REF to be set", ErrFlagParse)
+				}
+
+				added, err = gitdiff.AddedLines(".", base)
+				if err != nil {
+					return fmt.Errorf("%w: fail-on-new: %w", ErrFlagParse, err)
+				}
+
+				repoRoot = gitdiff.Root(".")
+			}
+
 			todosFound := false
 			todoFunc := opts.TODOFunc
 			opts.TODOFunc = func(o *walker.TODORef) error {
+				if added != nil && !added.Contains(o.FileName, repoRoot, o.TODO.Line) {
+					return nil
+				}
+
 				todosFound = true
 				return todoFunc(o)
 			}
